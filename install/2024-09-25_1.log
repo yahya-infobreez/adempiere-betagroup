@@ -1,0 +1,6 @@
+*** 2024-09-25 13:02:23.947 Adempiere Log (CLogFile) ***
+13:02:23.945 Setup.<init>: ADempiere(r) Release 3.6.0LTS_2010-06-14 -Smart Suite ERP,CRM and SCM- (c) 1999-2010 ADempiere(r); Implementation: ADempiere - Supported by ADempiere community [1]
+13:02:24.147 ConfigurationData.load: Defaults [1]
+13:02:39.142 Config.test: OK: JavaHome=/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.422.b05-2.0.1.el9.x86_64 [21]
+
+*** 2024-09-25 13:05:25.382 Adempiere Log (CLogFile) ***

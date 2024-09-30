@@ -1,0 +1,11 @@
+*** 2024-09-25 13:35:21.549 Adempiere Log (CLogFile) ***
+13:35:21.548 Setup.<init>: ADempiere(r) Release 3.6.0LTS_2010-06-14 -Smart Suite ERP,CRM and SCM- (c) 1999-2010 ADempiere(r); Implementation: ADempiere - Supported by ADempiere community [1]
+13:35:21.836 ConfigurationData.load: Defaults [1]
+13:36:09.582 Config.test: OK: JavaHome=/usr/lib/jvm/jdk-1.8-oracle-x64 [22]
+13:36:09.583 Config.test: OK: Version=1.8.0_411 [22]
+13:36:09.583 ConfigurationData.testAdempiere: OK: AdempiereHome = /home/yahya/workspace/adempiere/install [22]
+13:36:09.600 KeyStoreMgt.<init>: /home/yahya/workspace/adempiere/install/keystore/myKeystore [22]
+13:36:09.614 KeyStoreMgt.createCertificate:  [22]
+13:36:11.737 KeyStoreMgt.keytool: keytool -genkey -keyalg rsa -alias adempiere -dname "CN=localhost, OU=yahya, O=AdempiereUser, L=MyTown, C=IN" -keypass myPassword -validity 999 -keystore /home/yahya/workspace/adempiere/install/keystore/myKeystore -storepass myPassword [22]
+
+*** 2024-09-25 14:17:08.999 Adempiere Log (CLogFile) ***

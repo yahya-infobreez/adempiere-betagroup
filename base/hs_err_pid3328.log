@@ -1,0 +1,103 @@
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+# java.lang.OutOfMemoryError: requested 720896 bytes for offset table expansion. Out of swap space?
+#
+#  Internal Error (blockOffsetTable.cpp:73), pid=3328, tid=2884
+#  Error: offset table expansion
+#
+# JRE version: 6.0_20-b02
+# Java VM: Java HotSpot(TM) Client VM (16.3-b01 mixed mode, sharing windows-x86 )
+# If you would like to submit a bug report, please visit:
+#   http://java.sun.com/webapps/bugreport/crash.jsp
+#
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x002a8000):  JavaThread "Unknown thread" [_thread_in_vm, id=2884, stack(0x008d0000,0x00cd0000)]
+
+Stack: [0x008d0000,0x00cd0000],  sp=0x00ccfbc8,  free space=ffe00ccfbd8k
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+V  [jvm.dll+0x1f4180]
+V  [jvm.dll+0xa1ebc]
+V  [jvm.dll+0x20480]
+V  [jvm.dll+0x20bf1]
+V  [jvm.dll+0xceb47]
+V  [jvm.dll+0x833cb]
+V  [jvm.dll+0x1d8ad6]
+V  [jvm.dll+0xcf2e5]
+V  [jvm.dll+0xc9e47]
+V  [jvm.dll+0x1e2988]
+V  [jvm.dll+0xd8984]
+V  [jvm.dll+0x1ddcd8]
+V  [jvm.dll+0x102e10]
+C  [javac.exe+0x1656]
+C  [javac.exe+0x20d9]
+C  [MSVCR71.dll+0x9565]
+C  [kernel32.dll+0xb699]
+
+
+---------------  P R O C E S S  ---------------
+
+Java Threads: ( => current thread )
+
+Other Threads:
+
+=>0x002a8000 (exited) JavaThread "Unknown thread" [_thread_in_vm, id=2884, stack(0x008d0000,0x00cd0000)]
+
+VM state:not at safepoint (not fully initialized)
+
+VM Mutex/Monitor currently owned by a thread: None
+
+Dynamic libraries:
+0x00400000 - 0x0040a000 	C:\Program Files\Java\jdk1.6.0_20\bin\javac.exe
+0x7c900000 - 0x7c9b2000 	C:\WINDOWS\system32\ntdll.dll
+0x7c800000 - 0x7c8f5000 	C:\WINDOWS\system32\kernel32.dll
+0x6d010000 - 0x6d025000 	C:\Program Files\Java\jdk1.6.0_20\bin\jli.dll
+0x77dd0000 - 0x77e6b000 	C:\WINDOWS\system32\ADVAPI32.dll
+0x77e70000 - 0x77f02000 	C:\WINDOWS\system32\RPCRT4.dll
+0x77fe0000 - 0x77ff1000 	C:\WINDOWS\system32\Secur32.dll
+0x7c340000 - 0x7c396000 	C:\Program Files\Java\jdk1.6.0_20\bin\MSVCR71.dll
+0x002b0000 - 0x00306000 	C:\Program Files\Java\jdk1.6.0_20\jre\bin\msvcr71.dll
+0x6d8b0000 - 0x6db47000 	C:\Program Files\Java\jdk1.6.0_20\jre\bin\client\jvm.dll
+0x7e410000 - 0x7e4a0000 	C:\WINDOWS\system32\USER32.dll
+0x77f10000 - 0x77f58000 	C:\WINDOWS\system32\GDI32.dll
+0x76b40000 - 0x76b6d000 	C:\WINDOWS\system32\WINMM.dll
+0x76390000 - 0x763ad000 	C:\WINDOWS\system32\IMM32.DLL
+0x629c0000 - 0x629c9000 	C:\WINDOWS\system32\LPK.DLL
+0x74d90000 - 0x74dfb000 	C:\WINDOWS\system32\USP10.dll
+0x77c10000 - 0x77c68000 	C:\WINDOWS\system32\msvcrt.dll
+0x6d860000 - 0x6d86c000 	C:\Program Files\Java\jdk1.6.0_20\jre\bin\verify.dll
+0x6d3e0000 - 0x6d3ff000 	C:\Program Files\Java\jdk1.6.0_20\jre\bin\java.dll
+0x6d340000 - 0x6d348000 	C:\Program Files\Java\jdk1.6.0_20\jre\bin\hpi.dll
+0x76bf0000 - 0x76bfb000 	C:\WINDOWS\system32\PSAPI.DLL
+0x6d8a0000 - 0x6d8af000 	C:\Program Files\Java\jdk1.6.0_20\jre\bin\zip.dll
+
+VM Arguments:
+jvm_args: -Denv.class.path=.;C:\Program Files\Java\jre1.5.0_05\lib\ext\QTJava.zip -Dapplication.home=C:\Program Files\Java\jdk1.6.0_20 -Xms8m -Xss4m -ea:com.sun.tools... -Xms512m -Xmx512m 
+java_command: com.sun.tools.javac.Main -deprecation -d C:\srcAdempiere\Release\base\build -classpath C:\srcAdempiere\Release\base\build;C:\srcAdempiere\Release\lib\CCTools.jar;C:\srcAdempiere\Release\lib\oracle.jar;C:\srcAdempiere\Release\lib\postgresql.jar;C:\srcAdempiere\Release\lib\jboss.jar;C:\srcAdempiere\Release\lib\glassfish.jar;C:\srcAdempiere\Release\tools\lib\junit.jar;C:\srcAdempiere\Release\tools\lib\jnlp.jar;C:\srcAdempiere\Release\tools\lib\servlet-api.jar;C:\srcAdempiere\Release\tools\lib\cron4j-2.2.1.jar;C:\srcAdempiere\Release\base;C:\Program Files\Java\jre1.5.0_05\lib\ext\QTJava.zip;C:\srcAdempiere\Release\tools\lib\ant.jar;C:\srcAdempiere\Release\tools\lib\ant-launcher.jar;C:\srcAdempiere\Release\tools\lib\ant-commons-net.jar;C:\srcAdempiere\Release\tools\lib\commons-net-1.4.0.jar;C:\Program Files\Java\jdk1.6.0_20\lib\tools.jar -sourcepath C:\srcAdempiere\Release\base\src;C:\srcAdempiere\Release\looks\src;C:\srcAdempiere\Release\glassfishfacet\src;C:\srcAdempiere\Release\jbossfacet\src -target 1.6 -g @C:\DOCUME~1\Mamoun\LOCALS~1\Temp\files435760354
+Launcher Type: SUN_STANDARD
+
+Environment Variables:
+JAVA_HOME=C:\Program Files\Java\jdk1.6.0_20
+CLASSPATH=.;C:\Program Files\Java\jre1.5.0_05\lib\ext\QTJava.zip
+PATH="C:\Program Files\Java\jdk1.6.0_20\bin";C:\Program Files\Java\jdk1.6.0_20\bin;C:\Program Files\Java\jdk1.6.0_20\lib;C:\oracle\product\10.2.0\db_1\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\Program Files\Intel\Wireless\Bin\;C:\Program Files\QuickTime\QTSystem\;C:\Program Files\TortoiseSVN\bin;;C:\Java\tools\apache-ant-1.7.1\BIN
+USERNAME=Mamoun
+OS=Windows_NT
+PROCESSOR_IDENTIFIER=x86 Family 6 Model 23 Stepping 6, GenuineIntel
+
+
+
+---------------  S Y S T E M  ---------------
+
+OS: Windows XP Build 2600 Service Pack 2
+
+CPU:total 2 (2 cores per cpu, 1 threads per core) family 6 model 23 stepping 6, cmov, cx8, fxsr, mmx, sse, sse2, sse3, ssse3, sse4.1
+
+Memory: 4k page, physical 2087148k(891492k free), swap 1930412k(5764k free)
+
+vm_info: Java HotSpot(TM) Client VM (16.3-b01) for windows-x86 JRE (1.6.0_20-b02), built on Apr 12 2010 13:52:23 by "java_re" with MS VC++ 7.1 (VS2003)
+
+time: Mon Jun 21 14:43:09 2010
+elapsed time: 0 seconds
+

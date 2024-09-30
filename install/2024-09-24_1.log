@@ -1,0 +1,11 @@
+*** 2024-09-24 21:53:11.64 Adempiere Log (CLogFile) ***
+21:53:11.640 Setup.<init>: ADempiere(r) Release 3.6.0LTS_2010-06-14 -Smart Suite ERP,CRM and SCM- (c) 1999-2010 ADempiere(r); Implementation: ADempiere - Supported by ADempiere community [1]
+21:53:11.748 ConfigurationData.load: Defaults [1]
+-----------> Config.getTNS_File: Error Reading /opt/oracle/product/23ai/dbhomeFree//network/admin/tnsnames.ora [1]
+21:53:33.439 Config.test: OK: JavaHome=/usr/lib/jvm/jdk-1.8-oracle-x64 [25]
+21:53:33.450 Language.getLanguage: Adding Language=en, Country=IN, Locale=en_IN [25]
+===========> ConfigurationData.test: Wrong Java Version: Should be 1.8.0 [25]
+===========> ConfigurationPanel$1.finished: Error Java Home 
+(Wrong Java Version: Should be 1.8.0) [17]
+
+*** 2024-09-24 21:53:59.706 Adempiere Log (CLogFile) ***

@@ -1,0 +1,22 @@
+*** 2024-09-24 21:40:27.196 Adempiere Log (CLogFile) ***
+21:40:27.195 Setup.<init>: ADempiere(r) Release 3.6.0LTS_2010-06-14 -Smart Suite ERP,CRM and SCM- (c) 1999-2010 ADempiere(r); Implementation: ADempiere - Supported by ADempiere community [1]
+21:40:27.819 ConfigurationData.load: Defaults [1]
+-----------> Config.getTNS_File: Error Reading /opt/oracle/product/23ai/dbhomeFree//network/admin/tnsnames.ora [1]
+-----------> Config.getTNS_File: Error Reading /opt/oracle/product/23ai/dbhomeFree//network/admin/tnsnames.ora [14]
+21:50:00.977 Config.test: OK: JavaHome=/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.422.b05-2.0.1.el9.x86_64 [18]
+21:50:00.984 Language.getLanguage: Adding Language=en, Country=IN, Locale=en_IN [18]
+===========> ConfigurationData.test: Wrong Java Version: Should be 1.6.0 [18]
+===========> ConfigurationPanel$1.finished: Error Java Home 
+(Wrong Java Version: Should be 1.6.0) [14]
+21:50:11.879 Config.test: OK: JavaHome=/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.422.b05-2.0.1.el9.x86_64 [20]
+===========> ConfigurationData.test: Wrong Java Version: Should be 1.6.0 [20]
+===========> ConfigurationPanel$1.finished: Error Java Home 
+(Wrong Java Version: Should be 1.6.0) [14]
+21:51:59.823 Config.test: OK: JavaHome=/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.422.b05-2.0.1.el9.x86_64 [21]
+21:51:59.824 Config.test: OK: Version=1.8.0_422 [21]
+21:51:59.824 ConfigurationData.testAdempiere: OK: AdempiereHome = /home/yahya/workspace/adempiere/install [21]
+21:51:59.827 KeyStoreMgt.<init>: /home/yahya/workspace/adempiere/install/keystore/myKeystore [21]
+21:51:59.830 KeyStoreMgt.createCertificate:  [21]
+21:52:09.938 KeyStoreMgt.keytool: keytool -genkey -keyalg rsa -alias adempiere -dname "CN=localhost, OU=yahya, O=AdempiereUser, L=MyTown, C=IN" -keypass myPassword -validity 999 -keystore /home/yahya/workspace/adempiere/install/keystore/myKeystore -storepass myPassword [21]
+
+*** 2024-09-24 21:52:55.456 Adempiere Log (CLogFile) ***
