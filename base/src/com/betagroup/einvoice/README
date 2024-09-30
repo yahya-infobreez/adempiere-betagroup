@@ -1,0 +1,6 @@
+To generate the jaxb model classes from schema, run the following command
+The jaxb-bindings file should be created for each XSD as appropriate.
+
+ xjc -extension -b xsd/maindoc/jaxb-bindings-UBL-Invoice-2.1.xml xsd/maindoc/UBL-Invoice-2.1.xsd 
+
+folder path is relative to current directory...
