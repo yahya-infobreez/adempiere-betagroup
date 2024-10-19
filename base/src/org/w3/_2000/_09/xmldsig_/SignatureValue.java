@@ -52,6 +52,14 @@ public class SignatureValue {
     @XmlSchemaType(name = "ID")
     protected String id;
 
+    public SignatureValue() {
+	}
+    
+    public SignatureValue(String value) {
+    	this();
+    	setValue(value.getBytes());
+    }
+    
     /**
      * Gets the value of the value property.
      * 

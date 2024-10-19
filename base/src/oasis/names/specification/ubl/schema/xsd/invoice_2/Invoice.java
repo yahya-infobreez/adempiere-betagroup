@@ -8,13 +8,29 @@
 
 package oasis.names.specification.ubl.schema.xsd.invoice_2;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.Duration;
+import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.namespace.QName;
+
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2.AllowanceChargeType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2.BillingReference;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2.CustomerPartyType;
@@ -23,6 +39,7 @@ import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2.Deli
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2.DocumentReferenceType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2.ExchangeRateType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2.InvoiceLineType;
+import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2.LocationType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2.MonetaryTotalType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2.OrderReference;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2.PartyType;
@@ -413,6 +430,10 @@ public class Invoice {
     public void setProfileID(ProfileID value) {
         this.profileID = value;
     }
+    public void setProfileID(String value) {
+        this.profileID = new ProfileID();
+        this.profileID.setValue(value);
+    }
 
     /**
      * 
@@ -530,6 +551,10 @@ public class Invoice {
     public void setUUID(UUID value) {
         this.uuid = value;
     }
+    public void setUUID(String value) {
+        this.uuid = new UUID();
+        this.uuid.setValue(value);
+    }
 
     /**
      * 
@@ -558,6 +583,12 @@ public class Invoice {
     public void setIssueDate(IssueDate value) {
         this.issueDate = value;
     }
+    
+    public void setIssueDate(LocalDate datetime) throws Exception {
+        this.issueDate = new IssueDate();
+        this.issueDate.setValue(datetime);
+    }
+    
 
     /**
      * 
@@ -585,6 +616,12 @@ public class Invoice {
      */
     public void setIssueTime(IssueTime value) {
         this.issueTime = value;
+    }
+    
+    
+    public void setIssueTime(LocalDateTime datetime) throws Exception {
+        this.issueTime = new IssueTime();
+        this.issueTime.setValue(datetime); 
     }
 
     /**
@@ -614,6 +651,12 @@ public class Invoice {
     public void setDueDate(DueDate value) {
         this.dueDate = value;
     }
+    
+    public void setDueDate(LocalDate datetime) throws Exception {
+        this.dueDate = new DueDate();
+        this.dueDate.setValue(datetime);
+    }
+
 
     /**
      * 
@@ -641,6 +684,12 @@ public class Invoice {
      */
     public void setInvoiceTypeCode(InvoiceTypeCode value) {
         this.invoiceTypeCode = value;
+    }
+    
+    public void setInvoiceTypeCode(String value) {
+        this.invoiceTypeCode = new InvoiceTypeCode();
+        this.invoiceTypeCode.setName(value);
+        this.invoiceTypeCode.setValue(value);
     }
 
     /**
@@ -731,7 +780,14 @@ public class Invoice {
     public void setDocumentCurrencyCode(DocumentCurrencyCode value) {
         this.documentCurrencyCode = value;
     }
-
+    
+    public void setDocumentCurrencyCode(String value) {
+        this.documentCurrencyCode = new DocumentCurrencyCode();
+        this.documentCurrencyCode.setName(value);
+        this.documentCurrencyCode.setValue(value);
+    }
+    
+    
     /**
      * 
      * <pre>
@@ -758,6 +814,11 @@ public class Invoice {
      */
     public void setTaxCurrencyCode(TaxCurrencyCode value) {
         this.taxCurrencyCode = value;
+    }
+    
+    public void setTaxCurrencyCode(String value) {
+        this.taxCurrencyCode = new TaxCurrencyCode();
+        this.taxCurrencyCode.setValue(value);
     }
 
     /**
@@ -1015,6 +1076,14 @@ public class Invoice {
      */
     public void setOrderReference(OrderReference value) {
         this.orderReference = value;
+    }
+    
+    public void setOrderReference(String value) {
+        this.orderReference = new OrderReference();
+        ID id = new ID();
+        id.setValue(value);
+        this.orderReference.setID(id);
+        // Other entries not required (this.orderReference.set* setOrderTypeCode(value); setIssueDate; etc)
     }
 
     /**
@@ -1541,6 +1610,13 @@ public class Invoice {
      */
     public void setDeliveryTerms(DeliveryTerms value) {
         this.deliveryTerms = value;
+    }
+    
+    public void setDeliveryTerms(String value) {
+//        this.deliveryTerms = new DeliveryTerms();
+//        this.deliveryTerms.setDeliveryLocation(new LocationType().);
+//        this.deliveryTerms.setAmount(xx);
+//        this.deliveryTerms.setAllowanceCharge(new AllowanceChargeType());
     }
 
     /**

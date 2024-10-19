@@ -8,11 +8,17 @@
 
 package oasis.names.specification.ubl.schema.xsd.unqualifieddatatypes_2;
 
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 
@@ -99,5 +105,18 @@ public class DateTimeType {
     public void setValue(XMLGregorianCalendar value) {
         this.value = value;
     }
-
+    
+    
+    public void setValue(LocalDateTime datetime) throws Exception {
+        this.value = getXmlDateTime(datetime);
+    }
+    
+    public static DateTimeFormatter datetimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-ddTmmss.SSSX");
+	/** Utility function to get XML date from LocalTime */
+    public static XMLGregorianCalendar getXmlDateTime(LocalDateTime datetime) throws DatatypeConfigurationException {
+		String datetimeString = datetime.format(datetimeFormatter);
+        XMLGregorianCalendar calendar = DatatypeFactory.newInstance().newXMLGregorianCalendar(datetimeString);
+        		//DatatypeFactory.newInstance().newXMLGregorianCalendar(year, month, day, hour, minute, second, millisecond, timezone);
+		return calendar;
+	}
 }

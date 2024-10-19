@@ -27,7 +27,10 @@ import java.util.logging.Level;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
+
+import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_2.ID;
 
 /**
  *	Business Partner Model
@@ -1023,5 +1026,80 @@ public class MBPartner extends X_C_BPartner
 			delete_Tree(MTree_Base.TREETYPE_BPartner);
 		return success;
 	}	//	afterDelete
+
+	/*********************  Additional fields for eInvoice - by YAHYA ***************/
+	
+	
+    public static final String COLUMNNAME_TRDLICENSENO = "TRDLICENSENO";
+	public void setCRN (String CRN)
+	{
+		set_Value (COLUMNNAME_TRDLICENSENO, CRN);
+	}
+
+	/** Get Order Description.
+		@return Description to be used on orders
+	  */
+	public String getCRN () 
+	{
+		return (String)get_Value(COLUMNNAME_TRDLICENSENO);
+	}
+	
+
+    public static final String COLUMNNAME_OTHER_DOC_NO = "OTHER_DOC_NO";
+
+	public void setLicenseNo (String licenseNo)
+	{
+		set_Value (COLUMNNAME_OTHER_DOC_NO, licenseNo);
+	}
+	
+	public String getLicenseNo() {
+		// Implementation has separate field TRDLICENSENO for CRN. Other cases are saved in OTHER_DOC_NO with type set in OTHER_DOC_TYPE
+		String returnValue = null;
+		String crn = getCRN();
+		if(crn != null) {
+			returnValue = crn;
+		} else {
+			returnValue = (String)get_Value(COLUMNNAME_OTHER_DOC_NO);
+		}
+		return returnValue;
+	}
+	
+    public static final String COLUMNNAME_OTHER_DOC_TYPE = "OTHER_DOC_TYPE";
+
+	public void setLicenseScheme (String licenseNo)
+	{
+		set_Value (COLUMNNAME_OTHER_DOC_TYPE, licenseNo);
+	}
+	
+	/**
+	 * Other Buyer/Seller ID / Registration No
+		- Tax Identification Number "TIN" as schemeID
+		- Commercial registration number with "CRN" as schemeID
+		- MOMRAH license with "MOM" as schemeID
+		- MHRSD license with "MLS" as schemeID
+		- 700 Number with "700" as schemeID
+		- MISA license with "SAG" as schemeID
+		- National ID with "NAT" as schemeID
+		- GCC ID with "GCC" as schemeID
+		- Iqama Number with "IQA" as schemeID
+		- Passport ID with "PAS" as schemeID
+		- Other ID with "OTH" as schemeID
+		In case multiple IDs exist then one of the above must be entered following the sequence specified above 
+	 * @return
+	 */
+	
+	public String getLicenseScheme() {
+		// Implementation has separate field TRDLICENSENO for CRN. Other cases are saved in OTHER_DOC_NO with type set in OTHER_DOC_TYPE
+		String scheme = null;
+		String crn = getCRN();
+		if(crn != null) {
+			scheme = "CRN";
+		} else {
+			scheme = (String)get_Value(COLUMNNAME_OTHER_DOC_TYPE); 
+		}
+		return scheme;
+	}	
+	
+	
 
 }	//	MBPartner

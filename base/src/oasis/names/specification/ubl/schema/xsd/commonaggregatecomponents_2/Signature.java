@@ -122,6 +122,11 @@ public class Signature {
     public void setID(ID value) {
         this.id = value;
     }
+    
+    public void setID(String value) {
+        this.id = new ID();
+        this.id.setValue(value);
+    }
 
     /**
      * 
@@ -294,6 +299,11 @@ public class Signature {
      */
     public void setSignatureMethod(SignatureMethod value) {
         this.signatureMethod = value;
+    }
+    
+    public void setSignatureMethod(String value) {
+        this.signatureMethod = new SignatureMethod();
+        this.signatureMethod.setValue(value);
     }
 
     /**

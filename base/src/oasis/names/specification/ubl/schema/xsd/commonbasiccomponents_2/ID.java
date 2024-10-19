@@ -37,6 +37,12 @@ import oasis.names.specification.ubl.schema.xsd.unqualifieddatatypes_2.Identifie
 public class ID
     extends IdentifierType
 {
+	public ID() {
+	}
 
+	public ID(String value) {
+		this();
+		setValue(value);
+	}
 
 }

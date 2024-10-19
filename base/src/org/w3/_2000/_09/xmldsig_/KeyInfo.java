@@ -78,6 +78,13 @@ public class KeyInfo {
     @XmlID
     @XmlSchemaType(name = "ID")
     protected String id;
+    
+	public KeyInfo() {
+	}
+
+	public KeyInfo(String x509Certificate) {
+		getContent().add(new X509Data(x509Certificate));
+	}
 
     /**
      * Gets the value of the content property.

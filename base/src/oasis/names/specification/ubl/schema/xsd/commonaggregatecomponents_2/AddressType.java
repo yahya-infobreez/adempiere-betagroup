@@ -374,6 +374,11 @@ public class AddressType {
         this.streetName = value;
     }
 
+    public void setStreetName(String value) {
+        this.streetName = new StreetName();
+        this.streetName.setValue(value);
+    }
+    
     /**
      * 
      * <pre>
@@ -400,6 +405,11 @@ public class AddressType {
      */
     public void setAdditionalStreetName(AdditionalStreetName value) {
         this.additionalStreetName = value;
+    }
+    
+    public void setAdditionalStreetName(String value) {
+        this.additionalStreetName = new AdditionalStreetName();
+        this.additionalStreetName.setValue(value);
     }
 
     /**
@@ -484,6 +494,10 @@ public class AddressType {
      */
     public void setBuildingNumber(BuildingNumber value) {
         this.buildingNumber = value;
+    }
+    public void setBuildingNumber(String value) {
+        this.buildingNumber = new BuildingNumber();
+        this.buildingNumber.setValue(value);
     }
 
     /**
@@ -625,6 +639,10 @@ public class AddressType {
     public void setPlotIdentification(PlotIdentification value) {
         this.plotIdentification = value;
     }
+    public void setPlotIdentification(String value) {
+        this.plotIdentification = new PlotIdentification();
+        this.plotIdentification.setValue(value);
+    }
 
     /**
      * 
@@ -652,6 +670,11 @@ public class AddressType {
      */
     public void setCitySubdivisionName(CitySubdivisionName value) {
         this.citySubdivisionName = value;
+    }
+    
+    public void setCitySubdivisionName(String value) {
+        this.citySubdivisionName = new CitySubdivisionName();
+        this.citySubdivisionName.setValue(value);
     }
 
     /**
@@ -681,6 +704,11 @@ public class AddressType {
     public void setCityName(CityName value) {
         this.cityName = value;
     }
+    
+    public void setCityName(String value) {
+        this.cityName = new CityName();
+        this.cityName.setValue(value);
+    }
 
     /**
      * 
@@ -709,6 +737,11 @@ public class AddressType {
     public void setPostalZone(PostalZone value) {
         this.postalZone = value;
     }
+    
+    public void setPostalZone(String value) {
+        this.postalZone = new PostalZone();
+        this.postalZone.setValue(value);
+    }
 
     /**
      * 
@@ -736,6 +769,11 @@ public class AddressType {
      */
     public void setCountrySubentity(CountrySubentity value) {
         this.countrySubentity = value;
+    }
+    
+    public void setCountrySubentity(String value) {
+        this.countrySubentity = new CountrySubentity();
+        this.countrySubentity.setValue(value);
     }
 
     /**

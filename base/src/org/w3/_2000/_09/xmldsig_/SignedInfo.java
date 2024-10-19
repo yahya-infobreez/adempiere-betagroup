@@ -88,6 +88,11 @@ public class SignedInfo {
     public void setCanonicalizationMethod(CanonicalizationMethod value) {
         this.canonicalizationMethod = value;
     }
+    
+    public void setCanonicalizationMethod(String algorithm) {
+        this.canonicalizationMethod = new CanonicalizationMethod();
+        this.canonicalizationMethod.setAlgorithm(algorithm);
+    }
 
     /**
      * Gets the value of the signatureMethod property.
@@ -111,6 +116,11 @@ public class SignedInfo {
      */
     public void setSignatureMethod(SignatureMethod value) {
         this.signatureMethod = value;
+    }
+    
+    public void setSignatureMethod(String value) {
+        this.signatureMethod = new SignatureMethod();
+        this.signatureMethod.setAlgorithm(value);
     }
 
     /**

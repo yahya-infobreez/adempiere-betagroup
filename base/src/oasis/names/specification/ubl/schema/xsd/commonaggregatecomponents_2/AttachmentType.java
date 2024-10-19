@@ -80,6 +80,14 @@ public class AttachmentType {
     public void setEmbeddedDocumentBinaryObject(EmbeddedDocumentBinaryObject value) {
         this.embeddedDocumentBinaryObject = value;
     }
+    
+    public void setEmbeddedDocumentBinaryObject(String value) {
+        this.embeddedDocumentBinaryObject = new EmbeddedDocumentBinaryObject();
+        if(value != null) {
+	        this.embeddedDocumentBinaryObject.setValue(value.getBytes());
+	        this.embeddedDocumentBinaryObject.setMimeCode(value);
+        }
+    }
 
     /**
      * 

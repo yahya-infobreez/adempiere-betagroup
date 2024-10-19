@@ -21,6 +21,8 @@ import java.util.Properties;
 
 import org.compiere.util.CCache;
 
+import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_2.ID;
+
 /**
  *	Organization Info Model
  *	
@@ -99,5 +101,6 @@ public class MOrgInfo extends X_AD_OrgInfo
 		setDUNS ("?");
 		setTaxID ("?");
 	}	//	MOrgInfo
+
 	
 }

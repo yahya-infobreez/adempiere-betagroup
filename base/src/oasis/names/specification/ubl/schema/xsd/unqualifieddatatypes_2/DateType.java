@@ -8,12 +8,17 @@
 
 package oasis.names.specification.ubl.schema.xsd.unqualifieddatatypes_2;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_2.ActualDeliveryDate;
 import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_2.ActualDespatchDate;
@@ -206,5 +211,17 @@ public class DateType {
     public void setValue(XMLGregorianCalendar value) {
         this.value = value;
     }
+    
+    public void setValue(LocalDate datetime) throws Exception {
+        this.value = getXmlDate(datetime);
+    }
 
+	/** Utility function to get XML date from LocalDate */
+	public static DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+	public static XMLGregorianCalendar getXmlDate(LocalDate datetime) throws DatatypeConfigurationException {
+		String datetimeString = datetime.format(dateFormatter);
+        XMLGregorianCalendar calendar = DatatypeFactory.newInstance().newXMLGregorianCalendar(datetimeString);
+        		//DatatypeFactory.newInstance().newXMLGregorianCalendar(year, month, day, hour, minute, second, millisecond, timezone);
+		return calendar;
+	}
 }

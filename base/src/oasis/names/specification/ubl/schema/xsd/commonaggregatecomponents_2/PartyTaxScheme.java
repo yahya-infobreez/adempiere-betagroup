@@ -136,6 +136,11 @@ public class PartyTaxScheme {
     public void setCompanyID(CompanyID value) {
         this.companyID = value;
     }
+    
+    public void setCompanyID(String value) {
+        this.companyID = new CompanyID();
+        this.companyID.setValue(value);
+    }
 
     /**
      * 
@@ -282,4 +287,10 @@ public class PartyTaxScheme {
         this.taxScheme = value;
     }
 
+    public void setTaxScheme(String value) {
+        this.taxScheme = new TaxScheme();
+        this.taxScheme.setID(value); // Fill both ID & Name, as it not clear from documents. TODO Verify the impact
+        this.taxScheme.setName(value);
+    }
+    
 }

@@ -53,6 +53,19 @@ public class CountryType {
     protected IdentificationCode identificationCode;
     @XmlElement(name = "Name", namespace = "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2")
     protected Name name;
+    
+    public CountryType() {
+		
+	}
+    
+    public CountryType(String code, String name) {
+		this.identificationCode = new IdentificationCode();
+		this.identificationCode.setValue(code);
+//		this.identificationCode.setName(name); // TODO Is this needed?
+		this.name = new Name();
+		this.name.setValue(name);
+	}
+    
 
     /**
      * 

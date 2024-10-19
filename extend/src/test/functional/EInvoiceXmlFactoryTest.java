@@ -37,8 +37,14 @@ public class EInvoiceXmlFactoryTest extends AdempiereTestCase {
 		Properties ctx = Env.getCtx();
 		MInvoice minvoice = MInvoice.get(ctx, 1000);
 		assertNotNull(minvoice);
-		Invoice xmlInvoice = EInvoiceXmlFactory.createXmlInvoice(minvoice);
-		assertNotNull(xmlInvoice);
+		Invoice xmlInvoice;
+		try {
+			xmlInvoice = EInvoiceXmlFactory.createXmlInvoice(minvoice);
+			assertNotNull(xmlInvoice);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
 	}
 
 	public void testWriteXml() {
@@ -47,14 +53,15 @@ public class EInvoiceXmlFactoryTest extends AdempiereTestCase {
 		Env.setContext(ctx, "AD_Org_ID", 0);
 		MInvoice minvoice = MInvoice.get(ctx, 1000000);
 		assertNotNull(minvoice);
-		Invoice xmlInvoice = EInvoiceXmlFactory.createXmlInvoice(minvoice);
-		assertNotNull(xmlInvoice);
-		
-		FileOutputStream out;
 		try {
+			Invoice xmlInvoice = EInvoiceXmlFactory.createXmlInvoice(minvoice);
+			assertNotNull(xmlInvoice);
+		
+			FileOutputStream out;
 			out = new FileOutputStream("test-einvoice.xml");
 			EInvoiceXmlFactory.writeXml(xmlInvoice, out);
 		} catch (Exception e) {
+			e.printStackTrace();
 			fail(e.getMessage());
 		}
 	}

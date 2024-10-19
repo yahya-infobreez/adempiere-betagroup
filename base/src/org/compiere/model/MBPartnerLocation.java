@@ -20,6 +20,8 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
 
+import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_2.StreetName;
+
 
 /**
  *	Partner Location Model
@@ -250,5 +252,83 @@ public class MBPartnerLocation extends X_C_BPartner_Location
 			m_uniqueName += "#" + id;		
 		}
 	}	//	makeUnique
+
+	
+	/********************** Changes for eInvoice by Yahya *******************/
+	
+	/**
+	 * Street name, added in BP location table
+	 */
+	public static final String COLUMNNAME_STREET = "STREET";
+	
+
+	public String getStreetName() {
+		return (String)get_Value(COLUMNNAME_STREET);
+	}
+	
+	public void setStreetName (String StreetName)
+	{
+		set_Value (COLUMNNAME_STREET, StreetName);
+	}
+
+	/**
+	 * BuildingNo, added in BP location table
+	 */
+	public static final String COLUMNNAME_BUILD_NO = "BUILD_NO";
+	
+
+	public String getBuildingNo() {
+		return (String)get_Value(COLUMNNAME_BUILD_NO);
+	}
+	
+	public void setBuildingNo (String BuildingNo)
+	{
+		set_Value (COLUMNNAME_BUILD_NO, BuildingNo);
+	}
+	
+	/**
+	 * AdditionalNo, added in BP location table
+	 */
+	public static final String COLUMNNAME_ADDL_NO = "ADDL_NO";
+	
+
+	public String getAdditionalNo() {
+		return (String)get_Value(COLUMNNAME_ADDL_NO);
+	}
+	
+	public void setAdditionalNo (String AdditionalNo)
+	{
+		set_Value (COLUMNNAME_ADDL_NO, AdditionalNo);
+	}
+	
+	/**
+	 * Postal Zip, added in BP location table (also present in C_Location - but not used)
+	 */
+	public static final String COLUMNNAME_POSTAL_ZIP = "POSTAL_ZIP";
+	
+
+	public String getPostalZip() {
+		return (String)get_Value(COLUMNNAME_POSTAL_ZIP);
+	}
+	
+	public void setPostalZip (String PostalZip)
+	{
+		set_Value (COLUMNNAME_POSTAL_ZIP, PostalZip);
+	}
+	
+	/**
+	 * District, added in BP location table
+	 */
+	public static final String COLUMNNAME_DISTRICT = "DISTRICT";
+	
+
+	public String getDistrict() {
+		return (String)get_Value(COLUMNNAME_DISTRICT);
+	}
+	
+	public void setDistrict (String District)
+	{
+		set_Value (COLUMNNAME_DISTRICT, District);
+	}
 	
 }	//	MBPartnerLocation

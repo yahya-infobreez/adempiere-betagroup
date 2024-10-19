@@ -8,6 +8,7 @@
 
 package oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -291,6 +292,11 @@ public class DeliveryType {
     public void setActualDeliveryDate(ActualDeliveryDate value) {
         this.actualDeliveryDate = value;
     }
+    
+    public void setActualDeliveryDate(LocalDate date) throws Exception {
+        this.actualDeliveryDate = new ActualDeliveryDate();
+        this.actualDeliveryDate.setValue(date);
+    }
 
     /**
      * 
@@ -346,6 +352,10 @@ public class DeliveryType {
      */
     public void setLatestDeliveryDate(LatestDeliveryDate value) {
         this.latestDeliveryDate = value;
+    }
+    public void setLatestDeliveryDate(LocalDate date) throws Exception {
+        this.latestDeliveryDate = new LatestDeliveryDate();
+        this.latestDeliveryDate.setValue(date);
     }
 
     /**

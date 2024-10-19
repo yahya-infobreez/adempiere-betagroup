@@ -154,6 +154,12 @@ public class DocumentReferenceType {
     public void setID(ID value) {
         this.id = value;
     }
+    
+    public void setID(String value) {
+        ID id = new ID();
+        id.setValue(value);
+    }
+
 
     /**
      * 
@@ -209,6 +215,11 @@ public class DocumentReferenceType {
      */
     public void setUUID(UUID value) {
         this.uuid = value;
+    }
+    
+    public void setUUID(String value) {
+        this.uuid = new UUID();
+        this.uuid.setValue(value);
     }
 
     /**

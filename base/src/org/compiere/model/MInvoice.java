@@ -41,6 +41,8 @@ import org.compiere.util.Msg;
 import org.eevolution.model.MPPProductBOM;
 import org.eevolution.model.MPPProductBOMLine;
 
+import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_2.UUID;
+
 
 /**
  *	Invoice Model.
@@ -2343,5 +2345,189 @@ public class MInvoice extends X_C_Invoice implements DocAction
 			|| DOCSTATUS_Closed.equals(ds)
 			|| DOCSTATUS_Reversed.equals(ds);
 	}	//	isComplete
+
+	/***************************  Fields added for eInvoice by Yahya ***********************/
+	
+	/* UUID Column */
+	public static final String COLUMNNAME_UUID = "uuid";
+	public String getUUID() {
+		return (String)get_Value(COLUMNNAME_UUID);
+	}
+	
+	public void setUUID (String uuid)
+	{
+		set_Value (COLUMNNAME_UUID, uuid);
+	}
+	
+	public static final String COLUMNNAME_IsSimplifiedInvoice = "IsSimplifiedInvoice";
+	/**
+	 * Set isSimplifiedInvoice for B2C invoices. 
+	 * @param isSimplifiedInvoice
+	 */
+	public void setIsSimplifiedInvoice (boolean isSimplifiedInvoice)
+	{
+		set_ValueNoCheck (COLUMNNAME_IsSimplifiedInvoice, Boolean.valueOf(isSimplifiedInvoice));
+	}
+
+	/** Get IsSimplifiedInvoice flag. True for B2C invoices
+		@return Indicates if this document requires approval
+	  */
+	public boolean isSimplifiedInvoice () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsSimplifiedInvoice);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+	
+	public static final String COLUMNNAME_IsExportInvoice = "IsExportInvoice";
+	/**
+	 * Set isExportInvoice for B2C invoices. 
+	 * @param isExportInvoice
+	 */
+	public void setIsExportInvoice (boolean isExportInvoice)
+	{
+		set_ValueNoCheck (COLUMNNAME_IsExportInvoice, Boolean.valueOf(isExportInvoice));
+	}
+
+	/** Get IsExportInvoice flag. True for B2C invoices
+		@return Indicates if this document requires approval
+	  */
+	public boolean isExportInvoice () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsExportInvoice);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+	
+	/** Previous Invoice ID 
+	 * Set Previous Invoice in the same Sequence, for chaining the Invoices in a sequence.
+	 * Each Solution Unit/terminal may have different sequences and hence different previous Invoice ID
+	 */
+	public static final String COLUMNNAME_PreviousInvoice_ID = "PreviousInvoice_ID";
+	
+	/**
+	 * Set Previous Invoice in the same Sequence, for chaining the Invoices in a sequence.
+	 * 
+	 * @param PreviousInvoice_ID
+	 */
+	public void setPreviousInvoice_ID (int PreviousInvoice_ID)
+	{
+		if (PreviousInvoice_ID < 1) 
+			set_Value (COLUMNNAME_PreviousInvoice_ID, null);
+		else 
+			set_Value (COLUMNNAME_PreviousInvoice_ID, Integer.valueOf(PreviousInvoice_ID));
+	}
+
+
+	/**
+	 * 
+	 * @return
+	 */
+	public int getPreviousInvoice_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_PreviousInvoice_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+	
+
+	/**
+	 * Hash of the Invoice XML generated as per ZATCA rules
+	 */
+	public static final String COLUMNNAME_InvoiceHash = "InvoiceHash";
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public String getInvoiceHash() {
+		return (String)get_Value(COLUMNNAME_InvoiceHash);
+	}
+	
+	public void setInvoiceHash (String InvoiceHash)
+	{
+		set_Value (COLUMNNAME_InvoiceHash, InvoiceHash);
+	}
+	
+	
+
+	/**
+	 * QR code generated as per ZATCA rules or received from ZATCA eInvoice portal
+	 */
+	public static final String COLUMNNAME_QRCode = "QRCode";
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public String getQRCode() {
+		return (String)get_Value(COLUMNNAME_QRCode);
+	}
+	
+	public void setQRCode (String QRCode)
+	{
+		set_Value (COLUMNNAME_QRCode, QRCode);
+	}
+
+	/** Reason for Return - Reference
+	 * Values are encoded in English & Arabic.
+	 * 	Reasons for issuance of credit / debit note as per Article 40 (paragraph 1) and Article 54 (3) of KSA VAT regulations, a Credit and Debit Note is issued for these 5 instances:
+		- Cancellation or suspension of the supplies after its occurrence either wholly or partially (تم إلغاء أو وقف التوريد بعد حدوثه أو اعتباره كلياً أو جزئياً)
+		- In case of essential change or amendment in the supply, which leads to the change of the VAT due (وجود تغيير أو تعديل جوهري في طبيعة التوريد بحيث يؤدي الى تغيير الضريبة المستحقة)
+		- Amendment of the supply value which is pre-agreed upon between the supplier and consumer (تم الاتفاق على تعديل قيمة التوريد مسبقاً)
+		- In case of goods or services refund. (عند ترجيع السلع أو الخدمات)
+		- In case of change in Seller's or Buyer's information (عند التعديل على بيانات المورد أو المشتري)
+	 */	
+	public static final String COLUMNNAME_ReturnReason = "ReturnReason";
+	
+	public String getReturnReason() {
+		return (String)get_Value(COLUMNNAME_ReturnReason);
+	}
+	
+	/**
+	 * Return the reason code, converted to Arabic String
+	 * @return
+	 */
+	public String getReturnReasonString() {
+		String reason = (String)get_Value(COLUMNNAME_ReturnReason);
+		if(reason == null)
+			return null;
+		String returnValue = null;
+		switch(reason) {
+		case "Cancellation":
+			returnValue = "تم إلغاء أو وقف التوريد بعد حدوثه أو اعتباره كلياً أو جزئياً";
+			break;		
+		case "Correction":
+			returnValue = "وجود تغيير أو تعديل جوهري في طبيعة التوريد بحيث يؤدي الى تغيير الضريبة المستحقة";
+			break;
+		case "Rate Change":
+			returnValue = "تم الاتفاق على تعديل قيمة التوريد مسبقاً";
+			break;
+		case "returnValue":
+			returnValue = "عند ترجيع السلع أو الخدمات";
+			break;
+		case "PartyChange":
+			returnValue = "عند التعديل على بيانات المورد أو المشتري";
+			break;
+		}
+		return returnValue;
+	}
+	
+	public void setReturnReason (String ReturnReason) 
+	{
+		set_Value (COLUMNNAME_ReturnReason, ReturnReason);
+	}
+	
 
 }	//	MInvoice

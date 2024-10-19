@@ -141,6 +141,11 @@ public class PartyLegalEntity {
     public void setRegistrationName(RegistrationName value) {
         this.registrationName = value;
     }
+    
+    public void setRegistrationName(String value) {
+        this.registrationName = new RegistrationName();
+        this.registrationName.setValue(value);
+    }
 
     /**
      * 

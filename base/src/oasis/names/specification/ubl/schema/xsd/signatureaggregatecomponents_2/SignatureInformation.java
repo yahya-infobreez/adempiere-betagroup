@@ -116,6 +116,11 @@ public class SignatureInformation {
     public void setReferencedSignatureID(ReferencedSignatureID value) {
         this.referencedSignatureID = value;
     }
+    
+    public void setReferencedSignatureID(String value) {
+        this.referencedSignatureID = new ReferencedSignatureID();
+        this.referencedSignatureID.setValue(value);
+    }
 
     /**
      * This is a single digital signature as defined by the W3C specification.

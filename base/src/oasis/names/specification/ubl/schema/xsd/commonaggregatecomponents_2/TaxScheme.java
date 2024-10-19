@@ -99,6 +99,9 @@ public class TaxScheme {
     public void setID(ID value) {
         this.id = value;
     }
+    public void setID(String value) {
+        this.id = new ID(value);
+    }
 
     /**
      * 
@@ -126,6 +129,10 @@ public class TaxScheme {
      */
     public void setName(Name value) {
         this.name = value;
+    }
+    public void setName(String value) {
+        this.name = new Name();
+        this.name.setValue(value);
     }
 
     /**

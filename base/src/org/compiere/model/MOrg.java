@@ -24,6 +24,8 @@ import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_2.ID;
+
 /**
  *	Organization Model
  *	
@@ -197,5 +199,49 @@ public class MOrg extends X_AD_Org
 		}
 		return m_linkedBPartner.intValue();
 	}	//	getLinkedC_BPartner_ID
+	
+
+	/****************** Changes for eInvoice - by YAHYA ****************/
+	
+	
+    public static final String COLUMNNAME_CR_NO = "CR_NO";
+    
+	/**
+	 * Set CR Number of the company/org
+	 * @return
+	 */
+	public void setCRN (String CRN)
+	{
+		set_Value (COLUMNNAME_CR_NO, CRN);
+	}
+
+	/**
+	 * Get CR Number of the company/org
+	 * @return
+	 */
+	public String getCRN () 
+	{
+		return (String)get_Value(COLUMNNAME_CR_NO);
+	}
+	
+    public static final String COLUMNNAME_CERTIFICATE = "CERTIFICATE";
+    
+	/**
+	 * Set CR Number of the company/org
+	 * @return
+	 */
+	public void setCertificate(String Certificate)
+	{
+		set_Value (COLUMNNAME_CERTIFICATE, Certificate);
+	}
+
+	/**
+	 * Get CR Number of the company/org
+	 * @return
+	 */
+	public String getCertificate () 
+	{
+		return (String)get_Value(COLUMNNAME_CERTIFICATE);
+	}
 	
 }	//	MOrg

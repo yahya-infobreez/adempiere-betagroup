@@ -10,6 +10,7 @@ package oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
@@ -50,6 +51,10 @@ public class PartyIdentification {
 
     @XmlElement(name = "ID", namespace = "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2", required = true)
     protected ID id;
+    
+    // Added manually, as this is not specified in schema
+    @XmlAttribute(name = "schemeID")
+    private String schemeID;
 
     /**
      * 
@@ -78,5 +83,15 @@ public class PartyIdentification {
     public void setID(ID value) {
         this.id = value;
     }
+
+	public String getSchemeID() {
+		return schemeID;
+	}
+
+	public void setSchemeID(String schemeID) {
+		this.schemeID = schemeID;
+	}
+    
+    
 
 }

@@ -63,6 +63,17 @@ public class X509Data {
     })
     @XmlAnyElement
     protected List<java.lang.Object> x509IssuerSerialsAndX509SKISAndX509SubjectNames;
+    
+    public X509Data() {
+	}
+    
+    public X509Data(String x509Certificate) {
+    	this();
+    	getX509IssuerSerialsAndX509SKISAndX509SubjectNames();
+    	if(x509Certificate != null) {
+    		getX509IssuerSerialsAndX509SKISAndX509SubjectNames().add(x509Certificate.getBytes());
+    	}
+	}
 
     /**
      * Gets the value of the x509IssuerSerialsAndX509SKISAndX509SubjectNames property.

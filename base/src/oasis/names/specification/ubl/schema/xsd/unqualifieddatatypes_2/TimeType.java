@@ -8,12 +8,20 @@
 
 package oasis.names.specification.ubl.schema.xsd.unqualifieddatatypes_2;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_2.ActualDeliveryTime;
 import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_2.ActualDespatchTime;
@@ -160,5 +168,22 @@ public class TimeType {
     public void setValue(XMLGregorianCalendar value) {
         this.value = value;
     }
+    
+    public void setValue(LocalDateTime datetime) throws Exception {
+        this.value = getXmlTime(datetime);
+    }
+    
+    public static DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss.SSSX");	
+	/** Utility function to get XML date from LocalTime */
+	public static  XMLGregorianCalendar getXmlTime(LocalDateTime datetime) throws DatatypeConfigurationException {
+//		String datetimeString = datetime.atOffset(ZoneOffset.UTC).format(timeFormatter);
+        XMLGregorianCalendar calendar = //DatatypeFactory.newInstance().newXMLGregorianCalendar(datetimeString);
+        		DatatypeFactory.newInstance().newXMLGregorianCalendar();
+        	calendar.setHour(datetime.getHour());
+        	calendar.setMinute(datetime.getMinute());
+        	calendar.setSecond(datetime.getSecond());
+        	calendar.setFractionalSecond(new BigDecimal(datetime.getNano()*1000000));
+		return calendar;
+	}
 
 }
