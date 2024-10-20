@@ -1,16 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app id="WebApp_ID" version="2.4" xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
- xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
-<!--  If this shows error (Referenced file missing/contains errors (http://www.ibm.com/webservices/xsd/j2ee_web_services_client_1_1.xsd)), 
-	add the following entries in eclipse->Preferences->XML->XML Catalog 
-
-	 URI:      http://java.sun.com/xml/ns/j2ee/j2ee_web_services_client_1_1.xsd
-	 Key Type: Schema Location
-	 Key:      http://www.ibm.com/webservices/xsd/j2ee_web_services_client_1_1.xsd
-	
-	This made Eclipse download and cache Sun's copy of the file the first time it was needed, 
-	instead of the IBM version which has currently lost its HTTP redirect (for me).
-	Refer https://bugs.eclipse.org/bugs/show_bug.cgi?id=152355#c17 
+<web-app id="WebApp_ID" version="2.5" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+<!--  Updated schema location to fix the error (Referenced file missing/contains errors (http://www.ibm.com/webservices/xsd/j2ee_web_services_client_1_1.xsd)), 
+	Refer https://stackoverflow.com/a/13437631
 	
 	-->
 	<display-name>ADempiere WebUI</display-name>
