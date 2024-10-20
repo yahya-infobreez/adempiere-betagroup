@@ -27,7 +27,8 @@ import org.compiere.util.CLogger;
 import org.zkoss.zk.au.out.AuScript;
 import org.zkoss.zk.ui.util.Clients;
 
-import sun.misc.BASE64Encoder;
+import java.util.Base64;
+import java.util.Base64.Encoder;
 
 /**
  * class to manage browser token for auto authentication
@@ -116,15 +117,12 @@ public final class BrowserToken {
 	
 	private static String getHomeToken() throws UnsupportedEncodingException {
 		String home = Adempiere.getAdempiereHome();	
-		BASE64Encoder encoder = new BASE64Encoder();
-		home = encoder.encode(home.getBytes("UTF-8"));
-		home = URLEncoder.encode(home, "UTF-8");
+		home = new String(Base64.getEncoder().encode(home.getBytes("UTF-8")), "UTF-8");
 		return home;
 	}
 	
 	private static String getPasswordHash(MSession session, MUser user) throws UnsupportedEncodingException, NoSuchAlgorithmException {
 		MessageDigest digest = MessageDigest.getInstance("SHA-512");
-		BASE64Encoder encoder = new BASE64Encoder();
 	    digest.reset();
 	    digest.update(session.getWebSession().getBytes("UTF-8"));
 	    String password = null;
@@ -133,8 +131,7 @@ public final class BrowserToken {
 	    else
 	    	password = new String("");
 	    byte[] input = digest.digest(password.getBytes("UTF-8"));
-	    String hash = encoder.encode(input);
-	    hash = URLEncoder.encode(hash, "UTF-8");
+	    String hash = new String(Base64.getEncoder().encode(input), "UTF-8");
 	    
 	    return hash;
 	}
