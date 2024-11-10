@@ -45,7 +45,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class SignatureValue {
 
     @XmlValue
-    protected byte[] value;
+//    protected byte[] value;
+    protected String value;
     @XmlAttribute(name = "Id")
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     @XmlID
@@ -57,7 +58,7 @@ public class SignatureValue {
     
     public SignatureValue(String value) {
     	this();
-    	setValue(value.getBytes());
+    	this.value = value;
     }
     
     /**
@@ -67,7 +68,7 @@ public class SignatureValue {
      *     possible object is
      *     byte[]
      */
-    public byte[] getValue() {
+    public String getValue() {
         return value;
     }
 
@@ -78,7 +79,7 @@ public class SignatureValue {
      *     allowed object is
      *     byte[]
      */
-    public void setValue(byte[] value) {
+    public void setValue(String value) {
         this.value = value;
     }
 

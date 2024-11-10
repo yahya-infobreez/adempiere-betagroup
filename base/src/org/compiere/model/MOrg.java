@@ -248,6 +248,7 @@ public class MOrg extends X_AD_Org
 		set_Value (COLUMNNAME_DIGITALCERTIFICATE, Certificate);
 	}
 
+	/** The certificate shall be saved base64 encoded ie. PCSID/CCSID  AS IS without decoding */
 	public String getCertificate () 
 	{
 		return (String)get_Value(COLUMNNAME_DIGITALCERTIFICATE);

@@ -61,14 +61,16 @@ public class EInvoiceXmlFactoryTest extends AdempiereTestCase {
 		Properties ctx = new Properties();
 		Env.setContext(ctx, "AD_Client_ID", 1000000);
 		Env.setContext(ctx, "AD_Org_ID", 0);
-		MInvoice minvoice = MInvoice.get(ctx, 1000000);
+		MInvoice minvoice = MInvoice.get(ctx, 1075216);
+		// 1075216 = 42235ARI,  1075283=24884ARC, 1075286=42273ARI, 1075323=12634APC
+				// 1074762 = 11932ARD, 1074815=16390APD, 1074995=16414APD, 1074714=11925ARD
 		assertNotNull(minvoice);
 		try {
 			Invoice xmlInvoice = EInvoiceXmlFactory.createInvoiceXml(minvoice);
 			assertNotNull(xmlInvoice);
 		
 			FileOutputStream out;
-			out = new FileOutputStream("test-einvoice.xml");
+			out = new FileOutputStream("/tmp/test-einvoice.xml");
 			EInvoiceXmlFactory.marshalJaxb(xmlInvoice, out, false);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -80,7 +82,7 @@ public class EInvoiceXmlFactoryTest extends AdempiereTestCase {
 		Properties ctx = new Properties();
 		Env.setContext(ctx, "AD_Client_ID", 1000000);
 		Env.setContext(ctx, "AD_Org_ID", 0);
-		MInvoice minvoice = MInvoice.get(ctx, 1000000);
+		MInvoice minvoice = MInvoice.get(ctx, 1075216);
 		assertNotNull(minvoice);
 		try {
 			Invoice xmlInvoice = EInvoiceXmlFactory.loadXml(new File("/tmp/eInvoice42470ARI.xml"));

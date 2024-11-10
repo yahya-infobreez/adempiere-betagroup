@@ -107,6 +107,8 @@ public class QRUtil {
         ByteBuffer buffer = ByteBuffer.allocate(1024); // Max 700 characters
         try {
             for(int i=0; i < params.length; i++) {
+            	if(params[i] == null)
+            		break; // The last tag is conditional - applicable only for Simplified Invoices
             	byte[] data = params[i].getBytes();
                 buffer.put(new byte[]{(byte)(i+1),(byte)data.length});
                 buffer.put(data);

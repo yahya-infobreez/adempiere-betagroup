@@ -523,20 +523,26 @@ public class EInvoiceXmlFactory {
 		 cac:AdditionalDocumentReference / cbc:ID = QR
 		 cac:AdditionalDocumentReference / cac:Attachment / cbc:EmbeddedDocumentBinaryObject /@mimeCode = text/plain
 		*/
-		String companyName = org.getName2() != null ? org.getName2() : client.getName2();
-		String qrString = QRUtil.generateQR(companyName, client.getVatNumber(), minvoice.getInvoiceIssueTime(), 
-				minvoice.getGrandTotal(), minvoice.getTaxTotal(), invoiceHash, 
-				invoiceSignature, org.getPublicKey(), ""); // org.getCertificate());
-		minvoice.setInvoiceHash(invoiceHash);
-		minvoice.setQRCode(qrString);
-		minvoice.saveEx();
+		// Set QR etc in case of Simplified Invoice. For Tax Invoice, it will be provided by ZATCA after uploading
 
-		DocumentReferenceType qrCode = new DocumentReferenceType();
-		AttachmentType attachQrCode = new AttachmentType();
-		attachQrCode.setEmbeddedDocumentBinaryObject(minvoice.getQRCode(), "text/plain");
-		qrCode.setAttachment(attachQrCode);
-		qrCode.setID("QR");
-		invoice.getAdditionalDocumentReferences().add(qrCode);
+		if(minvoice.isSimplifiedInvoice()) {
+			String companyName = org.getName2() != null ? org.getName2() : client.getName2();
+			Timestamp invoiceIssueTime = minvoice.getInvoiceIssueTime() != null ? minvoice.getInvoiceIssueTime():minvoice.getDateInvoiced();
+			String qrString = QRUtil.generateQR(companyName, client.getVatNumber(), invoiceIssueTime, 
+			minvoice.getGrandTotal(), minvoice.getTaxTotal(), invoiceHash, 
+			invoiceSignature, org.getPublicKey(), org.getCertificate());
+			
+			minvoice.setInvoiceHash(invoiceHash);
+			minvoice.setQRCode(qrString);
+			minvoice.saveEx();
+	
+			DocumentReferenceType qrCode = new DocumentReferenceType();
+			AttachmentType attachQrCode = new AttachmentType();
+			attachQrCode.setEmbeddedDocumentBinaryObject(minvoice.getQRCode(), "text/plain");
+			qrCode.setAttachment(attachQrCode);
+			qrCode.setID("QR");
+			invoice.getAdditionalDocumentReferences().add(qrCode);
+		}
 		
 		return invoice;
 	}
@@ -628,7 +634,7 @@ public class EInvoiceXmlFactory {
 		// DigestMethod = sha256
 		reference.setDigestMethod(new DigestMethod("http://www.w3.org/2001/04/xmlenc#sha256"));
 		// DigestValue 
-		reference.setDigestValue(invoiceHashBase64.getBytes());	// TODO Confirm if Invoice Hash is right here
+		reference.setDigestValue(invoiceHashBase64);	// TODO Confirm if Invoice Hash is right here
 		signedInfo.getReferences().add(reference);
 		
 //	    Step 2: Generate Digital Signature </b>
@@ -649,21 +655,24 @@ public class EInvoiceXmlFactory {
          * X509 Certificate( After completing CCSID API, it will return (binary security token),
          * take this value and decode it using base 64, the output is X509 certificate.) 
          */
-        String certificateHash = QRUtil.generateSHA256Hash(org.getCertificate().getBytes());
+        byte[] decodedCertificate = Base64.getDecoder().decode(org.getCertificate());
+        String certificateHash = QRUtil.generateSHA256Hash(decodedCertificate);
         String certificateHashBase64 = Base64.getEncoder().encodeToString(certificateHash.getBytes());
 
         // Step 5: Generate Signed Properties Hash
 		SignedProperties signedProperties = getSignedProperties(certificateHashBase64, org.getCertificate());	
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		marshalJaxb(signedProperties, out, true);
-		String signedPropertiesHash = Base64.getEncoder().encodeToString(out.toByteArray());
+
+		String signedPropertiesHash = QRUtil.generateSHA256Hash(out.toByteArray());
+				//Base64.getEncoder().encodeToString(out.toByteArray());
 
 		// Second Reference = SignatureProperties
 		Reference reference2 = new Reference();
 		reference2.setType("http://www.w3.org/2000/09/xmldsig#SignatureProperties");
 		reference2.setURI("#xadesSignedProperties");
 		reference2.setDigestMethod(new DigestMethod("http://www.w3.org/2001/04/xmlenc#sha256"));
-		reference2.setDigestValue(signedPropertiesHash.getBytes()); // Already base64 encoded
+		reference2.setDigestValue(signedPropertiesHash); // Already base64 encoded
 		signedInfo.getReferences().add(reference2);
 		
 		// Step 6: Populate The UBL Extensions Output		
@@ -671,7 +680,7 @@ public class EInvoiceXmlFactory {
 		dsSignature.setSignedInfo(signedInfo);			
 		dsSignature.setSignatureValue(new SignatureValue(signatureBase64));	
 		
-		X509Data x509Data = new X509Data().addX509Certificate(org.getCertificate());
+		X509Data x509Data = new X509Data().addX509Certificate(org.getCertificate()); // Already Base64 encoded
 		KeyInfo keyInfo = new KeyInfo(); 
 		keyInfo.getContent().add(x509Data);
 		dsSignature.setKeyInfo(keyInfo);	//************** // TODO
