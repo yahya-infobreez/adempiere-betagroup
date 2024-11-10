@@ -44,5 +44,11 @@ public class ID
 		this();
 		setValue(value);
 	}
+	
+	public ID(String schemeId, String value) {
+		this();
+		setSchemeID(schemeId);
+		setValue(value);
+	}
 
 }

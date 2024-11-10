@@ -63,7 +63,15 @@ public class QualifyingProperties {
     @XmlSchemaType(name = "ID")
     protected String id;
 
-    /**
+    public QualifyingProperties() {
+		// TODO Auto-generated constructor stub
+	}
+    public QualifyingProperties(String target, SignedProperties signedProperties) {
+		this.target = target;
+		this.signedProperties = signedProperties;
+	}
+
+	/**
      * Gets the value of the signedProperties property.
      * 
      * @return

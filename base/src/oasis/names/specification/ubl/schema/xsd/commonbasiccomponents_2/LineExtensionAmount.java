@@ -37,6 +37,8 @@ import oasis.names.specification.ubl.schema.xsd.unqualifieddatatypes_2.AmountTyp
 public class LineExtensionAmount
     extends AmountType
 {
+	public LineExtensionAmount() {
+	}
 
 
 }

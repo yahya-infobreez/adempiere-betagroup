@@ -46,6 +46,15 @@ public class X509IssuerSerialType {
     protected String x509IssuerName;
     @XmlElement(name = "X509SerialNumber", required = true)
     protected BigInteger x509SerialNumber;
+    
+    public X509IssuerSerialType() {
+		// TODO Auto-generated constructor stub
+	}
+    
+    public X509IssuerSerialType(String issuerName, String serialNumber) {
+    	x509IssuerName = issuerName;
+    	x509SerialNumber = new BigInteger(serialNumber);
+	}
 
     /**
      * Gets the value of the x509IssuerName property.

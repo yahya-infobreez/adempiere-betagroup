@@ -1060,5 +1060,35 @@ public class MClient extends X_AD_Client
 		}
 		return (Collections.binarySearch(m_fieldAccess, aDFieldID) > 0);
 	}
+	
+	/***************************** Changes for eInvoice - by YAHYA ***************/
+	
+	/** Legal name of company. Requires to be Arabic. So client name cannot be used */
+    public static final String COLUMNNAME_NAME2 = "Name2";
+    
+	public void setName2 (String LegalName)
+	{
+		set_Value (COLUMNNAME_NAME2, LegalName);
+	}
+
+	public String getName2 () 
+	{
+		return (String)get_Value(COLUMNNAME_NAME2);
+	}
+	
+	/**
+	 * District, added in BP location table
+	 */
+	public static final String COLUMNNAME_VAT_NUMBER = "VAT_NUMBER";
+	
+
+	public String getVatNumber() {
+		return (String)get_Value(COLUMNNAME_VAT_NUMBER);
+	}
+	
+	public void setVatNumber (String vatNumber)
+	{
+		set_Value (COLUMNNAME_VAT_NUMBER, vatNumber);
+	}
 
 }	//	MClient

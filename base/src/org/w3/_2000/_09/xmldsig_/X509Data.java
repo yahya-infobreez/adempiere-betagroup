@@ -18,6 +18,8 @@ import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.namespace.QName;
+
 import org.w3c.dom.Element;
 
 
@@ -67,12 +69,17 @@ public class X509Data {
     public X509Data() {
 	}
     
-    public X509Data(String x509Certificate) {
-    	this();
+    // TODO Othe types not implemented
+    public X509Data addX509Certificate(String x509Certificate) {
     	getX509IssuerSerialsAndX509SKISAndX509SubjectNames();
     	if(x509Certificate != null) {
-    		getX509IssuerSerialsAndX509SKISAndX509SubjectNames().add(x509Certificate.getBytes());
+    		// Not wrapping the data in JAXBElement causes following exception
+    		// [unable to marshal type "***" as an element because it is missing an @XmlRootElement annotation]
+    		QName elementName = new QName("http://www.w3.org/2000/09/xmldsig#", "X509Certificate"); // supply element name here
+    		JAXBElement jaxbElement = new JAXBElement(elementName, String.class, x509Certificate);
+    		getX509IssuerSerialsAndX509SKISAndX509SubjectNames().add(jaxbElement);
     	}
+    	return this;
 	}
 
     /**

@@ -8,6 +8,8 @@
 
 package org.etsi.uri._01903.v1_3;
 
+import java.time.LocalDateTime;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -18,7 +20,10 @@ import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.XMLGregorianCalendar;
+
+import com.betagroup.einvoice.QRUtil;
 
 
 /**
@@ -95,6 +100,10 @@ public class SignedSignatureProperties {
      */
     public void setSigningTime(XMLGregorianCalendar value) {
         this.signingTime = value;
+    }
+    
+    public void setSigningTime(LocalDateTime datetime) throws Exception {
+        this.signingTime = QRUtil.getXmlTime(datetime);
     }
 
     /**

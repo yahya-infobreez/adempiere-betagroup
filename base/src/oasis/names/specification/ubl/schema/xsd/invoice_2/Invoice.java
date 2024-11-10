@@ -8,29 +8,16 @@
 
 package oasis.names.specification.ubl.schema.xsd.invoice_2;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.Duration;
-import javax.xml.datatype.XMLGregorianCalendar;
-import javax.xml.namespace.QName;
-
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2.AllowanceChargeType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2.BillingReference;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2.CustomerPartyType;
@@ -39,7 +26,6 @@ import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2.Deli
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2.DocumentReferenceType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2.ExchangeRateType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2.InvoiceLineType;
-import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2.LocationType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2.MonetaryTotalType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2.OrderReference;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2.PartyType;
@@ -211,7 +197,7 @@ import oasis.names.specification.ubl.schema.xsd.commonextensioncomponents_2.UBLE
     "legalMonetaryTotal",
     "invoiceLines"
 })
-@XmlRootElement(name = "Invoice")
+@XmlRootElement(name = "Invoice", namespace="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2")
 public class Invoice {
 
     @XmlElement(name = "UBLExtensions", namespace = "urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2")
@@ -621,6 +607,7 @@ public class Invoice {
     
     public void setIssueTime(LocalDateTime datetime) throws Exception {
         this.issueTime = new IssueTime();
+        datetime = datetime.truncatedTo(ChronoUnit.SECONDS);
         this.issueTime.setValue(datetime); 
     }
 
@@ -686,9 +673,9 @@ public class Invoice {
         this.invoiceTypeCode = value;
     }
     
-    public void setInvoiceTypeCode(String value) {
+    public void setInvoiceTypeCode(String name, String value) {
         this.invoiceTypeCode = new InvoiceTypeCode();
-        this.invoiceTypeCode.setName(value);
+        this.invoiceTypeCode.setName(name);
         this.invoiceTypeCode.setValue(value);
     }
 
@@ -783,7 +770,6 @@ public class Invoice {
     
     public void setDocumentCurrencyCode(String value) {
         this.documentCurrencyCode = new DocumentCurrencyCode();
-        this.documentCurrencyCode.setName(value);
         this.documentCurrencyCode.setValue(value);
     }
     

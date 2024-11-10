@@ -38,5 +38,13 @@ public class XPath
     extends TextType
 {
 
+	public XPath() {
+		// TODO Auto-generated constructor stub
+	}
+	public XPath(String xpath) {
+		this.value = xpath;
+	}
+
+	
 
 }

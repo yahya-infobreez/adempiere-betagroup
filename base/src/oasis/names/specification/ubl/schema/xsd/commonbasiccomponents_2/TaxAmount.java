@@ -8,6 +8,8 @@
 
 package oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_2;
 
+import java.math.BigDecimal;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -37,6 +39,9 @@ import oasis.names.specification.ubl.schema.xsd.unqualifieddatatypes_2.AmountTyp
 public class TaxAmount
     extends AmountType
 {
-
-
+	public TaxAmount() {
+	}
+	public TaxAmount(BigDecimal value, String currency) {
+		super(value, currency);
+	}
 }

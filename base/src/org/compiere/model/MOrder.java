@@ -1817,6 +1817,14 @@ public class MOrder extends X_C_Order implements DocAction
 			return null;
 		}
 		
+		//****** Additional fields for eInvoice ****************/
+		String vatNumber = ((MBPartner)getC_BPartner()).getVatNumber();
+		invoice.setVatNumber(vatNumber); // Copy it to Invoice for immutability
+		invoice.setIsSimplifiedInvoice(vatNumber == null);
+		MBPartnerLocation location = (MBPartnerLocation) invoice.getC_BPartner_Location();
+		invoice.setIsExportInvoice(location.getC_Location().getC_Country_ID() != 296); // 296 = Saudi Arabia
+		
+		
 		//	If we have a Shipment - use that as a base
 		if (shipment != null)
 		{
@@ -2413,5 +2421,82 @@ public class MOrder extends X_C_Order implements DocAction
 			|| DOCSTATUS_Closed.equals(ds)
 			|| DOCSTATUS_Reversed.equals(ds);
 	}	//	isComplete
+	
+	
+	/********** Changes for eInvoice - by YAHYA **************************/
+	/** Reason for Return - Reference
+	 * // BT-121 VAT exemption reason code // BR-KSA-23, BR-KSA-24, BR-KSA-69, BR-KSA-CL-04 
+		// must exist if tax category is 'Z', or 'E' or ‘O’,
+		// BT-120 VAT exemption reason text = Tax treatment applied to the supply	// BR-KSA-83, BR-KSA-F-06
+		/* BT-121 VAT exemption reason code Valid values are as follows. TODO Confirm if English/Arabic to be used
+		 E = Exempt from Tax التوريدات المعفاة
+		 	VATEX-SA-29 Financial services 	الخدمات المالية
+		 	VATEX-SA-29-7 Life insurance services	عقد تأمين على الحياة
+		 	VATEX-SA-30 Real estate transactions 	 التوريدات العقارية المعفاة من الضريبة
+		 S = Standard rate/ التوريدات الخاضعة للضريبة
+
+		Z = Zero rated goods 	التوريدات الخاضعة لنسبة الصفر
+			VATEX-SA-32		Export of goods صادرات السلع من المملكة
+			 VATEX-SA-33 	Export of services صادرات الخدمات من المملكة
+			 VATEX-SA-34-1 	The international transport of Goods النقل الدولي للسلع
+			VATEX-SA-34-2	international transport of passengers النقل الدولي للركاب
+			VATEX-SA-34-3	services directly connected and incidental to a Supply of international passenger transportً
+			 				الخدمات المرتبطة مباشرة أو عرضيابتوريد النقل الدولي للركاب			
+			VATEX-SA-34-4	Supply of a qualifying means of transport توريد وسائل النقل المؤهلة
+			VATEX-SA-34-5	Any services relating to Goods or passenger transportation, as defined in article twenty five of these Regulations
+						الخدمات ذات الصلة بنقل السلع أوالركاب، وفقا ً للتعريف الوارد بالمادة الخامسة والعشرين من الالئحةالتنفيذية لنظام ضريبة القيامة
+			VATEX-SA-35		Medicines and medical equipment ألدوية والمعدات الطبية
+			VATEX-SA-36		Qualifying metals المعادن المؤهلة
+			VATEX-SA-EDU 	Private education to citizen الخدمات التعليمية الخاصة للمواطنين
+			VATEX-SA-HEA	Private healthcare to citizen الخدمات الصحية الخاصة للمواطنين
+			VATEX-SA-MLTRY	supply of qualified military goods توريد السلع العسكرية المؤهلة
+			
+		O = Services outside scope of tax / Not subject to VAT/ التوريدات الغير خاضعة للضريبة
+			VATEX-SA-OOS	Reason = Free Text
+			
+	 */	
+	public static final String COLUMNNAME_Vat_Exemption_Reason = "Vat_Exemption_Reason";
+	
+	public String getVatExceptionReason() {
+		return (String)get_Value(COLUMNNAME_Vat_Exemption_Reason);
+	}
+	
+	/**
+	 * Return the reason code, converted to Arabic String
+	 * @return
+	 */
+	public String getVatExceptionReasonText() {
+		String reason = (String)get_Value(COLUMNNAME_Vat_Exemption_Reason);
+		if(reason == null)
+			return null;
+		String returnValue = null;
+		switch(reason) {
+	 	case "VATEX-SA-29":returnValue = "الخدمات المالية"; break;
+	 	case "VATEX-SA-29-7":returnValue = "عقد تأمين على الحياة"; break; // Life insurance services
+	 	case "VATEX-SA-30":returnValue = "التوريدات العقارية المعفاة من الضريبة"; break; 	// Real estate transactions 	
+		case "VATEX-SA-32":returnValue = "صادرات السلع من المملكة"; break;		// Export of goods 
+		case "VATEX-SA-33":returnValue = "صادرات الخدمات من المملكة"; break; 	// Export of services 
+		case "VATEX-SA-34-1":returnValue = "النقل الدولي للسلع"; break; 	// The international transport of Goods
+		case "VATEX-SA-34-2":returnValue = "النقل الدولي للركاب"; break;	// international transport of passengers
+		case "VATEX-SA-34-3":returnValue = "الخدمات المرتبطة مباشرة أو عرضيابتوريد النقل الدولي للركاب"; break;	// services directly connected and incidental to a Supply of international passenger transportً
+		 							
+		case "VATEX-SA-34-4":returnValue = "توريد وسائل النقل المؤهلة"; break;	// Supply of a qualifying means of transport 
+		case "VATEX-SA-34-5":returnValue = "الخدمات ذات الصلة بنقل السلع أوالركاب، وفقا ً للتعريف الوارد بالمادة الخامسة والعشرين من الالئحةالتنفيذية لنظام ضريبة القيامة"; break;	// Any services relating to Goods or passenger transportation, as defined in article twenty five of these Regulations
+		case "VATEX-SA-35":returnValue = "ألدوية والمعدات الطبية"; break;		// Medicines and medical equipment 
+		case "VATEX-SA-36":returnValue = "المعادن المؤهلة"; break;		// Qualifying metals 
+		case "VATEX-SA-EDU":returnValue = "الخدمات التعليمية الخاصة للمواطنين"; break; 	// Private education to citizen 
+		case "VATEX-SA-HEA":returnValue = "الخدمات الصحية الخاصة للمواطنين"; break;		// Private healthcare to citizen 
+		case "VATEX-SA-MLTRY":returnValue = "توريد السلع العسكرية المؤهلة"; break;	// supply of qualified military goods 
+		case "VATEX-SA-OOS":returnValue = "التوريدات الغير خاضعة للضريبة"; break; 	// Not subject to VAT // TODO Capture reason as Plain Text
+		}
+		return returnValue;
+	}
+	
+	public void setVatExceptionReason (String Reason) 
+	{
+		set_Value (COLUMNNAME_Vat_Exemption_Reason, Reason);
+	}
+	
+	
 	
 }	//	MOrder

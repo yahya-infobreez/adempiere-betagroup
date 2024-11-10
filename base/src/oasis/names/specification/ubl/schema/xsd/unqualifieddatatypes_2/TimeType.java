@@ -23,6 +23,9 @@ import javax.xml.bind.annotation.XmlValue;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
+
+import com.betagroup.einvoice.QRUtil;
+
 import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_2.ActualDeliveryTime;
 import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_2.ActualDespatchTime;
 import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_2.ActualPickupTime;
@@ -143,7 +146,8 @@ public class TimeType {
 
     @XmlValue
     @XmlSchemaType(name = "time")
-    protected XMLGregorianCalendar value;
+//    protected XMLGregorianCalendar value; // No control on the formatting
+    protected String value; // Set formated string instead as HHmmss
 
     /**
      * Gets the value of the value property.
@@ -153,7 +157,7 @@ public class TimeType {
      *     {@link XMLGregorianCalendar }
      *     
      */
-    public XMLGregorianCalendar getValue() {
+    public String getValue() {
         return value;
     }
 
@@ -165,25 +169,15 @@ public class TimeType {
      *     {@link XMLGregorianCalendar }
      *     
      */
-    public void setValue(XMLGregorianCalendar value) {
+    public void setValue(String value) {
         this.value = value;
     }
     
+    public static DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");	
     public void setValue(LocalDateTime datetime) throws Exception {
-        this.value = getXmlTime(datetime);
+//        this.value = QRUtil.getXmlTime(datetime);
+    	this.value = datetime.format(timeFormatter);
     }
-    
-    public static DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss.SSSX");	
-	/** Utility function to get XML date from LocalTime */
-	public static  XMLGregorianCalendar getXmlTime(LocalDateTime datetime) throws DatatypeConfigurationException {
-//		String datetimeString = datetime.atOffset(ZoneOffset.UTC).format(timeFormatter);
-        XMLGregorianCalendar calendar = //DatatypeFactory.newInstance().newXMLGregorianCalendar(datetimeString);
-        		DatatypeFactory.newInstance().newXMLGregorianCalendar();
-        	calendar.setHour(datetime.getHour());
-        	calendar.setMinute(datetime.getMinute());
-        	calendar.setSecond(datetime.getSecond());
-        	calendar.setFractionalSecond(new BigDecimal(datetime.getNano()*1000000));
-		return calendar;
-	}
+
 
 }

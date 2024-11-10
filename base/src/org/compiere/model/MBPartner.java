@@ -1029,7 +1029,20 @@ public class MBPartner extends X_C_BPartner
 
 	/*********************  Additional fields for eInvoice - by YAHYA ***************/
 	
+	/**
+	 * VAT Number of the party (This will be copied to Invoice for immutability)
+	 */
+	public static final String COLUMNNAME_VAT_NUMBER = "VAT_NUMBER";
 	
+	public String getVatNumber() {
+		return (String)get_Value(COLUMNNAME_VAT_NUMBER);
+	}
+	
+	public void setVatNumber (String vatNumber)
+	{
+		set_Value (COLUMNNAME_VAT_NUMBER, vatNumber);
+	}
+
     public static final String COLUMNNAME_TRDLICENSENO = "TRDLICENSENO";
 	public void setCRN (String CRN)
 	{

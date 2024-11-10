@@ -38,5 +38,12 @@ public class PaymentNote
     extends TextType
 {
 
+	public PaymentNote() {
+		
+	}
+	public PaymentNote(String value) {
+		this.value = value;
+	}
+
 
 }

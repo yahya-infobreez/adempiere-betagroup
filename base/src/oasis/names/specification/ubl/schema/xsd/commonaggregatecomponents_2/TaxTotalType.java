@@ -8,6 +8,7 @@
 
 package oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -70,7 +71,11 @@ public class TaxTotalType {
     @XmlElement(name = "TaxSubtotal")
     protected List<TaxSubtotal> taxSubtotals;
 
-    /**
+    
+    public TaxTotalType() {
+	}
+
+	/**
      * 
      * <pre>
      * &lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;ccts:Component xmlns:ccts="urn:un:unece:uncefact:documentation:2" xmlns="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;&lt;ccts:ComponentType&gt;BBIE&lt;/ccts:ComponentType&gt;&lt;ccts:DictionaryEntryName&gt;Tax Total. Tax Amount. Amount&lt;/ccts:DictionaryEntryName&gt;&lt;ccts:Definition&gt;The total tax amount for a particular taxation scheme, e.g., VAT; the sum of the tax subtotals for each tax category within the taxation scheme.&lt;/ccts:Definition&gt;&lt;ccts:Cardinality&gt;1&lt;/ccts:Cardinality&gt;&lt;ccts:ObjectClass&gt;Tax Total&lt;/ccts:ObjectClass&gt;&lt;ccts:PropertyTerm&gt;Tax Amount&lt;/ccts:PropertyTerm&gt;&lt;ccts:RepresentationTerm&gt;Amount&lt;/ccts:RepresentationTerm&gt;&lt;ccts:DataType&gt;Amount. Type&lt;/ccts:DataType&gt;&lt;/ccts:Component&gt;
@@ -97,6 +102,9 @@ public class TaxTotalType {
     public void setTaxAmount(TaxAmount value) {
         this.taxAmount = value;
     }
+    public void setTaxAmount(BigDecimal taxTotal, String currency) {
+    	this.taxAmount = new TaxAmount(taxTotal, currency);
+	}
 
     /**
      * 
@@ -124,6 +132,11 @@ public class TaxTotalType {
      */
     public void setRoundingAmount(RoundingAmount value) {
         this.roundingAmount = value;
+    }
+    public void setRoundingAmount(BigDecimal value, String currency) {
+        this.roundingAmount = new RoundingAmount();
+        this.roundingAmount.setValue(value);
+        this.roundingAmount.setCurrencyID(currency);
     }
 
     /**

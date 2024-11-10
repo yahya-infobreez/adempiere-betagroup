@@ -37,6 +37,14 @@ import oasis.names.specification.ubl.schema.xsd.unqualifieddatatypes_2.Identifie
 public class ExtensionURI
     extends IdentifierType
 {
+	
+	public ExtensionURI() {
+		// TODO Auto-generated constructor stub
+	}
+
+	public ExtensionURI(String uri) {
+		this.value = uri;
+	}
 
 
 }

@@ -23,6 +23,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -944,6 +946,11 @@ public class MInvoice extends X_C_Invoice implements DocAction
 					setC_PaymentTerm_ID (ii);
 			}
 		}
+		
+		// Create UUID
+		if(getUUID() == null) {
+			setUUID(java.util.UUID.randomUUID().toString());
+		}
 		return true;
 	}	//	beforeSave
 
@@ -1836,6 +1843,11 @@ public class MInvoice extends X_C_Invoice implements DocAction
 				return DocAction.STATUS_Invalid;
 			}
 		}	//	project
+		
+		// For eInvoice - Save Checkout Date & Time
+		if (isSOTrx()) {
+			setInvoiceIssueTime(new Timestamp(new Date().getTime()));
+		}
 
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
@@ -2349,7 +2361,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	/***************************  Fields added for eInvoice by Yahya ***********************/
 	
 	/* UUID Column */
-	public static final String COLUMNNAME_UUID = "uuid";
+	public static final String COLUMNNAME_UUID = "UUID";
 	public String getUUID() {
 		return (String)get_Value(COLUMNNAME_UUID);
 	}
@@ -2357,6 +2369,21 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	public void setUUID (String uuid)
 	{
 		set_Value (COLUMNNAME_UUID, uuid);
+	}
+	
+	/* UUID Column */
+	public static final String COLUMNNAME_Invoice_IssueTime = "Invoice_IssueTime";
+	/**
+	 * Checkout Time (including date) of issue of Invoice
+	 * @return
+	 */
+	public Timestamp getInvoiceIssueTime() {
+		return (Timestamp)get_Value(COLUMNNAME_Invoice_IssueTime);
+	}
+	
+	public void setInvoiceIssueTime (Timestamp time)
+	{
+		set_Value (COLUMNNAME_Invoice_IssueTime, time);
 	}
 	
 	public static final String COLUMNNAME_IsSimplifiedInvoice = "IsSimplifiedInvoice";
@@ -2465,7 +2492,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	/**
 	 * QR code generated as per ZATCA rules or received from ZATCA eInvoice portal
 	 */
-	public static final String COLUMNNAME_QRCode = "QRCode";
+	public static final String COLUMNNAME_QRCode = "BASE64STR"; // Already added earlier
 	
 	/**
 	 * 
@@ -2489,18 +2516,18 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		- In case of goods or services refund. (عند ترجيع السلع أو الخدمات)
 		- In case of change in Seller's or Buyer's information (عند التعديل على بيانات المورد أو المشتري)
 	 */	
-	public static final String COLUMNNAME_ReturnReason = "ReturnReason";
+	public static final String COLUMNNAME_DCNote_Reason = "DCNote_Reason";
 	
 	public String getReturnReason() {
-		return (String)get_Value(COLUMNNAME_ReturnReason);
+		return (String)get_Value(COLUMNNAME_DCNote_Reason);
 	}
 	
 	/**
 	 * Return the reason code, converted to Arabic String
 	 * @return
 	 */
-	public String getReturnReasonString() {
-		String reason = (String)get_Value(COLUMNNAME_ReturnReason);
+	public String getReturnReasonText() {
+		String reason = (String)get_Value(COLUMNNAME_DCNote_Reason);
 		if(reason == null)
 			return null;
 		String returnValue = null;
@@ -2508,16 +2535,16 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		case "Cancellation":
 			returnValue = "تم إلغاء أو وقف التوريد بعد حدوثه أو اعتباره كلياً أو جزئياً";
 			break;		
-		case "Correction":
+		case "Item/Qty Change":
 			returnValue = "وجود تغيير أو تعديل جوهري في طبيعة التوريد بحيث يؤدي الى تغيير الضريبة المستحقة";
 			break;
-		case "Rate Change":
+		case "Value Change":
 			returnValue = "تم الاتفاق على تعديل قيمة التوريد مسبقاً";
 			break;
-		case "returnValue":
+		case "Refund":
 			returnValue = "عند ترجيع السلع أو الخدمات";
 			break;
-		case "PartyChange":
+		case "Party Change":
 			returnValue = "عند التعديل على بيانات المورد أو المشتري";
 			break;
 		}
@@ -2526,8 +2553,60 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	
 	public void setReturnReason (String ReturnReason) 
 	{
-		set_Value (COLUMNNAME_ReturnReason, ReturnReason);
+		set_Value (COLUMNNAME_DCNote_Reason, ReturnReason);
 	}
 	
+	/**
+	 * VAT Number of the party (copied to Invoice for immutability)
+	 */
+	public static final String COLUMNNAME_VAT_NUMBER = "VAT_NUMBER";
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public String getVatNumber() {
+		return (String)get_Value(COLUMNNAME_VAT_NUMBER);
+	}
+	
+	public void setVatNumber (String vatNumber)
+	{
+		set_Value (COLUMNNAME_VAT_NUMBER, vatNumber);
+	}
 
+	
+	// Additional Utility Functions
+	
+	public BigDecimal getTotalAllowances() {
+		// Created as a Line with Product M_Product_ID=xxx OR C_ProductCategory_ID = yyy
+		MInvoiceLine[] lines = getLines("AND M_Product_ID IN ( 123 )");
+		BigDecimal totalAmt = Arrays.asList(lines).stream().map(l->l.getLineTotalAmt()).reduce(Env.ZERO, BigDecimal::add);
+		return totalAmt;
+	}
+
+	public BigDecimal getTotalCharges() {
+		// Created as a Line with Product M_Product_ID=xxx OR C_ProductCategory_ID = yyy
+		MInvoiceLine[] lines = getLines("AND M_Product_ID IN (123)");
+		BigDecimal totalAmt = Arrays.asList(lines).stream().map(l->l.getLineTotalAmt()).reduce(Env.ZERO, BigDecimal::add);
+		return totalAmt;
+	}
+
+	public BigDecimal getPrepaidAmt() {
+		// TODO Fill this value by querying Advance payments
+		return Env.ZERO;
+	}
+
+	public BigDecimal getRoundOffAmt() {
+		// Created as a Line with Product M_Product_ID=1204744 DECIMAL-ROUND_DECIMAL ROUND OFF IN CUSTOMER INVOICE
+		MInvoiceLine[] lines = getLines("AND M_Product_ID=1204744");
+		BigDecimal roundOffAmt = lines.length > 0 ? lines[0].getLineTotalAmt() : Env.ZERO;
+		return roundOffAmt;
+	}
+
+	public BigDecimal getTaxTotal() {
+		MInvoiceTax[] taxes = getTaxes(false);
+		BigDecimal totalAmt = Arrays.asList(taxes).stream().map(t->t.getTaxAmt()).reduce(Env.ZERO, BigDecimal::add);
+		return totalAmt;
+	}
+	
 }	//	MInvoice

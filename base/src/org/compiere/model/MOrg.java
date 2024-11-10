@@ -203,8 +203,20 @@ public class MOrg extends X_AD_Org
 
 	/****************** Changes for eInvoice - by YAHYA ****************/
 	
+	/** Legal name of company. Requires to be Arabic. If branch is having a different name, set it here */
+    public static final String COLUMNNAME_NAME2 = "Name2";
+    
+	public void setName2 (String LegalName)
+	{
+		set_Value (COLUMNNAME_NAME2, LegalName);
+	}
+
+	public String getName2 () 
+	{
+		return (String)get_Value(COLUMNNAME_NAME2);
+	}
 	
-    public static final String COLUMNNAME_CR_NO = "CR_NO";
+    public static final String COLUMNNAME_TRDLICENSENO = "TRDLICENSENO";
     
 	/**
 	 * Set CR Number of the company/org
@@ -212,7 +224,7 @@ public class MOrg extends X_AD_Org
 	 */
 	public void setCRN (String CRN)
 	{
-		set_Value (COLUMNNAME_CR_NO, CRN);
+		set_Value (COLUMNNAME_TRDLICENSENO, CRN);
 	}
 
 	/**
@@ -221,27 +233,159 @@ public class MOrg extends X_AD_Org
 	 */
 	public String getCRN () 
 	{
-		return (String)get_Value(COLUMNNAME_CR_NO);
+		return (String)get_Value(COLUMNNAME_TRDLICENSENO);
 	}
 	
-    public static final String COLUMNNAME_CERTIFICATE = "CERTIFICATE";
-    
 	/**
-	 * Set CR Number of the company/org
-	 * @return
+	 * Digital certificate obtained from ZATCA, used to sign invoices. This shall be unique for EGS.
+	 * Here each ORG is assumed to be an EGS.
 	 */
+	
+    public static final String COLUMNNAME_DIGITALCERTIFICATE = "DIGITALCERTIFICATE";
+    
 	public void setCertificate(String Certificate)
 	{
-		set_Value (COLUMNNAME_CERTIFICATE, Certificate);
+		set_Value (COLUMNNAME_DIGITALCERTIFICATE, Certificate);
+	}
+
+	public String getCertificate () 
+	{
+		return (String)get_Value(COLUMNNAME_DIGITALCERTIFICATE);
+	}
+	
+	/**
+	 * Public key used - part of Key Pair
+	 */
+    public static final String COLUMNNAME_PUBLICKEY = "PUBLICKEY";
+    
+	public void setPublicKey(String publicKey)
+	{
+		set_Value (COLUMNNAME_PUBLICKEY, publicKey);
+	}
+
+	public String getPublicKey () 
+	{
+		return (String)get_Value(COLUMNNAME_PUBLICKEY);
+	}
+	
+	/**
+	 * Public key used - part of Key Pair
+	 */
+    public static final String COLUMNNAME_PRIVATEKEY = "PRIVATEKEY";
+    
+	public void setPrivateKey(String privateKey)
+	{
+		set_Value (COLUMNNAME_PRIVATEKEY, privateKey);
+	}
+
+	public String getPrivateKey () 
+	{
+		return (String)get_Value(COLUMNNAME_PRIVATEKEY);
+	}
+	
+	/**
+	 * Public key used - part of Key Pair
+	 */
+    public static final String COLUMNNAME_EGS_NAME = "EGS_NAME";
+    
+	public void setEgsName(String egsName)
+	{
+		set_Value (COLUMNNAME_EGS_NAME, egsName);
+	}
+
+	public String getEgsName () 
+	{
+		return (String)get_Value(COLUMNNAME_EGS_NAME);
+	}
+	
+	/**
+	 * Public key used - part of Key Pair
+	 */
+    public static final String COLUMNNAME_EGS_SERIALNO = "EGS_SERIALNO";
+    
+	public void setEgsSerialNo(String EgsSerialNo)
+	{
+		set_Value (COLUMNNAME_EGS_SERIALNO, EgsSerialNo);
+	}
+
+	public String getEgsSerialNo () 
+	{
+		return (String)get_Value(COLUMNNAME_EGS_SERIALNO);
+	}
+	
+	/**
+	 * Street name, added in BP location table
+	 */
+	public static final String COLUMNNAME_STREET = "STREET";
+	
+
+	public String getStreetName() {
+		return (String)get_Value(COLUMNNAME_STREET);
+	}
+	
+	public void setStreetName (String StreetName)
+	{
+		set_Value (COLUMNNAME_STREET, StreetName);
 	}
 
 	/**
-	 * Get CR Number of the company/org
-	 * @return
+	 * BuildingNo, added in BP location table
 	 */
-	public String getCertificate () 
+	public static final String COLUMNNAME_BUILD_NO = "BUILD_NO";
+	
+
+	public String getBuildingNo() {
+		return (String)get_Value(COLUMNNAME_BUILD_NO);
+	}
+	
+	public void setBuildingNo (String BuildingNo)
 	{
-		return (String)get_Value(COLUMNNAME_CERTIFICATE);
+		set_Value (COLUMNNAME_BUILD_NO, BuildingNo);
+	}
+	
+	/**
+	 * AdditionalNo, added in BP location table
+	 */
+	public static final String COLUMNNAME_ADDL_NO = "ADDL_NO";
+	
+
+	public String getAdditionalNo() {
+		return (String)get_Value(COLUMNNAME_ADDL_NO);
+	}
+	
+	public void setAdditionalNo (String AdditionalNo)
+	{
+		set_Value (COLUMNNAME_ADDL_NO, AdditionalNo);
+	}
+	
+	/**
+	 * Postal Zip, added in BP location table (also present in C_Location - but not used)
+	 */
+	public static final String COLUMNNAME_POSTAL_ZIP = "POSTAL_ZIP";
+	
+
+	public String getPostalZip() {
+		return (String)get_Value(COLUMNNAME_POSTAL_ZIP);
+	}
+	
+	public void setPostalZip (String PostalZip)
+	{
+		set_Value (COLUMNNAME_POSTAL_ZIP, PostalZip);
+	}
+	
+	/**
+	 * District, added in BP location table
+	 */
+	public static final String COLUMNNAME_DISTRICT = "DISTRICT";
+	
+
+	public String getDistrict() {
+		return (String)get_Value(COLUMNNAME_DISTRICT);
+	}
+	
+	public void setDistrict (String District)
+	{
+		set_Value (COLUMNNAME_DISTRICT, District);
 	}
 	
 }	//	MOrg

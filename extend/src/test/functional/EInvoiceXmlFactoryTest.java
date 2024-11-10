@@ -1,13 +1,23 @@
 package test.functional;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Properties;
 
+import org.apache.ecs.xhtml.input;
 import org.compiere.model.MInvoice;
+import org.compiere.model.MOrg;
 import org.compiere.util.Env;
+import org.w3._2000._09.xmldsig_.KeyInfo;
+import org.w3._2000._09.xmldsig_.X509Data;
 
 import com.betagroup.einvoice.EInvoiceXmlFactory;
 
+import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2.AttachmentType;
 import oasis.names.specification.ubl.schema.xsd.invoice_2.Invoice;
 import test.AdempiereTestCase;
 
@@ -39,7 +49,7 @@ public class EInvoiceXmlFactoryTest extends AdempiereTestCase {
 		assertNotNull(minvoice);
 		Invoice xmlInvoice;
 		try {
-			xmlInvoice = EInvoiceXmlFactory.createXmlInvoice(minvoice);
+			xmlInvoice = EInvoiceXmlFactory.createInvoiceXml(minvoice);
 			assertNotNull(xmlInvoice);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -54,16 +64,115 @@ public class EInvoiceXmlFactoryTest extends AdempiereTestCase {
 		MInvoice minvoice = MInvoice.get(ctx, 1000000);
 		assertNotNull(minvoice);
 		try {
-			Invoice xmlInvoice = EInvoiceXmlFactory.createXmlInvoice(minvoice);
+			Invoice xmlInvoice = EInvoiceXmlFactory.createInvoiceXml(minvoice);
 			assertNotNull(xmlInvoice);
 		
 			FileOutputStream out;
 			out = new FileOutputStream("test-einvoice.xml");
-			EInvoiceXmlFactory.writeXml(xmlInvoice, out);
+			EInvoiceXmlFactory.marshalJaxb(xmlInvoice, out, false);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+	}
+	
+	public void testDeepCopyXml() {
+		Properties ctx = new Properties();
+		Env.setContext(ctx, "AD_Client_ID", 1000000);
+		Env.setContext(ctx, "AD_Org_ID", 0);
+		MInvoice minvoice = MInvoice.get(ctx, 1000000);
+		assertNotNull(minvoice);
+		try {
+			Invoice xmlInvoice = EInvoiceXmlFactory.loadXml(new File("/tmp/eInvoice42470ARI.xml"));
+			assertNotNull(xmlInvoice);
+			
+		
+			FileOutputStream out;
+			out = new FileOutputStream("test-einvoice.xml");
+			
+			EInvoiceXmlFactory.marshalJaxb(xmlInvoice, out, false);
+			out.close();
+
+			
+			Invoice copy = (Invoice) EInvoiceXmlFactory.unmarshalJaxb(xmlInvoice.getClass(), new FileInputStream("test-einvoice.xml"));
+			FileOutputStream out2 = new FileOutputStream("test-einvoice2.xml");
+			EInvoiceXmlFactory.marshalJaxb(copy, out2, false);
+			out2.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
 	}
 
+	
+	public void testValidateInvoice() {
+		Properties ctx = new Properties();
+		Env.setContext(ctx, "AD_Client_ID", 1000000);
+		Env.setContext(ctx, "AD_Org_ID", 0);
+		MInvoice minvoice = MInvoice.get(ctx, 1075739); // 42470ARI	
+		// 1075216 = 42235ARI,  1075283=24884ARC, 1075286=42273ARI, 1075323=12634APC
+		// 1074762 = 11932ARD, 1074815=16390APD, 1074995=16414APD, 1074714=11925ARD
+		assertNotNull(minvoice);
+		try {
+			Invoice xmlInvoice = EInvoiceXmlFactory.createInvoiceXml(minvoice);
+			assertNotNull(xmlInvoice);
+			
+			File output = EInvoiceXmlFactory.validateXml(xmlInvoice);			
+		} catch (Exception e) {			
+			e.printStackTrace();
+			fail(e.getMessage());
+		} finally {
+		}
+	}
+	
+	public void testSignInvoice() {
+		Properties ctx = new Properties();
+		Env.setContext(ctx, "AD_Client_ID", 1000000);
+		Env.setContext(ctx, "AD_Org_ID", 0);
+		MInvoice minvoice = MInvoice.get(ctx, 1075216); // 1075216 = 42235ARI,  1075283=24884ARC, 1075286=42273ARI, 1075323=12634APC
+		// 1074762 = 11932ARD, 1074815=16390APD, 1074995=16414APD, 1074714=11925ARD
+		assertNotNull(minvoice);
+		try {
+			Invoice xmlInvoice = EInvoiceXmlFactory.createInvoiceXml(minvoice);
+			assertNotNull(xmlInvoice);
+			
+			File output = EInvoiceXmlFactory.generateSignedXmlFile(xmlInvoice);
+			System.out.println("Output file = " + output.getAbsolutePath());
+			assertTrue(output.exists());
+		} catch (Exception e) {			
+			e.printStackTrace();
+			fail(e.getMessage());
+		} finally {
+		}
+	}
+	
+	public void testMarshalKeyInfo() {
+		String certificateData = "MIIE4zCCBImgAwIBAgITegAALzfpPGY2F7fidQABAAAvNzAKBggqhkjOPQQDAjBiMRUwEwYKCZImiZPy";
+		X509Data x509Data = new X509Data().addX509Certificate(certificateData);
+		KeyInfo keyInfo = new KeyInfo(); 
+		keyInfo.getContent().add(x509Data);
+		EInvoiceXmlFactory.marshalJaxb(keyInfo, System.out, true);
+	}
+
+	public void testMarshalX509Data() {
+		String certificateData = "MIIE4zCCBImgAwIBAgITegAALzfpPGY2F7fidQABAAAvNzAKBggqhkjOPQQDAjBiMRUwEwYKCZImiZPy";
+		X509Data x509Data = new X509Data().addX509Certificate(certificateData); 
+		EInvoiceXmlFactory.marshalJaxb(x509Data, System.out, true);
+	}
+	
+	public void testAttachment() {
+		String value = "Test Data";
+		AttachmentType attachment = new AttachmentType();
+		try {
+			attachment.setEmbeddedDocumentBinaryObject(value, "text/plain");
+			EInvoiceXmlFactory.marshalJaxb(attachment, System.out, true);
+			String out = new String(attachment.getEmbeddedDocumentBinaryObject().getValue());
+	    	System.out.println("In=" + value + ". Out="+ out);
+	
+			assertEquals(value, out);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.toString());
+		}
+	}
 }

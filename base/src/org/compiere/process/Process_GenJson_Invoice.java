@@ -72,7 +72,7 @@ public class Process_GenJson_Invoice extends SvrProcess{
 		}
 
 		//JSON file creation
-//YAHYA		try {
+//		try {
 			
 //				JSONArray list = new JSONArray();
 //				FileWriter file = new FileWriter("/opt/Adempiere/InvArchive/test.json");

@@ -55,7 +55,14 @@ public class DigestMethod {
     @XmlSchemaType(name = "anyURI")
     protected String algorithm;
 
-    /**
+	public DigestMethod() {
+		// TODO Auto-generated constructor stub
+	}
+    public DigestMethod(String algorithm) {
+		this.algorithm = algorithm;
+	}
+
+	/**
      * Gets the value of the content property.
      * 
      * <p>

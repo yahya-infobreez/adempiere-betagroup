@@ -8,9 +8,13 @@
 
 package oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_2.EmbeddedDocumentBinaryObject;
 
@@ -46,6 +50,7 @@ import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_2.Embedded
     "embeddedDocumentBinaryObject",
     "externalReference"
 })
+@XmlRootElement(name = "Attachment")
 public class AttachmentType {
 
     @XmlElement(name = "EmbeddedDocumentBinaryObject", namespace = "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2")
@@ -81,11 +86,11 @@ public class AttachmentType {
         this.embeddedDocumentBinaryObject = value;
     }
     
-    public void setEmbeddedDocumentBinaryObject(String value) {
+    public void setEmbeddedDocumentBinaryObject(String value, String mimeType) throws IOException {
         this.embeddedDocumentBinaryObject = new EmbeddedDocumentBinaryObject();
         if(value != null) {
-	        this.embeddedDocumentBinaryObject.setValue(value.getBytes());
-	        this.embeddedDocumentBinaryObject.setMimeCode(value);
+	        this.embeddedDocumentBinaryObject.setValue(value);
+	        this.embeddedDocumentBinaryObject.setMimeCode(mimeType);
         }
     }
 

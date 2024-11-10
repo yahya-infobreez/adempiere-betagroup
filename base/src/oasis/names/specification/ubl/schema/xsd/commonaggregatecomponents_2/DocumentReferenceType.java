@@ -156,8 +156,8 @@ public class DocumentReferenceType {
     }
     
     public void setID(String value) {
-        ID id = new ID();
-        id.setValue(value);
+        this.id = new ID();
+        this.id.setValue(value);
     }
 
 

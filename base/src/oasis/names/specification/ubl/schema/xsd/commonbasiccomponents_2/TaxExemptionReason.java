@@ -38,5 +38,9 @@ public class TaxExemptionReason
     extends TextType
 {
 
-
+	public TaxExemptionReason() {
+	}
+	public TaxExemptionReason(String value) {
+		this.value = value;
+	}
 }

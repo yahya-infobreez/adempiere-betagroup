@@ -89,7 +89,8 @@ import oasis.names.specification.ubl.schema.xsd.unqualifieddatatypes_2.VideoType
 public class BinaryObjectType {
 
     @XmlValue
-    protected byte[] value;
+//    protected byte[] value;
+    protected String value;
     @XmlAttribute(name = "format")
     protected String format;
     @XmlAttribute(name = "mimeCode")
@@ -117,7 +118,7 @@ public class BinaryObjectType {
      *     possible object is
      *     byte[]
      */
-    public byte[] getValue() {
+    public String getValue() {
         return value;
     }
 
@@ -128,7 +129,7 @@ public class BinaryObjectType {
      *     allowed object is
      *     byte[]
      */
-    public void setValue(byte[] value) {
+    public void setValue(String value) {
         this.value = value;
     }
 

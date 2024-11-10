@@ -38,5 +38,11 @@ public class PaymentMeansCode
     extends CodeType
 {
 
+	public PaymentMeansCode() {
+	}
+	public PaymentMeansCode(String value) {
+		this.setValue(value);
+	}
+
 
 }

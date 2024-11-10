@@ -115,5 +115,11 @@ public class NameType
     extends TextType
 {
 
+	public NameType() {
+	}
+	public NameType(String value) {
+		super(value);
+	}
+
 
 }

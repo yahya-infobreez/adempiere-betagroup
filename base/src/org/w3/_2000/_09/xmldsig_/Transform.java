@@ -20,6 +20,8 @@ import javax.xml.bind.annotation.XmlMixed;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.namespace.QName;
+
 import org.w3c.dom.Element;
 
 
@@ -59,6 +61,22 @@ public class Transform {
     @XmlSchemaType(name = "anyURI")
     protected String algorithm;
 
+	public Transform() {
+		// TODO Auto-generated constructor stub
+	}
+	public Transform(String algorithm, String xpath) {
+		this.algorithm = algorithm;
+		if(xpath != null) {
+			// We require XPath with namespace http://www.w3.org/2000/09/xmldsig#
+			// But no class created by JAXB. Hence wrap it with JAXBElement
+    		// Note: There is XPath class with namespace urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2.
+    		QName elementName = new QName("http://www.w3.org/2000/09/xmldsig#", "XPath"); // supply element name here
+    		JAXBElement jaxbElement = new JAXBElement(elementName, String.class, xpath);
+			this.getContent().add(jaxbElement);
+		}
+	}
+
+	
     /**
      * Gets the value of the content property.
      * 

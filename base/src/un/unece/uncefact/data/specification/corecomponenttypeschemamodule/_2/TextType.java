@@ -90,7 +90,14 @@ public class TextType {
     @XmlSchemaType(name = "normalizedString")
     protected String languageLocaleID;
 
-    /**
+    
+    public TextType() {
+	}
+    public TextType(String value2) {
+		this.value = value2;
+	}
+
+	/**
      * Gets the value of the value property.
      * 
      * @return

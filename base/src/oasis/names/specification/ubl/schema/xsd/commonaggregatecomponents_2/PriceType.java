@@ -8,6 +8,7 @@
 
 package oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -119,6 +120,12 @@ public class PriceType {
         this.priceAmount = value;
     }
 
+	public void setPriceAmount(BigDecimal priceEntered, String currency) {
+		this.priceAmount = new PriceAmount();
+		this.priceAmount.setValue(priceEntered);
+		this.priceAmount.setCurrencyID(currency);		
+	}
+
     /**
      * 
      * <pre>
@@ -146,6 +153,12 @@ public class PriceType {
     public void setBaseQuantity(BaseQuantity value) {
         this.baseQuantity = value;
     }
+
+	public void setBaseQuantity(BigDecimal value, String uom) {
+		this.baseQuantity = new BaseQuantity();
+		this.baseQuantity.setValue(value);
+		this.baseQuantity.setUnitCode(uom);
+	}
 
     /**
      * 
@@ -385,5 +398,7 @@ public class PriceType {
     public void setPricingExchangeRate(ExchangeRateType value) {
         this.pricingExchangeRate = value;
     }
+
+
 
 }

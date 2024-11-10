@@ -8,6 +8,8 @@
 
 package oasis.names.specification.ubl.schema.xsd.unqualifieddatatypes_2;
 
+import java.math.BigDecimal;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSeeAlso;
@@ -201,5 +203,16 @@ public class AmountType
     extends un.unece.uncefact.data.specification.corecomponenttypeschemamodule._2.AmountType
 {
 
+	public AmountType() {
+	}
+	
+	public AmountType(BigDecimal value) {
+		this.value = value;
+	}
+	
+	public AmountType(BigDecimal value, String currency) {
+		this.value = value;
+		this.currencyID = currency;
+	}
 
 }

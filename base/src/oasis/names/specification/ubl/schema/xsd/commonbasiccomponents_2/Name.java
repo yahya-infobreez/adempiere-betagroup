@@ -37,6 +37,12 @@ import oasis.names.specification.ubl.schema.xsd.unqualifieddatatypes_2.NameType;
 public class Name
     extends NameType
 {
+	public Name() {
+		// TODO Auto-generated constructor stub
+	}
+	public Name(String value) {
+		super(value);
+	}
 
 
 }

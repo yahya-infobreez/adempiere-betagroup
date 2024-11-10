@@ -15,6 +15,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import org.w3c.dom.Element;
 
+import oasis.names.specification.ubl.schema.xsd.commonsignaturecomponents_2.UBLDocumentSignatures;
+
 
 /**
  * <p>Java class for ExtensionContentType complex type.
@@ -42,10 +44,14 @@ import org.w3c.dom.Element;
 @XmlRootElement(name = "ExtensionContent")
 public class ExtensionContent {
 
-    @XmlAnyElement
+    @XmlAnyElement(lax = true)
     protected Element any;
 
-    /**
+    public ExtensionContent() {
+		// TODO Auto-generated constructor stub
+	}
+
+	/**
      * Gets the value of the any property.
      * 
      * @return
@@ -69,4 +75,37 @@ public class ExtensionContent {
         this.any = value;
     }
 
+//    @XmlRootElement(name = "ExtensionContent")
+//    public class ExtensionContent<T> {
+//
+//        @XmlAnyElement(lax = true)
+//        protected JAXBElement<?> any;
+//
+//        public ExtensionContent() {
+//    		// TODO Auto-generated constructor stub
+//    	}
+//
+//    	/**
+//         * Gets the value of the any property.
+//         * 
+//         * @return
+//         *     possible object is
+//         *     {@link Element }
+//         *     
+//         */
+//        public JAXBElement<?> getAny() {
+//            return any;
+//        }
+//
+//        /**
+//         * Sets the value of the any property.
+//         * 
+//         * @param value
+//         *     allowed object is
+//         *     {@link Element }
+//         *     
+//         */
+//        public void setAny(JAXBElement<?> value) {
+//            this.any = value;
+//        }
 }

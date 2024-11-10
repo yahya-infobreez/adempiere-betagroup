@@ -8,6 +8,8 @@
 
 package oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2;
 
+import java.math.BigDecimal;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -15,6 +17,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_2.BaseUnitMeasure;
 import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_2.CalculationSequenceNumeric;
+import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_2.ID;
 import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_2.PerUnitAmount;
 import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_2.Percent;
 import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_2.TaxAmount;
@@ -95,7 +98,15 @@ public class TaxSubtotal {
     @XmlElement(name = "TaxCategory", required = true)
     protected TaxCategoryType taxCategory;
 
-    /**
+    public TaxSubtotal() {
+	}
+    public TaxSubtotal(String category, BigDecimal percent, BigDecimal taxAmt, String currency) {
+		this.taxCategory = new TaxCategoryType(category, percent);
+		this.percent = new Percent(percent);
+		this.taxAmount = new TaxAmount(taxAmt, currency);
+	}
+
+	/**
      * 
      * <pre>
      * &lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;ccts:Component xmlns:ccts="urn:un:unece:uncefact:documentation:2" xmlns="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;&lt;ccts:ComponentType&gt;BBIE&lt;/ccts:ComponentType&gt;&lt;ccts:DictionaryEntryName&gt;Tax Subtotal. Taxable_ Amount. Amount&lt;/ccts:DictionaryEntryName&gt;&lt;ccts:Definition&gt;The net amount to which the tax percent (rate) is applied to calculate the tax amount.&lt;/ccts:Definition&gt;&lt;ccts:Cardinality&gt;0..1&lt;/ccts:Cardinality&gt;&lt;ccts:ObjectClass&gt;Tax Subtotal&lt;/ccts:ObjectClass&gt;&lt;ccts:PropertyTermQualifier&gt;Taxable&lt;/ccts:PropertyTermQualifier&gt;&lt;ccts:PropertyTerm&gt;Amount&lt;/ccts:PropertyTerm&gt;&lt;ccts:RepresentationTerm&gt;Amount&lt;/ccts:RepresentationTerm&gt;&lt;ccts:DataType&gt;Amount. Type&lt;/ccts:DataType&gt;&lt;/ccts:Component&gt;
@@ -122,6 +133,11 @@ public class TaxSubtotal {
     public void setTaxableAmount(TaxableAmount value) {
         this.taxableAmount = value;
     }
+	public void setTaxableAmount(BigDecimal taxAmt, String currency) {
+		this.taxableAmount = new TaxableAmount();
+		this.taxableAmount.setValue(taxAmt);
+		this.taxableAmount.setCurrencyID(currency);
+	}
 
     /**
      * 
@@ -150,6 +166,9 @@ public class TaxSubtotal {
     public void setTaxAmount(TaxAmount value) {
         this.taxAmount = value;
     }
+	public void setTaxAmount(BigDecimal taxAmt, String currency) {
+		this.taxAmount = new TaxAmount(taxAmt, currency);
+	}
 
     /**
      * 
@@ -374,5 +393,7 @@ public class TaxSubtotal {
     public void setTaxCategory(TaxCategoryType value) {
         this.taxCategory = value;
     }
+
+
 
 }

@@ -8,6 +8,8 @@
 
 package oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2;
 
+import java.math.BigDecimal;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -116,6 +118,12 @@ public class MonetaryTotalType {
     public void setLineExtensionAmount(LineExtensionAmount value) {
         this.lineExtensionAmount = value;
     }
+    
+    public void setLineExtensionAmount(BigDecimal value, String currency) {
+        this.lineExtensionAmount = new LineExtensionAmount();
+        this.lineExtensionAmount.setValue(value);
+        this.lineExtensionAmount.setCurrencyID(currency);
+    }
 
     /**
      * 
@@ -144,6 +152,11 @@ public class MonetaryTotalType {
     public void setTaxExclusiveAmount(TaxExclusiveAmount value) {
         this.taxExclusiveAmount = value;
     }
+    public void setTaxExclusiveAmount(BigDecimal value, String currency) {
+        this.taxExclusiveAmount = new TaxExclusiveAmount();
+        this.taxExclusiveAmount.setValue(value);
+        this.taxExclusiveAmount.setCurrencyID(currency);
+    }
 
     /**
      * 
@@ -171,6 +184,11 @@ public class MonetaryTotalType {
      */
     public void setTaxInclusiveAmount(TaxInclusiveAmount value) {
         this.taxInclusiveAmount = value;
+    }
+    public void setTaxInclusiveAmount(BigDecimal value, String currency) {
+        this.taxInclusiveAmount = new TaxInclusiveAmount();
+        this.taxInclusiveAmount.setValue(value);
+        this.taxInclusiveAmount.setCurrencyID(currency);
     }
 
     /**
@@ -201,6 +219,12 @@ public class MonetaryTotalType {
         this.allowanceTotalAmount = value;
     }
 
+	public void setAllowanceTotalAmount(BigDecimal amount, String currency) {
+		this.allowanceTotalAmount = new AllowanceTotalAmount();
+		this.allowanceTotalAmount.setValue(amount);
+		this.allowanceTotalAmount.setCurrencyID(currency);	
+	}
+
     /**
      * 
      * <pre>
@@ -228,6 +252,12 @@ public class MonetaryTotalType {
     public void setChargeTotalAmount(ChargeTotalAmount value) {
         this.chargeTotalAmount = value;
     }
+    
+	public void setChargeTotalAmount(BigDecimal amount, String currency) {
+		this.chargeTotalAmount = new ChargeTotalAmount();
+		this.chargeTotalAmount.setValue(amount);
+		this.chargeTotalAmount.setCurrencyID(currency);	
+	}
 
     /**
      * 
@@ -256,6 +286,12 @@ public class MonetaryTotalType {
     public void setPrepaidAmount(PrepaidAmount value) {
         this.prepaidAmount = value;
     }
+    
+	public void setPrepaidAmount(BigDecimal value, String currency) {
+		this.prepaidAmount = new PrepaidAmount();
+		this.prepaidAmount.setValue(value);
+		this.prepaidAmount.setCurrencyID(currency);	
+	}
 
     /**
      * 
@@ -283,6 +319,11 @@ public class MonetaryTotalType {
      */
     public void setPayableRoundingAmount(PayableRoundingAmount value) {
         this.payableRoundingAmount = value;
+    }
+    public void setPayableRoundingAmount(BigDecimal value, String currency) {
+        this.payableRoundingAmount = new PayableRoundingAmount();
+		this.payableRoundingAmount.setValue(value);
+		this.payableRoundingAmount.setCurrencyID(currency);	
     }
 
     /**
@@ -312,6 +353,12 @@ public class MonetaryTotalType {
     public void setPayableAmount(PayableAmount value) {
         this.payableAmount = value;
     }
+    public void setPayableAmount(BigDecimal value, String currency) {
+        this.payableAmount = new PayableAmount();
+		this.payableAmount.setValue(value);
+		this.payableAmount.setCurrencyID(currency);	
+    }
+
 
     /**
      * 
@@ -340,5 +387,6 @@ public class MonetaryTotalType {
     public void setPayableAlternativeAmount(PayableAlternativeAmount value) {
         this.payableAlternativeAmount = value;
     }
+
 
 }

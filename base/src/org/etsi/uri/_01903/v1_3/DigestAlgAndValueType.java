@@ -46,6 +46,15 @@ public class DigestAlgAndValueType {
     protected DigestMethod digestMethod;
     @XmlElement(name = "DigestValue", namespace = "http://www.w3.org/2000/09/xmldsig#", required = true)
     protected byte[] digestValue;
+    
+    public DigestAlgAndValueType() {
+		// TODO Auto-generated constructor stub
+	}
+   
+    public DigestAlgAndValueType(String algorithm, String value) {
+		digestMethod = new DigestMethod(algorithm);
+		digestValue = value.getBytes();
+	}
 
     /**
      * Gets the value of the digestMethod property.

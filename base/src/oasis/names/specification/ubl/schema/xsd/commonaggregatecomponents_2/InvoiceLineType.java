@@ -8,6 +8,7 @@
 
 package oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -16,10 +17,12 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_2.AccountingCost;
 import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_2.AccountingCostCode;
+import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_2.BaseQuantity;
 import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_2.FreeOfChargeIndicator;
 import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_2.ID;
 import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_2.InvoicedQuantity;
 import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_2.LineExtensionAmount;
+import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_2.Name;
 import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_2.Note;
 import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_2.PaymentPurposeCode;
 import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_2.TaxPointDate;
@@ -284,6 +287,12 @@ public class InvoiceLineType {
     public void setInvoicedQuantity(InvoicedQuantity value) {
         this.invoicedQuantity = value;
     }
+    
+	public void setInvoicedQuantity(BigDecimal value, String uom) {
+		this.invoicedQuantity = new InvoicedQuantity();
+		this.invoicedQuantity.setValue(value);
+		this.invoicedQuantity.setUnitCode(uom);
+	}
 
     /**
      * 
@@ -312,6 +321,12 @@ public class InvoiceLineType {
     public void setLineExtensionAmount(LineExtensionAmount value) {
         this.lineExtensionAmount = value;
     }
+
+	public void setLineExtensionAmount(BigDecimal lineNetAmt, String currency) {
+		this.lineExtensionAmount = new LineExtensionAmount();
+		this.lineExtensionAmount.setValue(lineNetAmt);
+		this.lineExtensionAmount.setCurrencyID(currency);
+	}
 
     /**
      * 
@@ -1016,5 +1031,11 @@ public class InvoiceLineType {
     public void setItemPriceExtension(PriceExtensionType value) {
         this.itemPriceExtension = value;
     }
+
+	public void setItem(String name) {
+		this.item = new ItemType();
+		this.item.setName(new Name(name));		
+	}
+
 
 }

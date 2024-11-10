@@ -8,6 +8,7 @@
 
 package oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -95,7 +96,19 @@ public class TaxCategoryType {
     @XmlElement(name = "TaxScheme", required = true)
     protected TaxScheme taxScheme;
 
-    /**
+    public TaxCategoryType() {
+	}
+    
+    
+    public TaxCategoryType(String category, BigDecimal percent2) {
+		this.id = new ID(category);
+		this.percent = new Percent(percent2);
+		this.taxScheme = new TaxScheme();
+		this.taxScheme.setID(new ID("VAT"));
+	}
+
+
+	/**
      * 
      * <pre>
      * &lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;ccts:Component xmlns:ccts="urn:un:unece:uncefact:documentation:2" xmlns="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;&lt;ccts:ComponentType&gt;BBIE&lt;/ccts:ComponentType&gt;&lt;ccts:DictionaryEntryName&gt;Tax Category. Identifier&lt;/ccts:DictionaryEntryName&gt;&lt;ccts:Definition&gt;An identifier for this tax category.&lt;/ccts:Definition&gt;&lt;ccts:Cardinality&gt;0..1&lt;/ccts:Cardinality&gt;&lt;ccts:ObjectClass&gt;Tax Category&lt;/ccts:ObjectClass&gt;&lt;ccts:PropertyTerm&gt;Identifier&lt;/ccts:PropertyTerm&gt;&lt;ccts:RepresentationTerm&gt;Identifier&lt;/ccts:RepresentationTerm&gt;&lt;ccts:DataType&gt;Identifier. Type&lt;/ccts:DataType&gt;&lt;ccts:Examples&gt;http://www.unece.org/uncefact/codelist/standard/UNECE_DutyorTaxorFeeCategoryCode_D09B.xsd&lt;/ccts:Examples&gt;&lt;/ccts:Component&gt;
@@ -121,6 +134,9 @@ public class TaxCategoryType {
      */
     public void setID(ID value) {
         this.id = value;
+    }
+    public void setID(String value) {
+        this.id = new ID(value);
     }
 
     /**
@@ -177,6 +193,10 @@ public class TaxCategoryType {
      */
     public void setPercent(Percent value) {
         this.percent = value;
+    }
+    public void setPercent(BigDecimal value) {
+        this.percent = new Percent();
+        this.percent.setValue(value);
     }
 
     /**
@@ -261,6 +281,10 @@ public class TaxCategoryType {
      */
     public void setTaxExemptionReasonCode(TaxExemptionReasonCode value) {
         this.taxExemptionReasonCode = value;
+    }
+    public void setTaxExemptionReasonCode(String value) {
+        this.taxExemptionReasonCode = new TaxExemptionReasonCode();
+        this.taxExemptionReasonCode.setValue(value);
     }
 
     /**
@@ -378,6 +402,10 @@ public class TaxCategoryType {
      */
     public void setTaxScheme(TaxScheme value) {
         this.taxScheme = value;
+    }
+    public void setTaxScheme(String value) {
+        this.taxScheme = new TaxScheme();
+        this.taxScheme.setID(value);
     }
 
 }
