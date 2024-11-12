@@ -420,6 +420,11 @@ public class EInvoiceXmlFactory {
 		
 		invoice.getPaymentMeans().add(paymentMeans);
 
+		/*
+		 * Note: RoundOff is also added as an InvoiceLine. Hence the totals shown in invoice header includes this amount.
+		 * This should be adjusted and roundOff shown separately 
+		 */
+		BigDecimal roundOffAmt = minvoice.getRoundOffAmt(); 
 		
 		// Document level allowance indicator	= 'false'/’True’
 		// cac:AllowanceCharge / cbc:ChargeIndicator
@@ -455,7 +460,7 @@ public class EInvoiceXmlFactory {
 		// BT-5 Currency for sum of invoice line net amount // BR-KSA-CL-02 // ISO 4217 alpha-3
 		// cac:LegalMonetaryTotal / cbc:LineExtensionAmount @currencyID
 		MonetaryTotalType monetaryTotalType = new MonetaryTotalType();
-		monetaryTotalType.setLineExtensionAmount(minvoice.getTotalLines(), currency); // TODO Should exclude charge/allowance
+		monetaryTotalType.setLineExtensionAmount(minvoice.getTotalLines().subtract(roundOffAmt), currency); // TODO Should exclude charge/allowance
 		
 
 		// BT-107 Sum of allowances on document level // Optional // Sum of Line Level allowances
@@ -475,14 +480,15 @@ public class EInvoiceXmlFactory {
 		// TODO Calculation depends on How charge/discount is handled at Document level		
 		// BT-5 Currency for invoice total amount without VAT
 		// cac:LegalMonetaryTotal / cbc:TaxExclusiveAmount @currencyID
-		monetaryTotalType.setTaxExclusiveAmount(minvoice.getTotalLines(), currency);
+		monetaryTotalType.setTaxExclusiveAmount(minvoice.getTotalLines().subtract(roundOffAmt), currency);
 		
 		// BT-112 Invoice total amount with VAT		// BR-KSA-F-04
 		// If VAT total is not entered, Gross Total to be entered Statement - "Amount includes VAT"
 		// cac:LegalMonetaryTotal / cbc:TaxInclusiveAmount		
 		// Currency for invoice total amount with VAT
 		// cac:LegalMonetaryTotal / cbc:TaxInclusiveAmount @currencyID
-		monetaryTotalType.setTaxInclusiveAmount(minvoice.getGrandTotal(), currency);
+		// Note: This amount excludes RoundOff. Round off is shown separately
+		monetaryTotalType.setTaxInclusiveAmount(minvoice.getGrandTotal().subtract(roundOffAmt), currency);
 		
 		// Pre-Paid amount	// Optional
 		// cac:LegalMonetaryTotal / cbc:PrepaidAmount
@@ -495,7 +501,6 @@ public class EInvoiceXmlFactory {
 		// cac:LegalMonetaryTotal/cbc:PayableRoundingAmount
 		// Currency for Rounding amount	// Optional		
 		// cac:LegalMonetaryTotal/cbc:PayableRoundingAmount @currencyID
-		BigDecimal roundOffAmt = Env.ZERO; // minvoice.getRoundOffAmt(); // This is not normal roundOff, instead is payment discount
 		monetaryTotalType.setPayableRoundingAmount(roundOffAmt, currency);
 
 		
@@ -503,7 +508,7 @@ public class EInvoiceXmlFactory {
 		// cac:LegalMonetaryTotal / cbc:PayableAmount		
 		// BT-5 Currency for amount due for payment
 		// cac:LegalMonetaryTotal / cbc:PayableAmount @currencyID
-		monetaryTotalType.setPayableAmount(minvoice.getOpenAmt(), currency);
+		monetaryTotalType.setPayableAmount(minvoice.getOpenAmt(), currency); // TODO This is valid after allocation is done for pre-payment
 		
 		// Finally add to Invoice
 		invoice.setLegalMonetaryTotal(monetaryTotalType);
@@ -516,6 +521,7 @@ public class EInvoiceXmlFactory {
 		String[] signPair = fillSignatureDetails(invoice, org);
 		String invoiceSignature = signPair[1];
 		String invoiceHash = signPair[0];
+		minvoice.setInvoiceHash(invoiceHash);
 
 		// KSA-14 = Invoice QR code	//  BR-KSA-27 // base64Binary.
 		/* cac:AdditionalDocumentReference / cac:Attachment / cbc:EmbeddedDocumentBinaryObject		 
@@ -529,12 +535,10 @@ public class EInvoiceXmlFactory {
 			String companyName = org.getName2() != null ? org.getName2() : client.getName2();
 			Timestamp invoiceIssueTime = minvoice.getInvoiceIssueTime() != null ? minvoice.getInvoiceIssueTime():minvoice.getDateInvoiced();
 			String qrString = QRUtil.generateQR(companyName, client.getVatNumber(), invoiceIssueTime, 
-			minvoice.getGrandTotal(), minvoice.getTaxTotal(), invoiceHash, 
-			invoiceSignature, org.getPublicKey(), org.getCertificate());
+				minvoice.getGrandTotal(), minvoice.getTaxTotal(), invoiceHash, 
+				invoiceSignature, org.getPublicKey(), org.getCertificate());
 			
-			minvoice.setInvoiceHash(invoiceHash);
 			minvoice.setQRCode(qrString);
-			minvoice.saveEx();
 	
 			DocumentReferenceType qrCode = new DocumentReferenceType();
 			AttachmentType attachQrCode = new AttachmentType();
@@ -543,6 +547,7 @@ public class EInvoiceXmlFactory {
 			qrCode.setID("QR");
 			invoice.getAdditionalDocumentReferences().add(qrCode);
 		}
+		minvoice.saveEx();
 		
 		return invoice;
 	}
@@ -895,6 +900,8 @@ public class EInvoiceXmlFactory {
 
 	private static void processLines(Invoice invoice, MInvoice minvoice) {
 		for (MInvoiceLine mline : minvoice.getLines()) {
+			if(mline.isRoundOffLine())
+				continue; // RoundOff handled separately
 			InvoiceLineType line = new InvoiceLineType();
 			// BT-126	Invoice line identifier		// BR-21, BR-16	// 
 			// cac:InvoiceLine /  cbc:ID
@@ -929,7 +936,7 @@ public class EInvoiceXmlFactory {
 			// BT-5 Currency for invoice line net amount	 // BR-KSA-CL-02
 			// cac:InvoiceLine  / cbc:LineExtensionAmount @currencyID
 			String currency = minvoice.getCurrencyISO();
-			line.setLineExtensionAmount(mline.getLineNetAmt(), currency);
+			line.setLineExtensionAmount(mline.getLineNetAmt().setScale(2), currency);
 	
 			// Invoice line allowance indicator //*** SKIP - as not applicable
 			// cac:InvoiceLine / cac:AllowanceCharge / cbc:ChargeIndicator	
@@ -976,14 +983,14 @@ public class EInvoiceXmlFactory {
 			// BT-5 Currency for VAT line amount
 			// cac:InvoiceLine / cac:TaxTotal / cbc:TaxAmount @currencyID
 			TaxTotalType lineTax = new TaxTotalType();
-			lineTax.setTaxAmount(mline.getTaxAmt(), currency);	
+			lineTax.setTaxAmount(mline.getTaxAmt().setScale(2), currency);	
 	
 			// KSA-12 Line amount inclusive VAT ?? // TODO CROSS CHECK
 			// cac:InvoiceLine / cac:TaxTotal / cbc:RoundingAmount	
 			// Currency for line amount inclusive VAT
 			// cac:InvoiceLine / cac:TaxTotal / cbc:RoundingAmount @curencyID
 			// Line Total is including Tax, in case of Exclusive pricelist. // TODO Handle inclusive pricelist
-			lineTax.setRoundingAmount(mline.getLineTotalAmt(), currency); 
+			lineTax.setRoundingAmount(mline.getLineTotalAmt().setScale(2), currency); 
 	
 			// KSA-31 Prepayment VAT Category Taxable Amount
 			// cac:InvoiceLine / cac:TaxTotal / cac:TaxSubtotal / cbc:TaxableAmount	
@@ -1231,24 +1238,12 @@ public class EInvoiceXmlFactory {
 	 */
 	
 			
-	public static File generateSignedXmlFile(Invoice invoice) throws Exception {
-		String fileName = "eInvoice" + invoice.getID().getValue()
-				.replaceAll("\\s+", "_")
-				.replaceAll("\\\\", "_")
-				.replaceAll("/", "_");
-		File inputFile = new File(System.getProperty("java.io.tmpdir"),  fileName + ".xml");
-		File outFile = new File(System.getProperty("java.io.tmpdir"), fileName + "-signed.xml");
-
+	public static File generateSignedXmlFile(File inFile, File outFile) throws Exception {
     	FileOutputStream out = null;
 	    try {
-	    	// Write the Invoice XML into tmp file first
-	    	BufferedOutputStream outStream1 = new BufferedOutputStream(new FileOutputStream(inputFile));
-	    	marshalJaxb(invoice, outStream1, false);
-	    	outStream1.close();
-	    	
 	    	// Pass the XML file to ZATCA SDK. Output file will be created by the SDK
 			ProcessBuilder builder = new ProcessBuilder("fatoora", "-sign", "-signedInvoice", outFile.getAbsolutePath(),
-					"-invoice", inputFile.getAbsolutePath());
+					"-invoice", inFile.getAbsolutePath());
 //			Map<String, String> envMap = new HashMap<String, String>() {{
 //	            put("key1", "value1");
 //			}};			

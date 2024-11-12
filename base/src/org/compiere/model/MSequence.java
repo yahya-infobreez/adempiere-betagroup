@@ -875,6 +875,14 @@ public class MSequence extends X_AD_Sequence
 		if (next < 0)
 			return null;
 
+		String documentNo = formatDocumentNo(po, next, prefix, suffix, decimalPattern, trxName);
+		s_log.finer (documentNo + " (" + incrementNo + ")"
+				+ " - C_DocType_ID=" + C_DocType_ID + " [" + trx + "]");
+		return documentNo;
+	}	//	getDocumentNo
+
+	private static String formatDocumentNo(PO po, int next, String prefix, String suffix, String decimalPattern,
+			String trxName) {
 		//	create DocumentNo
 		StringBuffer doc = new StringBuffer();
 		if (prefix != null && prefix.length() > 0)
@@ -886,11 +894,17 @@ public class MSequence extends X_AD_Sequence
 		if (suffix != null && suffix.length() > 0)
 			doc.append(Env.parseVariable(suffix, po, trxName, false));
 		String documentNo = doc.toString();
-		s_log.finer (documentNo + " (" + incrementNo + ")"
-				+ " - C_DocType_ID=" + C_DocType_ID + " [" + trx + "]");
 		return documentNo;
-	}	//	getDocumentNo
+	}
 
+	public static String getLastDocumentNo(int C_DocType_ID, String trxName, boolean definite, PO po) {
+		MDocType dt = MDocType.get(po.getCtx(), C_DocType_ID);
+		MSequence seq = (MSequence) dt.getDocNoSequence();
+		if(seq == null)
+			return null;
+		String lastDocNo = MSequence.formatDocumentNo(po, seq.getCurrentNext()-seq.getIncrementNo(), seq.getPrefix(), seq.getSuffix(), seq.getDecimalPattern(), trxName);
+		return lastDocNo;
+	}
 
 	/**************************************************************************
 	 *	Check/Initialize Client DocumentNo/Value Sequences

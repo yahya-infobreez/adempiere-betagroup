@@ -1817,14 +1817,6 @@ public class MOrder extends X_C_Order implements DocAction
 			return null;
 		}
 		
-		//****** Additional fields for eInvoice ****************/
-		String vatNumber = ((MBPartner)getC_BPartner()).getVatNumber();
-		invoice.setVatNumber(vatNumber); // Copy it to Invoice for immutability
-		invoice.setIsSimplifiedInvoice(vatNumber == null);
-		MBPartnerLocation location = (MBPartnerLocation) invoice.getC_BPartner_Location();
-		invoice.setIsExportInvoice(location.getC_Location().getC_Country_ID() != 296); // 296 = Saudi Arabia
-		
-		
 		//	If we have a Shipment - use that as a base
 		if (shipment != null)
 		{

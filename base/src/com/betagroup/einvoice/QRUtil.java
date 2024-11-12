@@ -43,8 +43,10 @@ public class QRUtil {
     public static String generateQR(String name, String vatNo, Timestamp time, BigDecimal grandTotal, BigDecimal vatAmt, /* Phase-1 fields */
     		String hash, String ecdsaSign, String ecdsaPublicKey, String zatcaSignForPublicKey /* phase-2 fields */ ) {
 		String date = getStringFromTimestamp(time, "yyyy-MM-dd'T'HH:mm:ss'Z'");
-		String qr = QRUtil.convertUsingTLVToBase64(name, vatNo, date, grandTotal.toPlainString(), vatAmt.toPlainString(),
-				hash, ecdsaSign, ecdsaPublicKey, zatcaSignForPublicKey);
+		byte[] decodedSignature = zatcaSignForPublicKey != null ? Base64.getDecoder().decode(zatcaSignForPublicKey) : null;
+		String qr = QRUtil.convertUsingTLVToBase64(name.getBytes(), vatNo.getBytes(),
+				date.getBytes(), grandTotal.toPlainString().getBytes(), vatAmt.toPlainString().getBytes(),
+				hash.getBytes(), ecdsaSign.getBytes(), ecdsaPublicKey.getBytes(), decodedSignature);
 		return qr;
     }
     
@@ -63,7 +65,8 @@ public class QRUtil {
     public static String generateQR(String name, String vatNo, Timestamp time, BigDecimal grandTotal, BigDecimal vatAmt /* Phase-1 fields */
     		/*  */ ) {
 		String date = getStringFromTimestamp(time, "yyyy-MM-dd'T'HH:mm:ss'Z'");
-		String qr = QRUtil.convertUsingTLVToBase64(name, vatNo, date, grandTotal.toPlainString(), vatAmt.toPlainString());
+		String qr = QRUtil.convertUsingTLVToBase64(name.getBytes(), vatNo.getBytes(),
+				date.getBytes(), grandTotal.toPlainString().getBytes(), vatAmt.toPlainString().getBytes());
 		return qr;
     }
     
@@ -102,14 +105,14 @@ public class QRUtil {
      * @param .....
      * @return
      */
-	public static String convertUsingTLVToBase64(String...params) {
+	public static String convertUsingTLVToBase64(byte[]... params) {
         String retValue = "";
         ByteBuffer buffer = ByteBuffer.allocate(1024); // Max 700 characters
         try {
             for(int i=0; i < params.length; i++) {
             	if(params[i] == null)
             		break; // The last tag is conditional - applicable only for Simplified Invoices
-            	byte[] data = params[i].getBytes();
+            	byte[] data = params[i];
                 buffer.put(new byte[]{(byte)(i+1),(byte)data.length});
                 buffer.put(data);
             }

@@ -1340,5 +1340,10 @@ public class MInvoiceLine extends X_C_InvoiceLine
 							+" AND "+MMatchInv.COLUMNNAME_Processed+"=?";
 		return DB.getSQLValueBDEx(get_TrxName(), sql, getC_InvoiceLine_ID(), true);
 	}
+	
+	public boolean isRoundOffLine() {
+		// Created as a Line with Product M_Product_ID=1204744 DECIMAL-ROUND_DECIMAL ROUND OFF IN CUSTOMER INVOICE
+		return getM_Product_ID() == 1204744;
+	}
 
 }	//	MInvoiceLine

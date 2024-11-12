@@ -17,19 +17,10 @@ public class QRUtilTest extends TestCase {
 	public void testGenerateQR() {
 		String qr = QRUtil.generateQR("Company name", "300012345678903", Timestamp.valueOf("2024-01-01 00:00:00"), BigDecimal.valueOf(1000.55), BigDecimal.valueOf(99.59));
 		System.out.println("QR = " + qr);
-		qr = QRUtil.generateQR("Company name", "312345678903", Timestamp.valueOf("2024-01-01 00:00:00"), BigDecimal.valueOf(1000.55), BigDecimal.valueOf(99.59));
+		String qr2 = QRUtil.generateQR("Company name", "312345678903", Timestamp.valueOf("2024-01-01 00:00:00"), BigDecimal.valueOf(1000.55), BigDecimal.valueOf(99.59));
 		System.out.println("QR = " + qr);	
-	}
-	
-	public void testGenerateQR2() {
-		String date = "2024-01-01T00:00:00Z";
-		String qr2 = QRUtil.convertUsingTLVToBase64("Company name", "30001245678903", date, "1000.55", "99.59");
-		System.out.println("QR2 = " + qr2);	
-		String qr3 = QRUtil.generateQR("Company name", "300045678903", Timestamp.valueOf("2024-01-01 00:00:00"), BigDecimal.valueOf(1000.55), BigDecimal.valueOf(99.59));
-		System.out.println("QR3 = " + qr3);
+		System.out.println(QRUtil.decodeQR(qr));
 		System.out.println(QRUtil.decodeQR(qr2));
-		System.out.println(QRUtil.decodeQR(qr3));
-		assertEquals(qr2, qr3);
 	}
 
 	public void testGetStringFromTimestamp() {

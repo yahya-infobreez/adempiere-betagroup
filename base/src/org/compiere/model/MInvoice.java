@@ -22,6 +22,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -1356,6 +1357,11 @@ public class MInvoice extends X_C_Invoice implements DocAction
 					+ ", @SO_CreditLimit@=" + bp.getSO_CreditLimit();
 				return DocAction.STATUS_Invalid;
 			}
+			
+			// For eInvoice - Save Checkout Date & Time
+			setVatNumber(bp.getVatNumber()); // Copy it to Invoice for immutability
+			setIsSimplifiedInvoice(bp.getVatNumber() == null);
+			setIsExportInvoice(getC_BPartner_Location().getC_Location().getC_Country_ID() != 296); // 296 = Saudi
 		}
 
 		//	Landed Costs
@@ -1845,9 +1851,15 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		}	//	project
 		
 		// For eInvoice - Save Checkout Date & Time
-		if (isSOTrx()) {
-			setInvoiceIssueTime(new Timestamp(new Date().getTime()));
+		if (isSOTrx() && !isReversal()) {
+			setInvoiceIssueTime(Timestamp.from(Instant.now()));
+			// This should be called before calling setDefiniteDocumentNo() below
+			setPreviousInvoice_ID(getPreviousInvoiceId()); 
+//			setInvoiceHash(InvoiceHash); // Set during XML generation
+//			setQR(); // Set during XML generation
 		}
+		
+		
 
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
@@ -1896,6 +1908,8 @@ public class MInvoice extends X_C_Invoice implements DocAction
 				setDocumentNo(value);
 		}
 	}
+	
+	
 
 	/**
 	 * 	Create Counter Document
@@ -2576,19 +2590,20 @@ public class MInvoice extends X_C_Invoice implements DocAction
 
 	
 	// Additional Utility Functions
-	
 	public BigDecimal getTotalAllowances() {
 		// Created as a Line with Product M_Product_ID=xxx OR C_ProductCategory_ID = yyy
-		MInvoiceLine[] lines = getLines("AND M_Product_ID IN ( 123 )");
-		BigDecimal totalAmt = Arrays.asList(lines).stream().map(l->l.getLineTotalAmt()).reduce(Env.ZERO, BigDecimal::add);
-		return totalAmt;
+//		MInvoiceLine[] lines = getLines("AND M_Product_ID IN ( 123 )");
+//		BigDecimal totalAmt = Arrays.asList(lines).stream().map(l->l.getLineTotalAmt()).reduce(Env.ZERO, BigDecimal::add);
+//		return totalAmt;
+		return Env.ZERO;
 	}
 
 	public BigDecimal getTotalCharges() {
 		// Created as a Line with Product M_Product_ID=xxx OR C_ProductCategory_ID = yyy
-		MInvoiceLine[] lines = getLines("AND M_Product_ID IN (123)");
-		BigDecimal totalAmt = Arrays.asList(lines).stream().map(l->l.getLineTotalAmt()).reduce(Env.ZERO, BigDecimal::add);
-		return totalAmt;
+//		MInvoiceLine[] lines = getLines("AND M_Product_ID IN (123)");
+//		BigDecimal totalAmt = Arrays.asList(lines).stream().map(l->l.getLineTotalAmt()).reduce(Env.ZERO, BigDecimal::add);
+//		return totalAmt;
+		return Env.ZERO;
 	}
 
 	public BigDecimal getPrepaidAmt() {
@@ -2607,6 +2622,21 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		MInvoiceTax[] taxes = getTaxes(false);
 		BigDecimal totalAmt = Arrays.asList(taxes).stream().map(t->t.getTaxAmt()).reduce(Env.ZERO, BigDecimal::add);
 		return totalAmt;
+	}
+	
+	/**
+	 * Returns Last Invoice ID, based on DocumentNo in the same sequence.
+	 * 
+	 * This should be called before calling setDefiniteDocumentNo() for current invoice.
+	 * And 'Overwrite Sequence on Complete' option shall be ON in current invoice's Document Type window (default 'AR Invoice')
+	 * @return Returns 0 If no previous invoice is present
+	 */
+	public int getPreviousInvoiceId() {
+		String lastDocumentNo = MSequence.getLastDocumentNo(getC_DocType_ID(), get_TrxName(), false, this);
+		int lastId = new Query(getCtx(), MInvoice.Table_Name, "DocumentNo=?", null).setClient_ID()
+			.setParameters(lastDocumentNo).firstIdOnly();
+		
+		return lastId > 0 ? lastId : 0; // Avoid -1
 	}
 	
 }	//	MInvoice

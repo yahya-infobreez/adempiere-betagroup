@@ -1,16 +1,11 @@
 package test.functional;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.Properties;
 
-import org.apache.ecs.xhtml.input;
 import org.compiere.model.MInvoice;
-import org.compiere.model.MOrg;
 import org.compiere.util.Env;
 import org.w3._2000._09.xmldsig_.KeyInfo;
 import org.w3._2000._09.xmldsig_.X509Data;
@@ -61,7 +56,7 @@ public class EInvoiceXmlFactoryTest extends AdempiereTestCase {
 		Properties ctx = new Properties();
 		Env.setContext(ctx, "AD_Client_ID", 1000000);
 		Env.setContext(ctx, "AD_Org_ID", 0);
-		MInvoice minvoice = MInvoice.get(ctx, 1075216);
+		MInvoice minvoice = MInvoice.get(ctx, 1075286);
 		// 1075216 = 42235ARI,  1075283=24884ARC, 1075286=42273ARI, 1075323=12634APC
 				// 1074762 = 11932ARD, 1074815=16390APD, 1074995=16414APD, 1074714=11925ARD
 		assertNotNull(minvoice);
@@ -111,7 +106,9 @@ public class EInvoiceXmlFactoryTest extends AdempiereTestCase {
 		Properties ctx = new Properties();
 		Env.setContext(ctx, "AD_Client_ID", 1000000);
 		Env.setContext(ctx, "AD_Org_ID", 0);
-		MInvoice minvoice = MInvoice.get(ctx, 1075739); // 42470ARI	
+//		MInvoice minvoice = MInvoice.get(ctx, 1075739);
+		MInvoice minvoice = MInvoice.get(ctx, 1075740);
+		// 1075739=42470ARI	1075740=42471ARI
 		// 1075216 = 42235ARI,  1075283=24884ARC, 1075286=42273ARI, 1075323=12634APC
 		// 1074762 = 11932ARD, 1074815=16390APD, 1074995=16414APD, 1074714=11925ARD
 		assertNotNull(minvoice);
@@ -135,10 +132,11 @@ public class EInvoiceXmlFactoryTest extends AdempiereTestCase {
 		// 1074762 = 11932ARD, 1074815=16390APD, 1074995=16414APD, 1074714=11925ARD
 		assertNotNull(minvoice);
 		try {
-			Invoice xmlInvoice = EInvoiceXmlFactory.createInvoiceXml(minvoice);
-			assertNotNull(xmlInvoice);
+			String fileName = "/tmp/eInvoice42470ARI.xml";
+			File inputFile = new File(fileName);
+			File outFile = new File(fileName.replace(".xml", "-signed.xml"));
 			
-			File output = EInvoiceXmlFactory.generateSignedXmlFile(xmlInvoice);
+			File output = EInvoiceXmlFactory.generateSignedXmlFile(inputFile, outFile);
 			System.out.println("Output file = " + output.getAbsolutePath());
 			assertTrue(output.exists());
 		} catch (Exception e) {			
