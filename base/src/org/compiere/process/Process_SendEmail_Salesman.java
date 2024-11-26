@@ -38,12 +38,16 @@ public class Process_SendEmail_Salesman extends SvrProcess
 		String orderno         = null;
 		BigDecimal salesrep_id = null; String custname   	  = null;
 		BigDecimal war_id 	   = null;
+		String ccEmail	   = null;
+		String ccEmailSm	   = null;
+		String ccEmailFm	   = null;
 		
 		
-		String emailToSQL 	   = "select email, nvl(description,name) from ad_user where ad_user_id = ?";
+		
+		String emailToSQL 	   = "select email,emailcc,name from ad_user where ad_user_id = ?";
 		String emailFromSQL    = "select requestuser, requestuserpw from AD_client where ad_client_id = ?" ;
 		String invoiceSQL      = "select i.documentno, i.grandtotal, i.salesrep_id, bp.name, p.value,i.c_order_id,"
-				+ "p.c_projecttype_id,p.m_warehouse_id  from c_invoice i "
+				+ "p.c_projecttype_id,p.m_warehouse_id from c_invoice i "
 				+ "left outer join c_bpartner bp on i.c_bpartner_id =  bp.c_bpartner_id "
 				+ "left outer join c_project p on i.c_project_id = p.c_project_id where i.c_invoice_id= ?";
 		try
@@ -63,6 +67,8 @@ public class Process_SendEmail_Salesman extends SvrProcess
 				ord_id      = rs.getBigDecimal(6);
 				prjtype_id  = rs.getBigDecimal(7);
 				war_id      = rs.getBigDecimal(8);
+				
+				
 			}
 			ps.close();
 			rs.close();
@@ -111,7 +117,9 @@ public class Process_SendEmail_Salesman extends SvrProcess
 			if (rs.next())
 			{
 				emailTo =  rs.getString(1);
-				salesmanName =  rs.getString(2);
+				ccEmail=rs.getString(2);
+				salesmanName =  rs.getString(3);
+				
 			}
 			ps.close();
 			rs.close();
@@ -149,6 +157,9 @@ public class Process_SendEmail_Salesman extends SvrProcess
 			exporter.exportReport();
 
 			File f = new File(outFileName);
+			
+			//ccEmailSm=DB.getSQLValueString(get_TrxName(),"SELECT sm_email FROM c_projecttype WHERE c_projecttype_id = ?",prjtype_id);
+			//ccEmailFm=DB.getSQLValueString(get_TrxName(),"SELECT fmemail FROM ad_client WHERE ad_client_id = ?",AD_Client_ID);
 			MClient client = MClient.get(getCtx());
 
 			if (emailFrom  != null) 
@@ -156,6 +167,16 @@ public class Process_SendEmail_Salesman extends SvrProcess
 				EMail email = client.createEMail(emailFrom.trim(), emailTo.trim(),
 						"Sales Invoice - " + documentno ,mailContent + "  \n \n \n Thanks & Regards" + "\n \n Stores & Delivery Section"+ "\n (Auto generated mail from Adempiere ERP)",false,fromPWD);
 				email.addAttachment(f);
+				
+				if (ccEmail != null && !ccEmail.isEmpty()) {
+			        String[] ccEmails = ccEmail.split(";");
+			        for (String cc : ccEmails) {
+			            email.addCc(cc.trim()); // trim to remove any extra spaces
+			        }
+			    }
+				//email.addCc(ccEmail);
+				//email.addCc(ccEmailSm);
+				//email.addCc(ccEmailFm);
 				email.send();
 				addLog(0,null,null, "Email sent successfully");
 			}
@@ -174,6 +195,8 @@ public class Process_SendEmail_Salesman extends SvrProcess
 			exporter.exportReport();
 
 			File f = new File(outFileName);
+			//ccEmailSm=DB.getSQLValueString(get_TrxName(),"SELECT sm_email FROM c_projecttype WHERE c_projecttype_id = ?",prjtype_id);
+			//ccEmailFm=DB.getSQLValueString(get_TrxName(),"SELECT fmemail FROM ad_client WHERE ad_client_id = ?",AD_Client_ID);
 			MClient client = MClient.get(getCtx());
 
 			if (emailFrom  != null) 
@@ -181,6 +204,15 @@ public class Process_SendEmail_Salesman extends SvrProcess
 				EMail email = client.createEMail(emailFrom.trim(), emailTo.trim(),
 						"Sales Invoice - " + documentno ,mailContent + "  \n \n \n Thanks & Regards" + "\n \n Stores & Delivery Section"+ "\n (Auto generated mail from Adempiere ERP)",false,fromPWD);
 				email.addAttachment(f);
+				if (ccEmail != null && !ccEmail.isEmpty()) {
+			        String[] ccEmails = ccEmail.split(";");
+			        for (String cc : ccEmails) {
+			            email.addCc(cc.trim()); // trim to remove any extra spaces
+			        }
+			    }
+				//email.addCc(ccEmail);
+				//email.addCc(ccEmailSm);
+				//email.addCc(ccEmailFm);
 				email.send();
 				addLog(0,null,null, "Email sent successfully");
 			}
