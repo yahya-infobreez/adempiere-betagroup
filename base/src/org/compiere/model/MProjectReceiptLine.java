@@ -88,7 +88,7 @@ protected boolean beforeSave (boolean newRecord)
 	
 	//*************************** BETA CODE Checking Duplicated Items OCT 06 2010 ***********************
 	
-	if (newRecord || is_ValueChanged("M_Product_ID"))
+	/*if (newRecord || is_ValueChanged("M_Product_ID"))
 	{
 		//	Prevent duplicated items in PO lines in a single PO document
 		boolean isDuplicated = false;
@@ -106,7 +106,27 @@ protected boolean beforeSave (boolean newRecord)
 			log.saveError("Error", Msg.getMsg(getCtx(), "The Product can't appear 2 times in a Document " ));
 			return false;
 		}
+	}*/
+	if (newRecord || is_ValueChanged("C_ProjectLine_ID"))
+	{
+		//	Prevent duplicated items in PO lines in a single PO document
+		boolean isDuplicated = false;
+		MProjectReceiptLine[] rcptLines = getParent().getLines();
+		for (MProjectReceiptLine oLine : rcptLines)
+		{
+			if (oLine.getC_ProjectLine_ID() == getC_ProjectLine_ID())
+			{
+				isDuplicated = true;
+				break;   
+			}
+		}
+		if (isDuplicated)
+		{
+			log.saveError("Error", Msg.getMsg(getCtx(), "The same project line can't appear 2 times in a Document " ));
+			return false;
+		}
 	}
+	
 	
 	/*
 	//Validate Product with Prod.Category Vs Warehouse  Dated:21Jul2011
