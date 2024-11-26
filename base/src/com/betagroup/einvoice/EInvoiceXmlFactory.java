@@ -1,6 +1,5 @@
 package com.betagroup.einvoice;
 
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -10,32 +9,19 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.security.InvalidParameterException;
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Base64;
-import java.util.Base64.Encoder;
-import java.util.List;
-
-import javax.xml.bind.Element;
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.util.JAXBSource;
-import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.apache.ecs.xhtml.sub;
-import org.compiere.model.I_C_Location;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MClient;
@@ -105,6 +91,10 @@ import oasis.names.specification.ubl.schema.xsd.signatureaggregatecomponents_2.S
 public class EInvoiceXmlFactory {
 
 	public static Invoice createInvoiceXml(MInvoice minvoice) throws Exception {
+		if(minvoice.get_ID() <= 0 || !MInvoice.DOCSTATUS_Completed.equals(minvoice.getDocStatus())) {
+			throw new Exception("Invalid Invoice document");
+		}
+			
 		Invoice invoice = new Invoice();
 		// KSA – EN16931 (BR-KSA-EN16931) // cbc:ProfileID
 		invoice.setProfileID("reporting:1.0"); // Hardcoded value
@@ -156,13 +146,18 @@ public class EInvoiceXmlFactory {
 		// TODO "Self-billed invoice":
 			invoiceTypeCode += "0";		
 
-		String invoiceType = "388"; // Sales Invoice
-		if("ARC".equals(minvoice.getC_DocType().getDocBaseType())) {
+		String invoiceType;
+		String invoiceDocType = minvoice.getC_DocType().getName();
+		if(invoiceDocType.equals("AR Invoice")) {
+			invoiceType = "388"; // Sales Invoice
+		} else if(invoiceDocType.equals("AR Credit Memo")) { //("ARC".equals(minvoice.getC_DocType().getDocBaseType())) {
 			invoiceType = "381"; // Credit Note
-		} else if("APC".equals(minvoice.getC_DocType().getDocBaseType())) {
+		} else if(invoiceDocType.equals("AR Debit Memo")) {
 			invoiceType = "383"; // Debit Note
-		} else if("PPI".equals(minvoice.getC_DocType().getDocBaseType())) {
+		} else  if(invoiceDocType.equals("Prepayment Invoice (Customer)")) { //if("PPI".equals(minvoice.getC_DocType().getDocBaseType())) {
 			invoiceType = "386"; // Prepayment Invoice // TODO
+		} else {
+			throw new AdempiereException("Invoice invoice type for eInvoice");
 		}
 		invoice.setInvoiceTypeCode(invoiceTypeCode, invoiceType);
 		
@@ -184,13 +179,25 @@ public class EInvoiceXmlFactory {
 		// Billing reference ID  = The sequential number (Invoice number BT-1) of the original invoice(s) 
 		// that the credit/debit note is related to. // cac:BillingReference / cac:InvoiceDocumentReference / cbc:ID 
 		// Mandatory for Credit Note/Debit Note. 1:n 		
-		if("ARC".equals(minvoice.getC_DocType().getDocBaseType()) || "APC".equals(minvoice.getC_DocType().getDocBaseType())) {
+		if(invoiceDocType.equals("AR Credit Memo") || invoiceDocType.equals("AR Debit Memo")) {
 			// forEach() {
 			DocumentReferenceType refType = new DocumentReferenceType();
-			// TODO
-	//		refType.setID(new ID(invoice.getReferenceInvoice); // TODO
-	//		refType.setDocumentType(value);
-	//		refType.setIssueDate(value);
+			if(minvoice.getRef_Invoice_ID() <= 0) {
+				throw new Exception("Original Invoice Reference missing for Credit/Debit note");
+			}
+			MInvoice originalInvoice = MInvoice.get(minvoice.getCtx(), minvoice.getRef_Invoice_ID());
+			refType.setID(new ID(originalInvoice.getDocumentNo())); 
+			String refInvoiceType = "388"; // Sales Invoice
+			String docType = originalInvoice.getC_DocType().getName();
+			if(docType.equals("AR Credit Memo")) { //("ARC".equals(minvoice.getC_DocType().getDocBaseType())) {
+				refInvoiceType = "381"; // Credit Note
+			} else if(docType.equals("AR Debit Memo")) {
+				refInvoiceType = "383"; // Debit Note
+			} else  if(docType.equals("Prepayment Invoice (Customer)")) { //if("PPI".equals(minvoice.getC_DocType().getDocBaseType())) {
+				refInvoiceType = "386"; // Prepayment Invoice // TODO
+			}
+			refType.setDocumentType(refInvoiceType);
+			refType.setIssueDate(originalInvoice.getDateInvoiced().toLocalDateTime().toLocalDate());
 			BillingReference billingReference = new BillingReference();
 			billingReference.setInvoiceDocumentReference(refType); // setDebitNoteDocumentReference(value); CreditNoteDocumentReference(value); 
 			invoice.getBillingReferences().add(billingReference);
@@ -401,7 +408,7 @@ public class EInvoiceXmlFactory {
 		- In case of goods or services refund. (عند ترجيع السلع أو الخدمات)
 		- In case of change in Seller's or Buyer's information (عند التعديل على بيانات المورد أو المشتري)
 		 */
-		if("ARC".equals(minvoice.getC_DocType().getDocBaseType()) || "APC".equals(minvoice.getC_DocType().getDocBaseType())) {
+		if(invoiceDocType.equals("AR Credit Memo") || invoiceDocType.equals("AR Debit Memo")) {
 			InstructionNote returnNote = new InstructionNote();
 			returnNote.setValue(minvoice.getReturnReasonText());
 			returnNote.setLanguageID("AR"); // TODO Confirm
@@ -508,7 +515,8 @@ public class EInvoiceXmlFactory {
 		// cac:LegalMonetaryTotal / cbc:PayableAmount		
 		// BT-5 Currency for amount due for payment
 		// cac:LegalMonetaryTotal / cbc:PayableAmount @currencyID
-		monetaryTotalType.setPayableAmount(minvoice.getOpenAmt(), currency); // TODO This is valid after allocation is done for pre-payment
+		monetaryTotalType.setPayableAmount(minvoice.getOpenAmt(false, null), currency); // TODO This is valid after allocation is done for pre-payment
+		// Note: openAmt(creditmemoAdjusted=false), as we always want the amount +ve)
 		
 		// Finally add to Invoice
 		invoice.setLegalMonetaryTotal(monetaryTotalType);
@@ -531,12 +539,18 @@ public class EInvoiceXmlFactory {
 		*/
 		// Set QR etc in case of Simplified Invoice. For Tax Invoice, it will be provided by ZATCA after uploading
 
-		if(minvoice.isSimplifiedInvoice()) {
+//		if(minvoice.isSimplifiedInvoice()) {
 			String companyName = org.getName2() != null ? org.getName2() : client.getName2();
 			Timestamp invoiceIssueTime = minvoice.getInvoiceIssueTime() != null ? minvoice.getInvoiceIssueTime():minvoice.getDateInvoiced();
+			
+			// Derive ECDSA Signature of ZATCA certificate
+			byte[] cert2 = Base64.getDecoder().decode(org.getCertificate());
+			X509Certificate x509Cert = DigitalSignatureHelper.decode(new String(cert2));
+			// decoded.getSignature() contains the ECDSA signature
+			byte[] edcsaPublicKey = Base64.getDecoder().decode(org.getPublicKey());
 			String qrString = QRUtil.generateQR(companyName, client.getVatNumber(), invoiceIssueTime, 
 				minvoice.getGrandTotal(), minvoice.getTaxTotal(), invoiceHash, 
-				invoiceSignature, org.getPublicKey(), org.getCertificate());
+				invoiceSignature, edcsaPublicKey, x509Cert.getSignature());
 			
 			minvoice.setQRCode(qrString);
 	
@@ -546,8 +560,14 @@ public class EInvoiceXmlFactory {
 			qrCode.setAttachment(attachQrCode);
 			qrCode.setID("QR");
 			invoice.getAdditionalDocumentReferences().add(qrCode);
-		}
+//		}
 		minvoice.saveEx();
+		
+		FileOutputStream out = new FileOutputStream("/tmp/test-einvoice-final.xml");
+//		marshalJaxb(invoice, out, false);
+		out.write(canonicalize(invoice, false));
+		out.close();
+		
 		
 		return invoice;
 	}
@@ -618,8 +638,8 @@ public class EInvoiceXmlFactory {
 		signedInfo.setSignatureMethod("http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256");
 		
 		// Step 1: Generate Invoice Hash
-		String invoiceHash = generateHash(invoice); 
-		String invoiceHashBase64 = Base64.getEncoder().encodeToString(invoiceHash.getBytes());
+		byte[] invoiceHash = generateHash(invoice); 
+		String invoiceHashBase64 = Base64.getEncoder().encodeToString(invoiceHash);
 
 		// Fill reference block
 		Reference reference = new Reference();
@@ -648,7 +668,7 @@ public class EInvoiceXmlFactory {
 		PrivateKey privateKey = DigitalSignatureHelper.getPrivateKey(org.getPrivateKey());
 		java.security.Signature signature = java.security.Signature.getInstance("SHA256withECDSA");
 		signature.initSign(privateKey);
-		signature.update(invoiceHash.getBytes());
+		signature.update(invoiceHash); // not encoded with base64
 		byte[] digitalSignature = signature.sign();
         // Encode the signature to Base64 for easy display
         String signatureBase64 = Base64.getEncoder().encodeToString(digitalSignature);
@@ -661,16 +681,16 @@ public class EInvoiceXmlFactory {
          * take this value and decode it using base 64, the output is X509 certificate.) 
          */
         byte[] decodedCertificate = Base64.getDecoder().decode(org.getCertificate());
-        String certificateHash = QRUtil.generateSHA256Hash(decodedCertificate);
-        String certificateHashBase64 = Base64.getEncoder().encodeToString(certificateHash.getBytes());
+        byte[] certificateHash = QRUtil.generateSHA256Hash(decodedCertificate);
+        String certificateHashBase64 = Base64.getEncoder().encodeToString(certificateHash);
+        
 
         // Step 5: Generate Signed Properties Hash
-		SignedProperties signedProperties = getSignedProperties(certificateHashBase64, org.getCertificate());	
+		SignedProperties signedProperties = getSignedProperties(certificateHashBase64, new String(decodedCertificate));	
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		marshalJaxb(signedProperties, out, true);
 
-		String signedPropertiesHash = QRUtil.generateSHA256Hash(out.toByteArray());
-				//Base64.getEncoder().encodeToString(out.toByteArray());
+		String signedPropertiesHash = Base64.getEncoder().encodeToString(QRUtil.generateSHA256Hash(out.toByteArray()));
 
 		// Second Reference = SignatureProperties
 		Reference reference2 = new Reference();
@@ -809,6 +829,9 @@ public class EInvoiceXmlFactory {
 
 		MInvoiceTax[] taxes = minvoice.getTaxes(false);
 		for (MInvoiceTax tax : taxes) {
+			if(tax.getC_Tax_ID() == 1000005) // TODO remove hardcoding
+				continue; // Special tax added for Round Off etc
+			
 			TaxSubtotal subTotal = new TaxSubtotal();
 			// BR-45, BR-DEC-19, BR-S-08, BR-E-08, BR-Z-08, BR-O-08, BR-CO-18 
 			// cac:TaxTotal / cac:TaxSubtotal / cbc:TaxableAmount
@@ -1085,26 +1108,38 @@ public class EInvoiceXmlFactory {
 //		}
 	}
 	
-	public static String generateHash(Invoice invoice) throws Exception {
-		Invoice invoiceCopy = deepCopyJaxb(invoice);
-		// Remove *[local-name()=׳Invoice׳]//*[local-name()=׳UBLExtensions׳]
-		invoiceCopy.setUBLExtensions(null);	
-		// remove QR. //*[local-name()=׳AdditionalDocumentReference׳] [cbc:ID[normalize-space(text()) = ׳QR׳]]
-		List<DocumentReferenceType> refList = invoiceCopy.getAdditionalDocumentReferences();
-		DocumentReferenceType qrReference = null;
-		for(DocumentReferenceType x: refList) {
-			if(x.getID() != null && "QR".equals(x.getID().getValue())) {
-				qrReference = x;
-				break;
-			}			
-		}
-		if(qrReference != null)
-			invoiceCopy.getAdditionalDocumentReferences().remove(qrReference); 
+	public static byte[] generateHash(Invoice invoice) throws Exception {
+		Invoice invoiceCopy = invoice; //deepCopyJaxb(invoice);
+//		// Remove *[local-name()=׳Invoice׳]//*[local-name()=׳UBLExtensions׳]
+//		invoiceCopy.setUBLExtensions(null);	
+//		// remove QR. //*[local-name()=׳AdditionalDocumentReference׳] [cbc:ID[normalize-space(text()) = ׳QR׳]]
+//		List<DocumentReferenceType> refList = invoiceCopy.getAdditionalDocumentReferences();
+//		DocumentReferenceType qrReference = null;
+//		for(DocumentReferenceType x: refList) {
+//			if(x.getID() != null && "QR".equals(x.getID().getValue())) {
+//				qrReference = x;
+//				break;
+//			}			
+//		}
+//		if(qrReference != null)
+//			invoiceCopy.getAdditionalDocumentReferences().remove(qrReference); 
+//		
+//		// [local-name()=׳Invoice׳]//*[local-name()=׳Signature׳]
+//		invoiceCopy.getSignatures().clear();
 		
-		// [local-name()=׳Invoice׳]//*[local-name()=׳Signature׳]
-		invoiceCopy.getSignatures().clear();
-		byte[] canonicalXml = canonicalize(invoice);
-		String invoiceHash = QRUtil.generateSHA256Hash(canonicalXml);
+		FileOutputStream out = new FileOutputStream("/tmp/test-einvoice-prehash.xml");
+		marshalJaxb(invoice, out, false);
+		out.close();
+//		FileOutputStream out2 = new FileOutputStream("/tmp/test-einvoice-stripped.xml");
+//		marshalJaxb(invoiceCopy, out2, false);
+//		out2.close();
+
+		byte[] canonicalXml = canonicalize(invoiceCopy, true);
+		FileOutputStream out3 = new FileOutputStream("/tmp/test-einvoice-canon.xml");
+		out3.write(canonicalXml);
+		out3.close();
+		
+		byte[] invoiceHash = QRUtil.generateSHA256Hash(canonicalXml);
 		return invoiceHash;
 	}
 	
@@ -1220,11 +1255,13 @@ public class EInvoiceXmlFactory {
         return document;
     }
 	
-    public static byte[] canonicalize(Invoice invoiceXml) throws Exception {
-    	Document doc = marshalToDocument(invoiceXml);
-    	byte[] canonicalXml = CanonicalizeHelper.canonicalize(doc);
-    	return canonicalXml;
+    public static byte[] canonicalize(Invoice invoiceXml, boolean strip) throws Exception {
     	
+//    	Document doc = marshalToDocument(invoiceXml);
+    	ByteArrayOutputStream out = new ByteArrayOutputStream();
+    	marshalJaxb(invoiceXml, out, false);
+    	byte[] canonicalXml = CanonicalizeHelper.canonicalize(out.toByteArray(), strip);
+    	return canonicalXml;    	
     }
 	/*
 	 *
@@ -1284,47 +1321,5 @@ public class EInvoiceXmlFactory {
 	}
 	
 	
-	/**
-	 * Validate the XML using ZATCA SDK. Output will be printed to console
-	 * @param invoice
-	 * @return
-	 * @throws Exception
-	 */
-	public static File validateXml(Invoice invoice) throws Exception {
-		String fileName = "eInvoice" + invoice.getID().getValue()
-				.replaceAll("\\s+", "_")
-				.replaceAll("\\\\", "_")
-				.replaceAll("/", "_");
-		File inputFile = new File(System.getProperty("java.io.tmpdir"),  fileName + ".xml");
-	    try {
-	    	// Write the Invoice XML into tmp file first
-	    	BufferedOutputStream outStream1 = new BufferedOutputStream(new FileOutputStream(inputFile));
-	    	marshalJaxb(invoice, outStream1, false);
-	    	outStream1.close();
-	    	
-	    	// Pass the XML file to ZATCA SDK. Output file will be created by the SDK
-			ProcessBuilder builder = new ProcessBuilder("fatoora", "-validate",
-					"-invoice", inputFile.getAbsolutePath());
-//			Map<String, String> envMap = new HashMap<String, String>() {{
-//	            put("key1", "value1");
-//			}};			
-//			builder.environment(envMap);
 
-//			builder.directory(new File("working_directory"));
-
-			Process process = builder.start();
-			// Wait for the process to complete
-			int exitCode = process.waitFor();
-			ZatcaSDKProcessHelper.printConsole(process, exitCode);
-
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw e;
-		}	    
-
-		return null;
-	}
 }

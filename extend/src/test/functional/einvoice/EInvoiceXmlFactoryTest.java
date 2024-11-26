@@ -1,5 +1,6 @@
-package test.functional;
+package test.functional.einvoice;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -11,6 +12,7 @@ import org.w3._2000._09.xmldsig_.KeyInfo;
 import org.w3._2000._09.xmldsig_.X509Data;
 
 import com.betagroup.einvoice.EInvoiceXmlFactory;
+import com.betagroup.einvoice.ZatcaSDKProcessHelper;
 
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2.AttachmentType;
 import oasis.names.specification.ubl.schema.xsd.invoice_2.Invoice;
@@ -40,7 +42,7 @@ public class EInvoiceXmlFactoryTest extends AdempiereTestCase {
 	
 	public void testCreateXmlInvoice() {
 		Properties ctx = Env.getCtx();
-		MInvoice minvoice = MInvoice.get(ctx, 1000);
+		MInvoice minvoice = MInvoice.get(ctx, 1075286);
 		assertNotNull(minvoice);
 		Invoice xmlInvoice;
 		try {
@@ -56,9 +58,8 @@ public class EInvoiceXmlFactoryTest extends AdempiereTestCase {
 		Properties ctx = new Properties();
 		Env.setContext(ctx, "AD_Client_ID", 1000000);
 		Env.setContext(ctx, "AD_Org_ID", 0);
-		MInvoice minvoice = MInvoice.get(ctx, 1075286);
-		// 1075216 = 42235ARI,  1075283=24884ARC, 1075286=42273ARI, 1075323=12634APC
-				// 1074762 = 11932ARD, 1074815=16390APD, 1074995=16414APD, 1074714=11925ARD
+		MInvoice minvoice = MInvoice.get(ctx, 1075742);
+
 		assertNotNull(minvoice);
 		try {
 			Invoice xmlInvoice = EInvoiceXmlFactory.createInvoiceXml(minvoice);
@@ -102,21 +103,45 @@ public class EInvoiceXmlFactoryTest extends AdempiereTestCase {
 	}
 
 	
-	public void testValidateInvoice() {
+	public void testValidateInvoiceB2B1() {
 		Properties ctx = new Properties();
 		Env.setContext(ctx, "AD_Client_ID", 1000000);
 		Env.setContext(ctx, "AD_Org_ID", 0);
-//		MInvoice minvoice = MInvoice.get(ctx, 1075739);
-		MInvoice minvoice = MInvoice.get(ctx, 1075740);
-		// 1075739=42470ARI	1075740=42471ARI
-		// 1075216 = 42235ARI,  1075283=24884ARC, 1075286=42273ARI, 1075323=12634APC
-		// 1074762 = 11932ARD, 1074815=16390APD, 1074995=16414APD, 1074714=11925ARD
+		MInvoice minvoice = MInvoice.get(ctx, 1075741);
 		assertNotNull(minvoice);
 		try {
 			Invoice xmlInvoice = EInvoiceXmlFactory.createInvoiceXml(minvoice);
 			assertNotNull(xmlInvoice);
-			
-			File output = EInvoiceXmlFactory.validateXml(xmlInvoice);			
+			String fileName = "eInvoice" + xmlInvoice.getID().getValue()
+					.replaceAll("\\s+", "_")
+					.replaceAll("\\\\", "_")
+					.replaceAll("/", "_");
+			File inputFile = new File(System.getProperty("java.io.tmpdir"),  fileName + ".xml");
+			ZatcaSDKProcessHelper.validateXml(inputFile);			
+		} catch (Exception e) {			
+			e.printStackTrace();
+			fail(e.getMessage());
+		} finally {
+		}
+	}	
+	
+	public void testValidateInvoiceB2B2() {
+		Properties ctx = new Properties();
+		Env.setContext(ctx, "AD_Client_ID", 1000000);
+		Env.setContext(ctx, "AD_Org_ID", 0);
+	
+		MInvoice minvoice = MInvoice.get(ctx, 1075742);
+		// 1075739=42470ARI	1075740=42471ARI
+		assertNotNull(minvoice);
+		try {
+			Invoice xmlInvoice = EInvoiceXmlFactory.createInvoiceXml(minvoice);
+			assertNotNull(xmlInvoice);
+			String fileName = "eInvoice" + xmlInvoice.getID().getValue()
+					.replaceAll("\\s+", "_")
+					.replaceAll("\\\\", "_")
+					.replaceAll("/", "_");
+			File inputFile = new File(System.getProperty("java.io.tmpdir"),  fileName + ".xml");
+			ZatcaSDKProcessHelper.validateXml(inputFile);			
 		} catch (Exception e) {			
 			e.printStackTrace();
 			fail(e.getMessage());
@@ -124,11 +149,73 @@ public class EInvoiceXmlFactoryTest extends AdempiereTestCase {
 		}
 	}
 	
+	public void testValidateCreditNoteB2B1() {
+		Properties ctx = new Properties();
+		Env.setContext(ctx, "AD_Client_ID", 1000000);
+		Env.setContext(ctx, "AD_Org_ID", 0);
+	
+		MInvoice minvoice = MInvoice.get(ctx, 1075745); // Credit Note from RMA
+		assertNotNull(minvoice);
+		try {
+			Invoice xmlInvoice = EInvoiceXmlFactory.createInvoiceXml(minvoice);
+			assertNotNull(xmlInvoice);
+			
+			String fileName = "eInvoice" + xmlInvoice.getID().getValue()
+					.replaceAll("\\s+", "_")
+					.replaceAll("\\\\", "_")
+					.replaceAll("/", "_");
+			File inputFile = new File(System.getProperty("java.io.tmpdir"),  fileName + ".xml");
+		    	// Write the Invoice XML into tmp file first
+		    	BufferedOutputStream outStream1 = new BufferedOutputStream(new FileOutputStream(inputFile));
+		    	EInvoiceXmlFactory.marshalJaxb(xmlInvoice, outStream1, false);
+		    	outStream1.close();
+		    	
+			ZatcaSDKProcessHelper.validateXml(inputFile);	
+			
+		} catch (Exception e) {			
+			e.printStackTrace();
+			fail(e.getMessage());
+		} finally {
+		}
+	}
+	
+	public void testValidateDebitNoteB2B1() {
+		Properties ctx = new Properties();
+		Env.setContext(ctx, "AD_Client_ID", 1000000);
+		Env.setContext(ctx, "AD_Org_ID", 0);
+	
+		MInvoice minvoice = MInvoice.get(ctx, 1075746); // Credit Note from RMA
+		assertNotNull(minvoice);
+		try {
+			Invoice xmlInvoice = EInvoiceXmlFactory.createInvoiceXml(minvoice);
+			assertNotNull(xmlInvoice);
+			
+			String fileName = "eInvoice" + xmlInvoice.getID().getValue()
+					.replaceAll("\\s+", "_")
+					.replaceAll("\\\\", "_")
+					.replaceAll("/", "_");
+			File inputFile = new File(System.getProperty("java.io.tmpdir"),  fileName + ".xml");
+		    	// Write the Invoice XML into tmp file first
+		    	BufferedOutputStream outStream1 = new BufferedOutputStream(new FileOutputStream(inputFile));
+		    	EInvoiceXmlFactory.marshalJaxb(xmlInvoice, outStream1, false);
+		    	outStream1.close();
+		    	
+			ZatcaSDKProcessHelper.validateXml(inputFile);	
+			
+		} catch (Exception e) {			
+			e.printStackTrace();
+			fail(e.getMessage());
+		} finally {
+		}
+	}
+	
+	
+	
 	public void testSignInvoice() {
 		Properties ctx = new Properties();
 		Env.setContext(ctx, "AD_Client_ID", 1000000);
 		Env.setContext(ctx, "AD_Org_ID", 0);
-		MInvoice minvoice = MInvoice.get(ctx, 1075216); // 1075216 = 42235ARI,  1075283=24884ARC, 1075286=42273ARI, 1075323=12634APC
+		MInvoice minvoice = MInvoice.get(ctx, 1075742); // 1075216 = 42235ARI,  1075283=24884ARC, 1075286=42273ARI, 1075323=12634APC
 		// 1074762 = 11932ARD, 1074815=16390APD, 1074995=16414APD, 1074714=11925ARD
 		assertNotNull(minvoice);
 		try {

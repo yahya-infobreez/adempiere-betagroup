@@ -24,8 +24,6 @@ import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_2.ID;
-
 /**
  *	Organization Model
  *	
@@ -241,6 +239,24 @@ public class MOrg extends X_AD_Org
 	 * Here each ORG is assumed to be an EGS.
 	 */
 	
+    public static final String COLUMNNAME_ZATCA_SECRET = "ZATCA_SECRET";
+    
+	public void setZatcaSecret(String Secret)
+	{
+		set_Value (COLUMNNAME_ZATCA_SECRET, Secret);
+	}
+
+	/** Return the secret key */
+	public String getZatcaSecret () 
+	{
+		return (String)get_Value(COLUMNNAME_ZATCA_SECRET);
+	}
+	
+	/**
+	 * Digital certificate obtained from ZATCA, used to sign invoices. This shall be unique for EGS.
+	 * Here each ORG is assumed to be an EGS.
+	 */
+	
     public static final String COLUMNNAME_DIGITALCERTIFICATE = "DIGITALCERTIFICATE";
     
 	public void setCertificate(String Certificate)
@@ -254,6 +270,7 @@ public class MOrg extends X_AD_Org
 		return (String)get_Value(COLUMNNAME_DIGITALCERTIFICATE);
 	}
 	
+
 	/**
 	 * Public key used - part of Key Pair
 	 */

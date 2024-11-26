@@ -1,6 +1,7 @@
 package com.betagroup.einvoice;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
@@ -26,6 +27,33 @@ public class ZatcaSDKProcessHelper {
 		while ((line = errorReader.readLine()) != null) {
 		    System.err.println(line);
 		}
+	}
+	
+	public static void validateXml(File inputFile) throws Exception {
+		try {
+	    	
+	    	// Pass the XML file to ZATCA SDK. Output file will be created by the SDK
+			ProcessBuilder builder = new ProcessBuilder("fatoora", "-validate",
+					"-invoice", inputFile.getAbsolutePath());
+//			Map<String, String> envMap = new HashMap<String, String>() {{
+//	            put("key1", "value1");
+//			}};			
+//			builder.environment(envMap);
+
+//			builder.directory(new File("working_directory"));
+
+			Process process = builder.start();
+			// Wait for the process to complete
+			int exitCode = process.waitFor();
+			ZatcaSDKProcessHelper.printConsole(process, exitCode);
+
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		}	    
 	}
 
 }

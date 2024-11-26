@@ -92,17 +92,19 @@
 	<classpathentry kind="src" path="/JasperReportsTools"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
 	<classpathentry kind="lib" path="/jboss/lib/commons-codec-1.14.0.wso2v1.jar"/>
+	<classpathentry kind="lib" path="/tools/lib/xmlsec-1.5.8.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="/jboss/client/jbossall-client.jar">
 		<attributes>
 			<attribute name="org.eclipse.jst.component.dependency" value="../"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/tools/lib/httpclient5-5.4.1.jar" sourcepath="/home/yahya/Downloads/httpcomponents-client-5.4.1-src/httpclient5/src/main/java"/>
-	<classpathentry kind="lib" path="/tools/lib/httpcore5-5.3.1.jar"/>
 	<classpathentry kind="lib" path="/tools/lib/jackson-annotations-2.18.1.jar"/>
 	<classpathentry kind="lib" path="/tools/lib/jackson-core-2.18.1.jar"/>
 	<classpathentry kind="lib" path="/tools/lib/jackson-databind-2.18.1.jar"/>
 	<classpathentry kind="lib" path="/tools/lib/bcprov-jdk18on-1.79.jar"/>
+	<classpathentry kind="lib" path="/tools/lib/commons-logging.jar"/>
+	<classpathentry kind="lib" path="/tools/lib/httpclient-4.2.6.jar"/>
+	<classpathentry kind="lib" path="/tools/lib/httpcore-4.2.5.jar"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>

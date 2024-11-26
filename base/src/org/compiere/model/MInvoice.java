@@ -564,6 +564,13 @@ public class MInvoice extends X_C_Invoice implements DocAction
                 setC_PaymentTerm_ID(rmaOrder.getC_PaymentTerm_ID());
                 setC_BPartner_Location_ID(rmaOrder.getBill_Location_ID());
             }
+            // Yahya - Set values from Invoice. May overwrite some of the fields set from Order.
+            // Also sets ref_invoice_id
+            MInvoice rmaInvoice = rma.getOriginalInvoice();
+            if(rmaInvoice != null) {
+            	setRMA(rma);
+            	setRef_Invoice_ID(rmaInvoice.get_ID()); // Set Original Invoice ID as Referenced Invoice ID
+            }
         }
 
 	}	//	setShipment
@@ -1362,6 +1369,19 @@ public class MInvoice extends X_C_Invoice implements DocAction
 			setVatNumber(bp.getVatNumber()); // Copy it to Invoice for immutability
 			setIsSimplifiedInvoice(bp.getVatNumber() == null);
 			setIsExportInvoice(getC_BPartner_Location().getC_Location().getC_Country_ID() != 296); // 296 = Saudi
+			
+			// Validate Credit/Debit Note fields
+			String invoiceDocType = getC_DocType().getName();;
+			if(invoiceDocType.equals("AR Credit Memo")
+					|| invoiceDocType.equals("AR Debit Memo")) { 
+				if(getRef_Invoice_ID() == 0) {
+					throw new AdempiereException("Original Invoice Reference missing");
+				}
+				String returnReason = getReturnReasonText();
+				if(returnReason == null) {
+					throw new AdempiereException("Reason for "+ invoiceDocType + " missing");
+				}
+			} // else ignore. ICV not applicable
 		}
 
 		//	Landed Costs
@@ -1849,17 +1869,6 @@ public class MInvoice extends X_C_Invoice implements DocAction
 				return DocAction.STATUS_Invalid;
 			}
 		}	//	project
-		
-		// For eInvoice - Save Checkout Date & Time
-		if (isSOTrx() && !isReversal()) {
-			setInvoiceIssueTime(Timestamp.from(Instant.now()));
-			// This should be called before calling setDefiniteDocumentNo() below
-			setPreviousInvoice_ID(getPreviousInvoiceId()); 
-//			setInvoiceHash(InvoiceHash); // Set during XML generation
-//			setQR(); // Set during XML generation
-		}
-		
-		
 
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
@@ -1872,6 +1881,24 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		// Set the definite document number after completed (if needed)
 		setDefiniteDocumentNo();
 
+		// For eInvoice 
+		if (isSOTrx() && !isReversal()) {
+			// Update ICV (Common for Invoices of types (Sales Invoice, Customer Credit Note, Customer Debit Note, Prepayment Invoice)
+			// Applicable either Simplified or Standard
+			String invoiceDocType = getC_DocType().getName();;
+			if(invoiceDocType .equals("AR Invoice") || invoiceDocType.equals("AR Credit Memo")
+					|| invoiceDocType.equals("AR Debit Memo") || invoiceDocType.equals("Prepayment Invoice (Customer)")) { 
+				setICV(getNextInvoiceCounterValue());			
+			} // else ignore. ICV not applicable
+		
+			// Save Checkout Date & Time
+			setInvoiceIssueTime(Timestamp.from(Instant.now()));
+			// This should be called before calling setDefiniteDocumentNo() below
+			setPreviousInvoice_ID(getPreviousInvoiceId()); 
+//			setInvoiceHash(InvoiceHash); // Set during XML generation
+//			setQR(); // Set during XML generation
+		}
+		
 		//	Counter Documents
 		MInvoice counter = createCounterDoc();
 		if (counter != null)
@@ -1909,6 +1936,15 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		}
 	}
 	
+	private int getNextInvoiceCounterValue() {
+		MSequence sq = new Query(getCtx(), MSequence.Table_Name, "Name=? and AD_Org_ID IN (0, ?) ", null)
+				.setParameters("EINVOICE_ICV_SEQ", getAD_Org_ID()).setClient_ID()
+				.setOrderBy("AD_Org_ID DESC")
+				.first();
+		int icv = sq.getNextID();
+		sq.saveEx();
+		return icv;
+	}
 	
 
 	/**
@@ -2588,6 +2624,50 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		set_Value (COLUMNNAME_VAT_NUMBER, vatNumber);
 	}
 
+	/**
+	 * InvoiceCounterValue - ICV
+	 */
+	public static final String COLUMNNAME_ICV = "ICV";
+	/**
+	 * 
+	 * @return
+	 */
+	public int getICV() {
+		return get_ValueAsInt(COLUMNNAME_ICV);	}
+	
+	public void setICV (int icv)
+	{
+		set_Value (COLUMNNAME_ICV, icv);
+	}
+	
+	public static final String COLUMNNAME_EInvoiceStatus = "EInvoiceStatus";
+	/**
+	 * 
+	 * @return
+	 */
+	public String getEInvoiceStatus() {
+		return (String)get_Value(COLUMNNAME_EInvoiceStatus);
+	}
+	
+	public void setEInvoiceStatus (String EInvoiceStatus)
+	{
+		set_Value (COLUMNNAME_EInvoiceStatus, EInvoiceStatus);
+	}
+	
+	
+	public static final String COLUMNNAME_EInvoiceMessage = "EInvoiceMessage";
+	/**
+	 * 
+	 * @return
+	 */
+	public String getEInvoiceMessage() {
+		return (String)get_Value(COLUMNNAME_EInvoiceMessage);
+	}
+	
+	public void setEInvoiceMessage (String EInvoiceMessage)
+	{
+		set_Value (COLUMNNAME_EInvoiceMessage, EInvoiceMessage);
+	}
 	
 	// Additional Utility Functions
 	public BigDecimal getTotalAllowances() {
@@ -2625,16 +2705,14 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	}
 	
 	/**
-	 * Returns Last Invoice ID, based on DocumentNo in the same sequence.
-	 * 
-	 * This should be called before calling setDefiniteDocumentNo() for current invoice.
-	 * And 'Overwrite Sequence on Complete' option shall be ON in current invoice's Document Type window (default 'AR Invoice')
+	 * Returns Last Invoice ID, based on ICV. 
+	 * ICV is common for all EInvoice types for a branch/terminal
 	 * @return Returns 0 If no previous invoice is present
 	 */
-	public int getPreviousInvoiceId() {
-		String lastDocumentNo = MSequence.getLastDocumentNo(getC_DocType_ID(), get_TrxName(), false, this);
-		int lastId = new Query(getCtx(), MInvoice.Table_Name, "DocumentNo=?", null).setClient_ID()
-			.setParameters(lastDocumentNo).firstIdOnly();
+	private int getPreviousInvoiceId() {
+		int lastIcv = getICV()-1;
+		int lastId = new Query(getCtx(), MInvoice.Table_Name, "ICV=?", null).setClient_ID()
+			.setParameters(lastIcv).firstIdOnly();
 		
 		return lastId > 0 ? lastId : 0; // Avoid -1
 	}

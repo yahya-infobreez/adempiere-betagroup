@@ -8,6 +8,7 @@
 
 package oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -249,6 +250,11 @@ public class DocumentReferenceType {
     public void setIssueDate(IssueDate value) {
         this.issueDate = value;
     }
+    
+    public void setIssueDate(LocalDate datetime) throws Exception {
+        this.issueDate = new IssueDate();
+        this.issueDate.setValue(datetime);
+    }
 
     /**
      * 
@@ -332,6 +338,11 @@ public class DocumentReferenceType {
      */
     public void setDocumentType(DocumentType value) {
         this.documentType = value;
+    }
+    
+    public void setDocumentType(String value) {
+        this.documentType = new DocumentType();
+        this.documentType.setValue(value);
     }
 
     /**

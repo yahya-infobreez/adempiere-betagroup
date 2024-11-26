@@ -41,12 +41,11 @@ public class QRUtil {
      * @return
      */
     public static String generateQR(String name, String vatNo, Timestamp time, BigDecimal grandTotal, BigDecimal vatAmt, /* Phase-1 fields */
-    		String hash, String ecdsaSign, String ecdsaPublicKey, String zatcaSignForPublicKey /* phase-2 fields */ ) {
+    		String hash, String ecdsaSign, byte[] ecdsaPublicKey, byte[] zatcaSign /* phase-2 fields */ ) {
 		String date = getStringFromTimestamp(time, "yyyy-MM-dd'T'HH:mm:ss'Z'");
-		byte[] decodedSignature = zatcaSignForPublicKey != null ? Base64.getDecoder().decode(zatcaSignForPublicKey) : null;
 		String qr = QRUtil.convertUsingTLVToBase64(name.getBytes(), vatNo.getBytes(),
 				date.getBytes(), grandTotal.toPlainString().getBytes(), vatAmt.toPlainString().getBytes(),
-				hash.getBytes(), ecdsaSign.getBytes(), ecdsaPublicKey.getBytes(), decodedSignature);
+				hash.getBytes(), ecdsaSign.getBytes(), ecdsaPublicKey, zatcaSign);
 		return qr;
     }
     
@@ -71,12 +70,13 @@ public class QRUtil {
     }
     
     
-    public static String generateSHA256Hash(byte[] input) throws NoSuchAlgorithmException {
+    public static byte[] generateSHA256Hash(byte[] input) throws NoSuchAlgorithmException {
 
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] hashBytes = digest.digest(input);
         // Convert byte array to hexadecimal string
-        return convertToHexString(hashBytes);
+//        return convertToHexString(hashBytes);
+        return hashBytes;
     }
     
     // hexToASCII(convertToHexString(new byte[]) == copy the bytes !!
