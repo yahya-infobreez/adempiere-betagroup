@@ -1,0 +1,5 @@
+-- Nov 18, 2024 6:24:58 PM AST
+-- Changes done for eInvoice support
+ALTER TABLE AD_Org ADD ZATCA_SECRET NVARCHAR2(120) DEFAULT NULL
+
+

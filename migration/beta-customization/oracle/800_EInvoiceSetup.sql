@@ -121,7 +121,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, Description,Help,Name,PO_
 
 -- Oct 24, 2024 11:51:48 AM AST
 -- Changes done for eInvoice support
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,1002574,1001023,0,36,155,'DIGITALCERTIFICATE',TO_DATE('2024-10-24 11:51:48','YYYY-MM-DD HH24:MI:SS'),100,'BETAG',2048,'Y','Y','N','N','N','N','N','N','N','N','N','N','Y','DIGITAL CERTIFICATE',0,TO_DATE('2024-10-24 11:51:48','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,1002574,1001023,0,36,155,'DIGITALCERTIFICATE',TO_DATE('2024-10-24 11:51:48','YYYY-MM-DD HH24:MI:SS'),100,'BETAG',2500,'Y','Y','N','N','N','N','N','N','N','N','N','N','Y','DIGITAL CERTIFICATE',0,TO_DATE('2024-10-24 11:51:48','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- Oct 24, 2024 11:51:48 AM AST
@@ -164,6 +164,28 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 -- Changes done for eInvoice support
 ALTER TABLE AD_Org ADD PRIVATEKEY NVARCHAR2(256) DEFAULT NULL 
 ;
+
+-- Nov 18, 2024 3:48:23 PM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,1001037,0,'ZATCA_SECRET',TO_DATE('2024-11-18 15:48:22','YYYY-MM-DD HH24:MI:SS'),100,'BETAG','Y','ZATCA SECRET','ZATCA SECRET',TO_DATE('2024-11-18 15:48:22','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- Nov 18, 2024 3:48:23 PM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Element_ID, t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Element t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Element_ID=1001037 AND NOT EXISTS (SELECT * FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- Nov 18, 2024 3:49:12 PM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,1002593,1001037,0,10,155,'ZATCA_SECRET',TO_DATE('2024-11-18 15:49:12','YYYY-MM-DD HH24:MI:SS'),100,'U',120,'Y','Y','N','N','N','N','N','N','N','N','N','N','Y','ZATCA SECRET',0,TO_DATE('2024-11-18 15:49:12','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- Nov 18, 2024 3:49:12 PM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=1002593 AND NOT EXISTS (SELECT * FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+
 
 -- Changes done for eInvoice support
 INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,1002577,1001026,0,10,155,'EGS_NAME',TO_DATE('2024-10-24 15:41:05','YYYY-MM-DD HH24:MI:SS'),100,'BETAG',60,'Y','Y','N','N','N','N','N','N','N','N','N','N','Y','EGS NAME',0,TO_DATE('2024-10-24 15:41:05','YYYY-MM-DD HH24:MI:SS'),100,0)
@@ -696,8 +718,9 @@ ALTER TABLE C_Invoice ADD PreviousInvoice_ID NUMBER(10) DEFAULT NULL
 
 -- Oct 24, 2024 8:08:44 PM AST
 -- Changes done for eInvoice support
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,1002589,1001033,0,10,318,'InvoiceHash',TO_DATE('2024-10-24 20:08:44','YYYY-MM-DD HH24:MI:SS'),100,'BETAG',32,'Y','Y','N','N','N','N','N','N','N','N','N','N','Y','Invoice Hash',0,TO_DATE('2024-10-24 20:08:44','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,SeqNo,Updated,UpdatedBy,Version,Description) VALUES (0,1002589,1001033,0,10,318,'InvoiceHash',TO_DATE('2024-10-24 20:08:44','YYYY-MM-DD HH24:MI:SS'),100,'BETAG',100,'Y','Y','N','N','N','N','N','N','N','N','N','N','Y','Invoice Hash',0,TO_DATE('2024-10-24 20:08:44','YYYY-MM-DD HH24:MI:SS'),100,0,'Base64 encoded Hash of Invoice XML')
 ;
+
 
 -- Oct 24, 2024 8:08:44 PM AST
 -- Changes done for eInvoice support
@@ -706,7 +729,10 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- Oct 24, 2024 8:08:46 PM AST
 -- Changes done for eInvoice support
-ALTER TABLE C_Invoice ADD InvoiceHash NVARCHAR2(32) DEFAULT NULL 
+ALTER TABLE C_Invoice ADD InvoiceHash NVARCHAR2(100) DEFAULT NULL 
+;
+
+UPDATE AD_Field SET Name='Invoice Hash', Description='Base64 encoded Hash of Invoice XML', Help=NULL WHERE AD_Column_ID=1002589 AND IsCentrallyMaintained='Y'
 ;
 
 -- Oct 24, 2024 8:19:10 PM AST
@@ -1031,7 +1057,382 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 
 
+-- Nov 21, 2024 8:47:42 PM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,CreatedBy,EntityType,IsActive,Name,Type,Updated,UpdatedBy) VALUES (0,0,1000074,'C_Invoice.C_Project_ID=@C_Project_ID@ AND C_Invoice.DocStatus IN (''CO'', ''CL'')',TO_DATE('2024-11-21 20:47:41','YYYY-MM-DD HH24:MI:SS'),100,'BETAG','Y','C_Invoice of Project','S',TO_DATE('2024-11-21 20:47:41','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- Nov 21, 2024 8:49:00 PM AST
+-- Changes done for eInvoice support
+UPDATE AD_Column SET AD_Reference_ID=18, AD_Reference_Value_ID=336, AD_Val_Rule_ID=1000074,Updated=TO_DATE('2024-11-21 20:49:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=10788
+;
+
+-- Nov 21, 2024 8:49:29 PM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SortNo,Updated,UpdatedBy) VALUES (0,10788,1006751,0,1000025,TO_DATE('2024-11-21 20:49:29','YYYY-MM-DD HH24:MI:SS'),100,0,'BETAG','Y','Y','Y','N','N','N','N','N','Referenced Invoice',530,0,TO_DATE('2024-11-21 20:49:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- Nov 21, 2024 8:51:35 PM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SortNo,Updated,UpdatedBy) VALUES (0,10788,1006752,0,1000025,TO_DATE('2024-11-21 20:51:35','YYYY-MM-DD HH24:MI:SS'),100,0,'BETAG','Y','Y','Y','N','N','N','N','N','Referenced Invoice',530,0,TO_DATE('2024-11-21 20:51:35','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- Nov 21, 2024 8:51:59 PM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SortNo,Updated,UpdatedBy) VALUES (0,10788,1006753,0,1000025,TO_DATE('2024-11-21 20:51:59','YYYY-MM-DD HH24:MI:SS'),100,0,'BETAG','Y','Y','Y','N','N','N','N','N','Referenced Invoice',530,0,TO_DATE('2024-11-21 20:51:59','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- Nov 21, 2024 8:59:45 PM AST
+-- Changes done for eInvoice support
+UPDATE AD_Field SET SeqNo=490,IsDisplayed='Y' WHERE AD_Field_ID=1006729
+;
+
+-- Nov 21, 2024 8:59:45 PM AST
+-- Changes done for eInvoice support
+UPDATE AD_Field SET SeqNo=500,IsDisplayed='Y' WHERE AD_Field_ID=1006730
+;
+
+-- Nov 21, 2024 8:59:45 PM AST
+-- Changes done for eInvoice support
+UPDATE AD_Field SET SeqNo=510,IsDisplayed='Y' WHERE AD_Field_ID=1006731
+;
+
+-- Nov 21, 2024 8:59:45 PM AST
+-- Changes done for eInvoice support
+UPDATE AD_Field SET SeqNo=520,IsDisplayed='Y' WHERE AD_Field_ID=1006732
+;
+
+-- Nov 21, 2024 8:59:45 PM AST
+-- Changes done for eInvoice support
+UPDATE AD_Field SET SeqNo=530,IsDisplayed='Y' WHERE AD_Field_ID=1006733
+;
+
+-- Nov 21, 2024 9:01:19 PM AST
+-- Changes done for eInvoice support
+UPDATE AD_Field SET SeqNo=480,IsDisplayed='Y' WHERE AD_Field_ID=1006734
+;
+
+-- Nov 21, 2024 9:01:19 PM AST
+-- Changes done for eInvoice support
+UPDATE AD_Field SET SeqNo=490,IsDisplayed='Y' WHERE AD_Field_ID=1006735
+;
+
+-- Nov 21, 2024 9:01:19 PM AST
+-- Changes done for eInvoice support
+UPDATE AD_Field SET SeqNo=500,IsDisplayed='Y' WHERE AD_Field_ID=1006736
+;
+
+-- Nov 21, 2024 9:01:19 PM AST
+-- Changes done for eInvoice support
+UPDATE AD_Field SET SeqNo=510,IsDisplayed='Y' WHERE AD_Field_ID=1006737
+;
+
+-- Nov 21, 2024 9:01:19 PM AST
+-- Changes done for eInvoice support
+UPDATE AD_Field SET SeqNo=520,IsDisplayed='Y' WHERE AD_Field_ID=1006739
+;
+
+-- Nov 21, 2024 9:05:17 PM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,1001040,0,'EInvoiceStatus',TO_DATE('2024-11-21 21:05:17','YYYY-MM-DD HH24:MI:SS'),100,'EInvoice Status filing status','BETAG','Y','EInvoice Status','EInvoice Status',TO_DATE('2024-11-21 21:05:17','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- Nov 21, 2024 9:05:18 PM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Element_ID, t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Element t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Element_ID=1001040 AND NOT EXISTS (SELECT * FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- Nov 21, 2024 9:14:19 PM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Reference (AD_Client_ID,AD_Org_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,IsOrderByValue,Name,Updated,UpdatedBy,ValidationType) VALUES (0,0,1000178,TO_DATE('2024-11-21 21:14:19','YYYY-MM-DD HH24:MI:SS'),100,'BETAG','Y','N','EInvoice Status',TO_DATE('2024-11-21 21:14:19','YYYY-MM-DD HH24:MI:SS'),100,'L')
+;
+
+-- Nov 21, 2024 9:14:19 PM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Reference_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Reference t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Reference_ID=1000178 AND NOT EXISTS (SELECT * FROM AD_Reference_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Reference_ID=t.AD_Reference_ID)
+;
+
+-- Nov 21, 2024 9:14:44 PM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Ref_List_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,1000601,1000178,TO_DATE('2024-11-21 21:14:44','YYYY-MM-DD HH24:MI:SS'),100,'BETAG','Y','CLEARED',TO_DATE('2024-11-21 21:14:44','YYYY-MM-DD HH24:MI:SS'),100,'CLEARED')
+;
+
+-- Nov 21, 2024 9:14:44 PM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Ref_List_ID=1000601 AND NOT EXISTS (SELECT * FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
+;
+
+-- Nov 21, 2024 9:15:25 PM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Ref_List_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,1000602,1000178,TO_DATE('2024-11-21 21:15:25','YYYY-MM-DD HH24:MI:SS'),100,'BETAG','Y','NOT CLEARED',TO_DATE('2024-11-21 21:15:25','YYYY-MM-DD HH24:MI:SS'),100,'NOT CLEARED')
+;
+
+-- Nov 21, 2024 9:15:25 PM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Ref_List_ID=1000602 AND NOT EXISTS (SELECT * FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
+;
+
+-- Nov 21, 2024 9:17:39 PM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Ref_List_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,1000603,1000178,TO_DATE('2024-11-21 21:17:38','YYYY-MM-DD HH24:MI:SS'),100,'BETAG','Y','REPORTED',TO_DATE('2024-11-21 21:17:38','YYYY-MM-DD HH24:MI:SS'),100,'REPORTED')
+;
+
+-- Nov 21, 2024 9:17:39 PM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Ref_List_ID=1000603 AND NOT EXISTS (SELECT * FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
+;
+
+-- Nov 21, 2024 9:22:07 PM AST
+-- Changes done for eInvoice support
+UPDATE AD_Ref_List SET Description='CLEARED or REPORTED Successfully', Name='SUCCESS', Value='SUCCESS',Updated=TO_DATE('2024-11-21 21:22:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=1000601
+;
+
+-- Nov 21, 2024 9:22:07 PM AST
+-- Changes done for eInvoice support
+UPDATE AD_Ref_List_Trl SET IsTranslated='N' WHERE AD_Ref_List_ID=1000601
+;
+
+-- Nov 21, 2024 9:22:58 PM AST
+-- Changes done for eInvoice support
+UPDATE AD_Ref_List SET Description='CLEARING or REPORTING failed', Name='ERROR', Value='ERROR',Updated=TO_DATE('2024-11-21 21:22:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=1000602
+;
+
+-- Nov 21, 2024 9:22:58 PM AST
+-- Changes done for eInvoice support
+UPDATE AD_Ref_List_Trl SET IsTranslated='N' WHERE AD_Ref_List_ID=1000602
+;
+
+-- Nov 21, 2024 9:23:20 PM AST
+-- Changes done for eInvoice support
+UPDATE AD_Ref_List SET Description='CLEARING or REPORTING failed. NEED TO RE-SUBMIT',Updated=TO_DATE('2024-11-21 21:23:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=1000602
+;
+
+-- Nov 21, 2024 9:23:20 PM AST
+-- Changes done for eInvoice support
+UPDATE AD_Ref_List_Trl SET IsTranslated='N' WHERE AD_Ref_List_ID=1000602
+;
+
+-- Nov 21, 2024 9:26:59 PM AST
+-- Changes done for eInvoice support
+UPDATE AD_Ref_List SET Description='ACCEPTED WITH WARNING', Name='WARNING', Value='WARNING',Updated=TO_DATE('2024-11-21 21:26:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=1000603
+;
+
+-- Nov 21, 2024 9:26:59 PM AST
+-- Changes done for eInvoice support
+UPDATE AD_Ref_List_Trl SET IsTranslated='N' WHERE AD_Ref_List_ID=1000603
+;
+
+-- Nov 21, 2024 9:30:25 PM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Ref_List_ID,AD_Reference_ID,Created,CreatedBy,Description,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,1000604,1000178,TO_DATE('2024-11-21 21:30:24','YYYY-MM-DD HH24:MI:SS'),100,'EInvoice not submitted. ','BETAG','Y','PENDING',TO_DATE('2024-11-21 21:30:24','YYYY-MM-DD HH24:MI:SS'),100,'PENDING')
+;
+
+-- Nov 21, 2024 9:30:25 PM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Ref_List_ID=1000604 AND NOT EXISTS (SELECT * FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
+;
+
+-- Nov 21, 2024 9:42:01 PM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,ReadOnlyLogic,SeqNo,Updated,UpdatedBy,Version) VALUES (0,1002594,1001040,0,17,1000178,318,'EInvoiceStatus',TO_DATE('2024-11-21 21:42:01','YYYY-MM-DD HH24:MI:SS'),100,'EInvoice Status filing status','BETAG',15,'Y','Y','N','N','N','N','N','N','N','N','N','N','Y','EInvoice Status','1=1',0,TO_DATE('2024-11-21 21:42:01','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- Nov 21, 2024 9:42:01 PM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=1002594 AND NOT EXISTS (SELECT * FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- Nov 21, 2024 9:42:36 PM AST
+-- Changes done for eInvoice support
+UPDATE AD_Column SET DefaultValue='PENDING',Updated=TO_DATE('2024-11-21 21:42:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=1002594
+;
+
+-- Nov 21, 2024 9:43:36 PM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,1001041,0,'EInvoiceMessage',TO_DATE('2024-11-21 21:43:35','YYYY-MM-DD HH24:MI:SS'),100,'BETAG','Y','EInvoice Message','EInvoice Message',TO_DATE('2024-11-21 21:43:35','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- Nov 21, 2024 9:43:36 PM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Element_ID, t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Element t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Element_ID=1001041 AND NOT EXISTS (SELECT * FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- Nov 21, 2024 9:44:14 PM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,1002595,1001041,0,14,318,'EInvoiceMessage',TO_DATE('2024-11-21 21:44:14','YYYY-MM-DD HH24:MI:SS'),100,'U',1000,'Y','Y','N','N','N','N','N','N','N','N','N','N','Y','EInvoice Message',0,TO_DATE('2024-11-21 21:44:14','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- Nov 21, 2024 9:44:14 PM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=1002595 AND NOT EXISTS (SELECT * FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- Nov 21, 2024 9:44:24 PM AST
+-- Changes done for eInvoice support
+UPDATE AD_Column SET EntityType='BETAG',Updated=TO_DATE('2024-11-21 21:44:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=1002595
+;
+
+-- Nov 21, 2024 9:44:56 PM AST
+-- Changes done for eInvoice support
+UPDATE AD_Column SET ReadOnlyLogic='1=1',Updated=TO_DATE('2024-11-21 21:44:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=1002595
+;
+
+-- Nov 21, 2024 9:45:12 PM AST
+-- Changes done for eInvoice support
+ALTER TABLE C_Invoice ADD EInvoiceMessage NVARCHAR2(1000) DEFAULT NULL 
+;
+
+-- Nov 21, 2024 9:45:26 PM AST
+-- Changes done for eInvoice support
+ALTER TABLE C_Invoice ADD EInvoiceStatus NVARCHAR2(15) DEFAULT 'PENDING'
+;
+
+-- Nov 21, 2024 9:49:42 PM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,1001042,0,'ICV',TO_DATE('2024-11-21 21:49:42','YYYY-MM-DD HH24:MI:SS'),100,'Common Serial Number of the Documents (Invoice, Credit Note, Debit Note) for both Tax Invoice and Simplified Invoices combined','BETAG','Y','Invoice Counter Value','Invoice Counter Value',TO_DATE('2024-11-21 21:49:42','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- Nov 21, 2024 9:49:42 PM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Element_ID, t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Element t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Element_ID=1001042 AND NOT EXISTS (SELECT * FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- Nov 21, 2024 9:51:34 PM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,ReadOnlyLogic,SeqNo,Updated,UpdatedBy,Version) VALUES (0,1002596,1001042,0,11,318,'ICV',TO_DATE('2024-11-21 21:51:34','YYYY-MM-DD HH24:MI:SS'),100,'Common Serial Number of the Documents (Invoice, Credit Note, Debit Note) for both Tax Invoice and Simplified Invoices combined','BETAG',10,'Y','Y','N','N','N','N','N','N','N','N','N','N','Y','Invoice Counter Value','1=1',0,TO_DATE('2024-11-21 21:51:34','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- Nov 21, 2024 9:51:34 PM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=1002596 AND NOT EXISTS (SELECT * FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- Nov 21, 2024 9:56:43 PM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SortNo,Updated,UpdatedBy) VALUES (0,1002596,1006754,0,1000008,TO_DATE('2024-11-21 21:56:43','YYYY-MM-DD HH24:MI:SS'),100,'Common Serial Number of the Documents (Invoice, Credit Note, Debit Note) for both Tax Invoice and Simplified Invoices combined',10,'BETAG','Y','Y','Y','N','N','N','Y','N','Invoice Counter Value',35,0,TO_DATE('2024-11-21 21:56:43','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- Nov 21, 2024 9:56:43 PM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Field_ID=1006754 AND NOT EXISTS (SELECT * FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
 
 
 
+-- Nov 25, 2024 6:37:11 AM AST
+-- Changes done for eInvoice support
+ALTER TABLE C_Invoice ADD ICV NUMBER(10) DEFAULT NULL 
+;
+
+-- Nov 25, 2024 6:44:30 AM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SortNo,Updated,UpdatedBy) VALUES (0,1002596,1006755,0,1000025,TO_DATE('2024-11-25 06:44:30','YYYY-MM-DD HH24:MI:SS'),100,'Common Serial Number of the Documents (Invoice, Credit Note, Debit Note) for both Tax Invoice and Simplified Invoices combined',0,'U','Y','Y','Y','N','N','N','N','N','Invoice Counter Value',540,0,TO_DATE('2024-11-25 06:44:30','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- Nov 25, 2024 6:44:30 AM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Field_ID=1006755 AND NOT EXISTS (SELECT * FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- Nov 25, 2024 6:45:02 AM AST
+-- Changes done for eInvoice support
+UPDATE AD_Field SET EntityType='BETAG', IsReadOnly='Y',Updated=TO_DATE('2024-11-25 06:45:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=1006755
+;
+
+-- Nov 25, 2024 6:46:20 AM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SortNo,Updated,UpdatedBy) VALUES (0,1002596,1006756,0,263,TO_DATE('2024-11-25 06:46:20','YYYY-MM-DD HH24:MI:SS'),100,'Common Serial Number of the Documents (Invoice, Credit Note, Debit Note) for both Tax Invoice and Simplified Invoices combined',0,'BETAG','Y','Y','Y','N','N','N','Y','N','Invoice Counter Value',390,0,TO_DATE('2024-11-25 06:46:20','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- Nov 25, 2024 6:46:20 AM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Field_ID=1006756 AND NOT EXISTS (SELECT * FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+
+
+-- Nov 25, 2024 10:05:56 AM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SortNo,Updated,UpdatedBy) VALUES (0,1002594,1006757,0,263,TO_DATE('2024-11-25 10:05:56','YYYY-MM-DD HH24:MI:SS'),100,'EInvoice Status filing status',0,'BETAG','Y','Y','Y','N','N','N','Y','N','EInvoice Status',400,0,TO_DATE('2024-11-25 10:05:56','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- Nov 25, 2024 10:05:56 AM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Field_ID=1006757 AND NOT EXISTS (SELECT * FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- Nov 25, 2024 10:06:33 AM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SortNo,Updated,UpdatedBy) VALUES (0,1002595,1006758,0,263,TO_DATE('2024-11-25 10:06:33','YYYY-MM-DD HH24:MI:SS'),100,0,'BETAG','Y','Y','Y','N','N','N','Y','N','EInvoice Message',410,0,TO_DATE('2024-11-25 10:06:33','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- Nov 25, 2024 10:06:33 AM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Field_ID=1006758 AND NOT EXISTS (SELECT * FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- Nov 25, 2024 10:09:59 AM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SortNo,Updated,UpdatedBy) VALUES (0,1002594,1006759,0,1000025,TO_DATE('2024-11-25 10:09:59','YYYY-MM-DD HH24:MI:SS'),100,'EInvoice Status filing status',0,'BETAG','Y','Y','Y','N','N','N','Y','N','EInvoice Status',550,0,TO_DATE('2024-11-25 10:09:59','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- Nov 25, 2024 10:09:59 AM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Field_ID=1006759 AND NOT EXISTS (SELECT * FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- Nov 25, 2024 10:10:22 AM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SortNo,Updated,UpdatedBy) VALUES (0,1002595,1006760,0,1000025,TO_DATE('2024-11-25 10:10:22','YYYY-MM-DD HH24:MI:SS'),100,0,'BETAG','Y','Y','Y','N','N','N','Y','N','EInvoice Message',560,0,TO_DATE('2024-11-25 10:10:22','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- Nov 25, 2024 10:10:22 AM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Field_ID=1006760 AND NOT EXISTS (SELECT * FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- Nov 25, 2024 10:11:20 AM AST
+-- Changes done for eInvoice support
+UPDATE AD_Field SET SeqNo=530,Updated=TO_DATE('2024-11-25 10:11:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=1006754
+;
+
+-- Nov 25, 2024 10:11:46 AM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SortNo,Updated,UpdatedBy) VALUES (0,1002594,1006761,0,1000008,TO_DATE('2024-11-25 10:11:46','YYYY-MM-DD HH24:MI:SS'),100,'EInvoice Status filing status',0,'BETAG','Y','Y','Y','N','N','N','Y','N','EInvoice Status',540,0,TO_DATE('2024-11-25 10:11:46','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- Nov 25, 2024 10:11:46 AM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Field_ID=1006761 AND NOT EXISTS (SELECT * FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- Nov 25, 2024 10:12:50 AM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SortNo,Updated,UpdatedBy) VALUES (0,1002595,1006762,0,1000008,TO_DATE('2024-11-25 10:12:50','YYYY-MM-DD HH24:MI:SS'),100,0,'BETAG','Y','Y','Y','N','N','N','Y','N','EInvoice Message',550,0,TO_DATE('2024-11-25 10:12:50','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- Nov 25, 2024 10:12:50 AM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Field_ID=1006762 AND NOT EXISTS (SELECT * FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- Nov 25, 2024 10:15:55 AM AST
+-- Changes done for eInvoice support
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,1000292,TO_DATE('2024-11-25 10:15:55','YYYY-MM-DD HH24:MI:SS'),100,1,100,'Sequence for Invoice Counter value (ICV)',1,'Y','N','Y','N','EInvoice_ICV','N',1000000,TO_DATE('2024-11-25 10:15:55','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- Nov 25, 2024 10:16:40 AM AST
+-- Changes done for eInvoice support
+UPDATE AD_Sequence SET Description='Sequence for Invoice Counter value (ICV). *** DO NOT Change Name***', Name='EINVOICE_ICV_SEQ',Updated=TO_DATE('2024-11-25 10:16:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Sequence_ID=1000292
+;
+
+
+-- Nov 25, 2024 6:29:42 PM AST
+-- Changes done for eInvoice support
+UPDATE AD_Column SET EntityType='BETAG', FieldLength=1000,Updated=TO_DATE('2024-11-25 18:29:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=1002505
+;
+
+-- Nov 25, 2024 6:29:49 PM AST
+-- Changes done for eInvoice support
+ALTER TABLE C_Invoice MODIFY BASE64STR NVARCHAR2(1000) DEFAULT NULL
 
