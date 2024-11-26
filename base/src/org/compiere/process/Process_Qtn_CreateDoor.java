@@ -44,6 +44,7 @@ public class Process_Qtn_CreateDoor extends SvrProcess{
     private String	p_Location = null;
     private String	p_CustDoorNo = null;
     private String	p_FRLF = null;
+    private String p_Min=null;
     
     protected void prepare() 
     {
@@ -95,6 +96,9 @@ public class Process_Qtn_CreateDoor extends SvrProcess{
 			else if (name.equals("LFTHICK"))
 				//p_LFTHICK = (Double)para[i].getParameter();
 				p_LFTHICK = (String)para[i].getParameter();
+			else if (name.equals("MIN"))
+				//p_LFTHICK = (Double)para[i].getParameter();
+				p_Min = (String)para[i].getParameter();
 			else
 				log.log(Level.SEVERE, "Unknown Parameter: " + name);
 	    }
@@ -160,7 +164,7 @@ public class Process_Qtn_CreateDoor extends SvrProcess{
     	//Validation Ends here
     	
     	
-    	String sql = "{call Beta_CreateDoorLines(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}";
+    	String sql = "{call Beta_CreateDoorLines(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}";
         try {
             CallableStatement cstmt = DB.prepareCall(sql);
             
@@ -186,6 +190,7 @@ public class Process_Qtn_CreateDoor extends SvrProcess{
             //cstmt.setDouble(20,p_LFTHICK);
             cstmt.setString(19,p_FRTHICK);
             cstmt.setString(20,p_LFTHICK);
+            cstmt.setString(21,p_Min);
             
 			cstmt.executeUpdate();
             cstmt.close();

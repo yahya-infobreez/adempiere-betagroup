@@ -211,11 +211,19 @@ public class Process_DB_TO_XLS
 
 
         attr_cost.setCellValue(this.attr_value);
-        if (this.v_quotline_desc == "") {
-          this.v_quotline_desc = (this.v_quotline_desc + this.attr_value + " ");
-        } else {
-          this.v_quotline_desc = (this.v_quotline_desc + "* " + this.attr_value + " ");
+        if (this.Attr_Name.equalsIgnoreCase("MINUTES"))
+        {	
+        	;
         }
+        else
+        {
+	        if (this.v_quotline_desc == "") {
+	          this.v_quotline_desc = (" " + this.v_quotline_desc + this.attr_value + " ");
+	        } else {
+	          this.v_quotline_desc = (this.v_quotline_desc + "* " + this.attr_value + " ");
+	        }
+        }
+        
         FileOutputStream fileOut = new FileOutputStream(this.Path_of_XLFile);
         this.wb.write(fileOut);
         fileOut.flush();
