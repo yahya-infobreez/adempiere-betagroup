@@ -6,7 +6,8 @@
 #
 #	$Header: /cvsroot/adempiere/utils_dev/myDevEnvTemplate.sh,v 1.6 2003/04/27 12:34:16 marekmosiewicz Exp $
 
-export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+export JAVA_HOME=/usr/java/jdk1.8.0_202-amd64/
+#export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 
 #check java home
 if [ $JAVA_HOME ]; then
@@ -25,8 +26,8 @@ if  [ ! -f $JAVA_HOME/lib/tools.jar ] ; then
 fi
 
 #classpath
-export CLASSPATH=$CLASSPATH:/opt/iReport-3.7.3/ireport/modules/ext/jasperreports-3.7.3.jar:/opt/Adempiere/lib/poi-3.6-20091214.jar:/opt/Adempiere/lib/poi-3.7.jar:/opt/Adempiere/lib/glassfish.jar
-pause
+#export CLASSPATH=$CLASSPATH:/opt/iReport-3.7.3/ireport/modules/ext/jasperreports-3.7.3.jar:/opt/Adempiere/lib/poi-3.6-20091214.jar:/opt/Adempiere/lib/poi-3.7.jar:/opt/Adempiere/lib/glassfish.jar
+#pause
 
 export ANT_CLASSPATH=$CLASSPATH:../tools/lib/ant.jar:../tools/lib/ant-launcher.jar:../tools/lib/ant-swing.jar:../tools/lib/ant-commons-net.jar:../tools/lib/commons-net.jar:$JAVA_HOME/lib/tools.jar
 

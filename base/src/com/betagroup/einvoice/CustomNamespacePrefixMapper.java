@@ -3,7 +3,7 @@ package com.betagroup.einvoice;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import com.sun.xml.internal.bind.marshaller.NamespacePrefixMapper;
+import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
 
 public class CustomNamespacePrefixMapper extends NamespacePrefixMapper {
 	
