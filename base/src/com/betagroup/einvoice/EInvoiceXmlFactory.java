@@ -102,11 +102,11 @@ public class EInvoiceXmlFactory {
 		invoice.setID(minvoice.getDocumentNo());
 		// BR-KSA-03 // cbc:UUID
 		invoice.setUUID(minvoice.getUUID());
+		Timestamp invoiceIssueTime = minvoice.getInvoiceIssueTime() != null ? minvoice.getInvoiceIssueTime() : minvoice.getDateInvoiced();
 		// BR-KSA-04, BR-KSA-F-01	// cbc:IssueDate
-		invoice.setIssueDate(minvoice.getDateInvoiced().toLocalDateTime().toLocalDate());
+		invoice.setIssueDate(invoiceIssueTime.toLocalDateTime().toLocalDate());
 		// BR-KSA-70	// cbc:IssueTime
-		invoice.setIssueTime(minvoice.getInvoiceIssueTime() != null ? minvoice.getInvoiceIssueTime().toLocalDateTime():
-			minvoice.getDateInvoiced().toLocalDateTime());
+		invoice.setIssueTime(invoiceIssueTime.toLocalDateTime());
 		
 		// BT-3 = BR-KSA-06, BR-KSA-07, BR-KSA-31 // cbc:InvoiceTypeCode / @name 
 		/* As per UN/CEFACT code list 1001
@@ -540,14 +540,12 @@ public class EInvoiceXmlFactory {
 		// Set QR etc in case of Simplified Invoice. For Tax Invoice, it will be provided by ZATCA after uploading
 
 //		if(minvoice.isSimplifiedInvoice()) {
-			String companyName = org.getName2() != null ? org.getName2() : client.getName2();
-			Timestamp invoiceIssueTime = minvoice.getInvoiceIssueTime() != null ? minvoice.getInvoiceIssueTime():minvoice.getDateInvoiced();
-			
+			String companyName = org.getName2() != null ? org.getName2() : client.getName2();			
 			// Derive ECDSA Signature of ZATCA certificate
 			byte[] cert2 = Base64.getDecoder().decode(org.getCertificate());
 			X509Certificate x509Cert = DigitalSignatureHelper.decode(new String(cert2));
 			// decoded.getSignature() contains the ECDSA signature
-			byte[] edcsaPublicKey = Base64.getDecoder().decode(org.getPublicKey());
+			byte[] edcsaPublicKey = x509Cert.getPublicKey().getEncoded();
 			String qrString = QRUtil.generateQR(companyName, client.getVatNumber(), invoiceIssueTime, 
 				minvoice.getGrandTotal(), minvoice.getTaxTotal(), invoiceHash, 
 				invoiceSignature, edcsaPublicKey, x509Cert.getSignature());
@@ -705,7 +703,11 @@ public class EInvoiceXmlFactory {
 		dsSignature.setSignedInfo(signedInfo);			
 		dsSignature.setSignatureValue(new SignatureValue(signatureBase64));	
 		
-		X509Data x509Data = new X509Data().addX509Certificate(org.getCertificate()); // Already Base64 encoded
+		// Derive ECDSA Signature of ZATCA certificate
+		byte[] cert2 = Base64.getDecoder().decode(org.getCertificate());
+		X509Certificate x509Cert = DigitalSignatureHelper.decode(new String(cert2));
+		String x509Base64 = Base64.getEncoder().encodeToString(x509Cert.getEncoded());
+		X509Data x509Data = new X509Data().addX509Certificate(x509Base64);
 		KeyInfo keyInfo = new KeyInfo(); 
 		keyInfo.getContent().add(x509Data);
 		dsSignature.setKeyInfo(keyInfo);	//************** // TODO
@@ -1094,11 +1096,6 @@ public class EInvoiceXmlFactory {
 //		try {
 			JAXBContext jaxbContext = JAXBContext.newInstance(Invoice.class);
 			Unmarshaller umarshaller = jaxbContext.createUnmarshaller();
-			
-//	        umarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-//	        // Set the custom NamespacePrefixMapper
-//	        //marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", new CustomNamespacePrefixMapper());
-//	        umarshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", new CustomNamespacePrefixMapper());
 
 			// Marshal the root element to an XML document	
 			Invoice invoice = (Invoice) umarshaller.unmarshal(inFile);
@@ -1228,9 +1225,7 @@ public class EInvoiceXmlFactory {
 	        	marshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
 	        }
 	        // Set the custom NamespacePrefixMapper
-	        //marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", new CustomNamespacePrefixMapper());
-	        marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", customMapper);
-//			marshaller.setProperty("com.sun.xml.internal.bind.xmlDeclaration", Boolean.FALSE);
+	        marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", customMapper);
 			marshaller.marshal(object, out);	
 		  } catch (JAXBException e) {
 		      throw new RuntimeException(e);
@@ -1243,7 +1238,7 @@ public class EInvoiceXmlFactory {
         Marshaller marshaller = jaxbContext.createMarshaller();
         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
         marshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE); // To remove xml version
-        marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", customMapper);
+        marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", customMapper);
 
         // Create a Document to hold the marshalled XML
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -1263,46 +1258,7 @@ public class EInvoiceXmlFactory {
     	byte[] canonicalXml = CanonicalizeHelper.canonicalize(out.toByteArray(), strip);
     	return canonicalXml;    	
     }
-	/*
-	 *
-	 How to generate ECDSA keys with secp256k1
-	 https://techdocs.akamai.com/iot-token-access-control/docs/generate-ecdsa-keys 
-	 
-	 Commands:
-	 openssl ecparam -name secp256k1 -genkey -noout -out ec-secp256k1-priv-key.pem
-	 openssl ec -in ec-secp256k1-priv-key.pem -pubout > ec-secp256k1-pub-key.pem
-	 
-	 */
-	
-			
-	public static File generateSignedXmlFile(File inFile, File outFile) throws Exception {
-    	FileOutputStream out = null;
-	    try {
-	    	// Pass the XML file to ZATCA SDK. Output file will be created by the SDK
-			ProcessBuilder builder = new ProcessBuilder("fatoora", "-sign", "-signedInvoice", outFile.getAbsolutePath(),
-					"-invoice", inFile.getAbsolutePath());
-//			Map<String, String> envMap = new HashMap<String, String>() {{
-//	            put("key1", "value1");
-//			}};			
-//			builder.environment(envMap);
 
-//			builder.directory(new File("working_directory"));
-
-			Process process = builder.start();
-
-			// Wait for the process to complete
-			int exitCode = process.waitFor();
-			ZatcaSDKProcessHelper.printConsole(process, exitCode);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw e;
-		}
-		return outFile; // outFile will be filled by the process
-	}
-	
 	/**
 	 * Extract the Invoice signature from XML
 	 * @param invoiceXml

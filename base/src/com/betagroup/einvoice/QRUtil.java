@@ -12,6 +12,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Base64.Decoder;
 import java.util.Base64.Encoder;
@@ -42,7 +43,7 @@ public class QRUtil {
      */
     public static String generateQR(String name, String vatNo, Timestamp time, BigDecimal grandTotal, BigDecimal vatAmt, /* Phase-1 fields */
     		String hash, String ecdsaSign, byte[] ecdsaPublicKey, byte[] zatcaSign /* phase-2 fields */ ) {
-		String date = getStringFromTimestamp(time, "yyyy-MM-dd'T'HH:mm:ss'Z'");
+		String date = getStringFromTimestamp(time, "yyyy-MM-dd'T'HH:mm:ss");
 		String qr = QRUtil.convertUsingTLVToBase64(name.getBytes(), vatNo.getBytes(),
 				date.getBytes(), grandTotal.toPlainString().getBytes(), vatAmt.toPlainString().getBytes(),
 				hash.getBytes(), ecdsaSign.getBytes(), ecdsaPublicKey, zatcaSign);
@@ -133,11 +134,18 @@ public class QRUtil {
         byte[] decoded1 = decoder.decode(qr); 
         ArrayList<String> qrData = new ArrayList<String>();
         try {
+        	int entryCount = 0;
         	byte[] qrBytes = decoded1; //convertHexStringToBinary(new String(decoded1));
             for(int i=0; i < qrBytes.length; ) {
+            	entryCount++;
             	int len = qrBytes[i+1] & 0x00FF;
-            	String qrEntry = new String(qrBytes, i+2, len, StandardCharsets.UTF_8);
-            	qrData.add(qrEntry);
+            	if(entryCount <= 7) {
+	            	String qrEntry = new String(qrBytes, i+2, len, StandardCharsets.UTF_8);
+	            	qrData.add(qrEntry);
+            	} else { // 8, 9 are saved as binary
+                	String qrEntry = QRUtil.convertToHexString(Arrays.copyOfRange(qrBytes, i+2, i+2+len));
+                	qrData.add(qrEntry);
+            	}
             	i += 2 + len;
             }
 

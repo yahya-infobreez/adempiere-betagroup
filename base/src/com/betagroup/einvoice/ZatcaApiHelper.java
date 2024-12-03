@@ -94,7 +94,13 @@ public class ZatcaApiHelper extends GenericApi {
 	 */
 	public static String API_ReportingModelEndpointS = "/invoices/reporting/single";
 	
-	
+	/**
+	 * Invoke Register CSR API
+	 * Requires userName, password to be set. @see {@link #setUsername(String)}, {@link #setPasswd(String)}
+	 * @param csr 
+	 * @return
+	 * @throws Exception
+	 */
 	public CSRResponse registerCSR(String csr) throws Exception {
 		CSRRequest data = new CSRRequest();
 		data.setCsr(csr);

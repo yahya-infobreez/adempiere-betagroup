@@ -33,6 +33,13 @@ public class CanonicalizeHelper {
         
     }
     
+    /**
+     * Returns canonicalized XML - after applying transform using XSLT. 
+     * @param xmlDocument
+     * @param strip - Strip specified tags for creating Invoice Hash
+     * @return
+     * @throws Exception
+     */
     public static byte[] canonicalize(byte[] xmlDocument, boolean strip) throws Exception {
     	try(ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();) {
     		String xsltPathStripped = "/resources/invoice-stripped.xsl"; // Removes the specified blocks for creating Hash & Signature

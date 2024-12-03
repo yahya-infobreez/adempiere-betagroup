@@ -19,6 +19,7 @@ import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import com.betagroup.einvoice.CanonicalizeHelper;
 import com.betagroup.einvoice.EInvoiceXmlFactory;
 import com.betagroup.einvoice.QRUtil;
 import com.betagroup.einvoice.ZatcaApiHelper;
@@ -79,7 +80,8 @@ public class Process_CheckInvoiceCompliance extends SvrProcess{
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		EInvoiceXmlFactory.marshalJaxb(invoiceXml, out, false);
-		byte[] invoiceData = out.toByteArray();
+//		byte[] invoiceData = out.toByteArray();
+		byte[] invoiceData = CanonicalizeHelper.canonicalize(out.toByteArray(), false);
 
 		// Send for compliance check
 		ZatcaApiHelper apiHelper = new ZatcaApiHelper();
@@ -96,9 +98,15 @@ public class Process_CheckInvoiceCompliance extends SvrProcess{
 //			}
 			minvoice.saveEx();
 
+			if(response.getErrors() != null && !response.getErrors().isEmpty()) {
+			} else {
+				String msg = "Error: CSR Registration with FATOORA portal failed. "
+						+ response.getErrors().toString();
+				s_log.saveError("ZatcaRegistrationFailed", msg);
+				return msg;
+			}
 		} else {
-			String msg = "Error: CSR Registration with FATOORA portal failed. "
-					+ response != null ? response.getErrors().toString() : "Reason unknown";
+			String msg = "Error: CSR Registration with FATOORA portal failed. Reason unknown";
 			s_log.saveError("ZatcaRegistrationFailed", msg);
 			return msg;
 		}

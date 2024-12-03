@@ -3,19 +3,14 @@ package com.betagroup.einvoice.process;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.util.Base64;
 import java.util.logging.Level;
 
 import org.adempiere.exceptions.FillMandatoryException;
-import org.compiere.model.MInvoice;
 import org.compiere.model.MOrg;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.CLogger;
 
-import com.betagroup.einvoice.DigitalSignatureHelper;
 import com.betagroup.einvoice.ZatcaApiHelper;
 import com.betagroup.einvoice.api.model.CSRResponse;
 
@@ -67,12 +62,12 @@ public class Process_EInvoiceRegistration extends SvrProcess {
 		byte[] csrData = Files.readAllBytes(csrFile);
 		byte[] privateKeyData = Files.readAllBytes(privatKeyFile);
 		
-		// Also save the privatekey & public key
+		// Also save the privatekey. Public key will be derived from Private Key or from certificate on demand
 		org.setPrivateKey(new String(privateKeyData));
-		PrivateKey privateKey = DigitalSignatureHelper.getPrivateKey(new String(privateKeyData)); 		
-		PublicKey publicKey = DigitalSignatureHelper.getPublicKeyFromPrivateKey(privateKey); 
-	    String publicKeyEncoded = Base64.getEncoder().encodeToString(publicKey.getEncoded());		
-		org.setPublicKey(publicKeyEncoded);
+//		PrivateKey privateKey = DigitalSignatureHelper.getPrivateKey(new String(privateKeyData)); 		
+//		PublicKey publicKey = DigitalSignatureHelper.getPublicKeyFromPrivateKey(privateKey); 
+//	    String publicKeyEncoded = Base64.getEncoder().encodeToString(ZatcaSDKProcessHelper.getCompressedPublicKey(privatKeyFile.toFile()));		
+//		org.setPublicKey(publicKeyEncoded);
 		
 		ZatcaApiHelper apiHelper = new ZatcaApiHelper();
 		apiHelper.setUsername(p_UserName);

@@ -184,7 +184,7 @@ public class EInvoiceXmlFactoryTest extends AdempiereTestCase {
 		Env.setContext(ctx, "AD_Client_ID", 1000000);
 		Env.setContext(ctx, "AD_Org_ID", 0);
 	
-		MInvoice minvoice = MInvoice.get(ctx, 1075746); // Credit Note from RMA
+		MInvoice minvoice = MInvoice.get(ctx, 1075750); //Debit Note
 		assertNotNull(minvoice);
 		try {
 			Invoice xmlInvoice = EInvoiceXmlFactory.createInvoiceXml(minvoice);
@@ -223,7 +223,7 @@ public class EInvoiceXmlFactoryTest extends AdempiereTestCase {
 			File inputFile = new File(fileName);
 			File outFile = new File(fileName.replace(".xml", "-signed.xml"));
 			
-			File output = EInvoiceXmlFactory.generateSignedXmlFile(inputFile, outFile);
+			File output = ZatcaSDKProcessHelper.generateSignedXmlFile(inputFile, outFile);
 			System.out.println("Output file = " + output.getAbsolutePath());
 			assertTrue(output.exists());
 		} catch (Exception e) {			

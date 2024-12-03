@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
@@ -12,7 +11,6 @@ import java.security.Security;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.ECGenParameterSpec;
-import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
 import java.util.Base64.Encoder;
@@ -92,5 +90,53 @@ public class DigitalSignatureHelper {
         System.out.println("Derived Public Key: " + publicKeyGenerated);
         return publicKeyGenerated;
 	}
+	
+//    public static byte[] getCompressedPublicKey(PublicKey publicKey) throws Exception {
+//		Security.addProvider(new BouncyCastleProvider());
+//        KeyFactory keyFactory = KeyFactory.getInstance("EC", "BC"); // Use "EC" for ECDSA, BC for BouncyCastle
+//
+//        ECPublicKey ecPublicKey = (ECPublicKey) publicKey;
+////        ECPoint point = ecPublicKey.getW();
+//
+//        // Get the parameters of the curve
+//
+//        java.security.spec.ECParameterSpec ecSpec = ecPublicKey.getParams();
+//
+//        // Create the ASN.1 structure
+//        ASN1ObjectIdentifier oid = new ASN1ObjectIdentifier("1.2.840.10045.3.1.7"); // OID for secp256k1
+//        DERBitString pubKeyBitString = new DERBitString(publicKey.getEncoded());
+//
+//        // Create the SubjectPublicKeyInfo structure
+//
+//        SubjectPublicKeyInfo subjectPublicKeyInfo = new SubjectPublicKeyInfo(
+//                new AlgorithmIdentifier(oid, null),
+//                pubKeyBitString
+//        );
+//
+//
+//        // Encode to DER
+//
+//        byte[] encoded = subjectPublicKeyInfo.getEncoded();
+//        return encoded;
+//        
+////        // Cast to ECPublicKey
+////        ECPublicKeySpec pubKeySpec = (ECPublicKeySpec) keyFactory.getKeySpec(publicKey, ECPublicKeySpec.class);
+////        ECPoint point = pubKeySpec.getQ();
+////
+////        // Get the x and y coordinates
+////        BigInteger x = point.getXCoord().toBigInteger();
+////        BigInteger y = point.getYCoord().toBigInteger();
+//        
+//        
+////
+////        // Determine if y is even or odd
+////        byte[] xBytes = x.toByteArray();
+////        byte[] compressedKey = new byte[xBytes.length + 1];
+////        compressedKey[0] = (byte) (y.testBit(0) ? 0x03 : 0x02); // 0x02 for even, 0x03 for odd
+////        System.arraycopy(xBytes, 0, compressedKey, 1, xBytes.length);
+////        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME); //"BC"
+////        return compressedKey;
+//
+//    }
 	
 }
