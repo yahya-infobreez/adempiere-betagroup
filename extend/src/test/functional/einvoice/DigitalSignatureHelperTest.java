@@ -22,10 +22,11 @@ public class DigitalSignatureHelperTest extends TestCase {
 		X509Certificate decoded = DigitalSignatureHelper.decode(new String(cert2));
 		System.out.println(decoded);
 		
-		System.out.println("Signature: " + QRUtil.convertToHexString(decoded.getSignature()));
+		System.out.println("Signature: " + QRUtil.convertToHexString(decoded.getSignature()) + " Not before: " + decoded.getNotBefore() + " Not after: " + decoded.getNotAfter());
 		
 		System.out.println("PublicKey: " + QRUtil.convertToHexString(decoded.getPublicKey().getEncoded()));
 		System.out.println("PublicKey: " + Base64.getEncoder().encodeToString(decoded.getPublicKey().getEncoded()));
+		System.out.println();
 	}
 	
 	

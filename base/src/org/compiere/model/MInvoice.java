@@ -1367,7 +1367,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 			
 			// For eInvoice - Save Checkout Date & Time
 			setVatNumber(bp.getVatNumber()); // Copy it to Invoice for immutability
-			setIsSimplifiedInvoice(bp.getVatNumber() == null);
+			setIsSimplifiedInvoice(bp.getVatNumber() == null && getC_BPartner_Location().getC_Location().getC_Country_ID() == 296);
 			setIsExportInvoice(getC_BPartner_Location().getC_Location().getC_Country_ID() != 296); // 296 = Saudi
 			
 			// Validate Credit/Debit Note fields

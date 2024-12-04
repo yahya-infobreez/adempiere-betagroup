@@ -302,13 +302,16 @@ public class EInvoiceXmlFactory {
 		// cac:AccountingCustomerParty / cac:Party / cac:PartyTaxScheme / cbc:CompanyID
 		// where  cac:AccountingCustomerParty / cac:Party / cac:PartyTaxScheme / cac:TaxScheme = VAT
 		MBPartner bp = (MBPartner) minvoice.getC_BPartner();	
-		PartyTaxScheme taxScheme2 = new PartyTaxScheme();
 		//VAT_NUMBER to be copied to Invoice for immutability
 		String vatNumber = minvoice.getVatNumber() != null ? minvoice.getVatNumber() : bp.getVatNumber();
-		taxScheme2.setCompanyID(vatNumber);
-		taxScheme2.setTaxScheme("VAT");
+
 		PartyType party2 = new PartyType();
-		party2.getPartyTaxSchemes().add(taxScheme2);
+		if(!minvoice.isSimplifiedInvoice()) {
+			PartyTaxScheme taxScheme2 = new PartyTaxScheme();
+			taxScheme2.setCompanyID(vatNumber);
+			taxScheme2.setTaxScheme("VAT");
+			party2.getPartyTaxSchemes().add(taxScheme2);
+		}
 		
 		// BT-46, BT-46-1 Other buyer ID // BR-KSA-14, BR-KSA-49, BR-KSA-81
 		// cac:AccountingCustomerParty / cac:Party / cac:PartyIdentification / cbc:ID where attribute "schemeID" is according to the description
@@ -327,14 +330,19 @@ public class EInvoiceXmlFactory {
 			- Other ID with "OTH" as schemeID
 			In case multiple IDs exist then one of the above must be entered following the sequence specified above 
 		 */
-		PartyIdentification party2Id = new PartyIdentification();
-		if(bp.getLicenseNo() != null) { // Optional if VAT ID is present
-			party2Id.setID(new ID(convertSchemeID(bp.getLicenseScheme()), bp.getLicenseNo()));
-			party2.getPartyIdentifications().add(party2Id);
-		} else if(vatNumber == null){
-			// Mandatory is VAT is not present
-//			throw new Exception("Either VAT Number or Company registration details shall be present");
-		}
+			if(bp.getLicenseNo() != null) { // Optional if VAT ID is present
+				PartyIdentification party2Id = new PartyIdentification();
+				party2Id.setID(new ID(convertSchemeID(bp.getLicenseScheme()), bp.getLicenseNo()));
+				party2.getPartyIdentifications().add(party2Id);
+			} else {
+				if(minvoice.isSimplifiedInvoice()) {
+					MOrder morder = (MOrder) minvoice.getC_Order();
+					if("VATEX-SA-EDU".equals(morder.getVatExceptionReason()) || "VATEX-SA-HEA".equals(morder.getVatExceptionReason())) {
+						throw new Exception("Trade License and name mandatory in case of exempted tax");
+					}
+				}
+			}
+
 				
 		// Buyer address  BT-50, BT-51, KSA-18, KSA-19, BT-52, BT-53, BT-54, KSA-4, BT-55
 		// BR-KSA-10, BR-KSA-63
