@@ -53,6 +53,8 @@
   	
   	<pathelement path="../JasperReportsTools/build"/>
   	<pathelement path="../JasperReportsTools/lib/jasperreports-3.7.3.jar"/>
+  	<pathelement path="../JasperReportsTools/lib/core-3.5.3.jar"/>
+  	<pathelement path="../JasperReportsTools/lib/javase-3.5.3.jar"/>
   </path>
 
 

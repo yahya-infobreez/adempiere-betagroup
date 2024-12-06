@@ -6,7 +6,7 @@
 #
 #	$Header: /cvsroot/adempiere/utils_dev/myDevEnvTemplate.sh,v 1.6 2003/04/27 12:34:16 marekmosiewicz Exp $
 
-export JAVA_HOME=/usr/java/jdk1.8.0_202-amd64/
+#export JAVA_HOME=/usr/java/jdk1.8.0_202-amd64/
 #export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 
 #check java home
@@ -41,5 +41,4 @@ $JAVA_HOME/bin/java $ANT_OPTS -classpath $ANT_CLASSPATH -Dant.home="." org.apach
 
 echo Done ...
 
-exit 0
-
+#exit 0

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="src" path="lib"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry exported="true" kind="src" path="/tools"/>
 	<classpathentry kind="src" path="/base"/>
@@ -14,5 +13,5 @@
 	<classpathentry kind="lib" path="/tools/lib/ant-launcher.jar"/>
 	<classpathentry kind="lib" path="/tools/lib/commons-net-1.4.0.jar"/>
 	<classpathentry kind="lib" path="/tools/lib/ojdbc8.jar"/>
-	<classpathentry kind="output" path="build"/>
+	<classpathentry kind="output" path="lib"/>
 </classpath>

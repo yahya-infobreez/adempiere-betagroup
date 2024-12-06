@@ -107,5 +107,7 @@
 	<classpathentry kind="lib" path="/tools/lib/httpclient-4.2.6.jar"/>
 	<classpathentry kind="lib" path="/tools/lib/httpcore-4.2.5.jar"/>
 	<classpathentry kind="lib" path="/jboss/lib/jaxb-impl.jar"/>
+	<classpathentry kind="lib" path="/JasperReportsTools/lib/core-3.5.3.jar"/>
+	<classpathentry kind="lib" path="/JasperReportsTools/lib/javase-3.5.3.jar"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>
