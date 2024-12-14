@@ -33,8 +33,8 @@ public class DigitalSignatureHelper {
 		Security.addProvider(new BouncyCastleProvider());
 		// TODO Save encrypted key in DB and decode it here
 		// Sign the Invoice hash using EDCSA
-		String privateKeyPEM = encodedKey.replace("-----BEGIN PRIVATE KEY-----", "")
-                .replace("-----END PRIVATE KEY-----", "")
+		String privateKeyPEM = encodedKey.replace("-----BEGIN PRIVATE KEY-----", "").replace("-----BEGIN EC PRIVATE KEY-----", "")
+                .replace("-----END PRIVATE KEY-----", "").replace("-----END EC PRIVATE KEY-----", "")
                 .replaceAll("\\s+", "");
 		byte[] keyBytes = Base64.getDecoder().decode(privateKeyPEM);
         // Step 3: Create a PKCS8EncodedKeySpec from the byte array

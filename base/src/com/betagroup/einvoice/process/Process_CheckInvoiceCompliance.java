@@ -77,16 +77,11 @@ public class Process_CheckInvoiceCompliance extends SvrProcess{
 		MOrg org = MOrg.get(getCtx(), minvoice.getAD_Org_ID());
 		MClient client = MClient.get(getCtx(), minvoice.getAD_Client_ID());
 		Invoice invoiceXml = EInvoiceXmlFactory.createInvoiceXml(minvoice);
-
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		EInvoiceXmlFactory.marshalJaxb(invoiceXml, out, false);
-//		byte[] invoiceData = out.toByteArray();
-		byte[] invoiceData = CanonicalizeHelper.canonicalize(out.toByteArray(), false);
+		byte[] invoiceData = EInvoiceXmlFactory.canonicalize(invoiceXml, false);
 
 		// Send for compliance check
 		ZatcaApiHelper apiHelper = new ZatcaApiHelper();
-		apiHelper.setUsername(org.getCertificate());
-		apiHelper.setPasswd(org.getZatcaSecret());
+		apiHelper.setAuth(org.getCertificate(), org.getZatcaSecret());
 		
 		InvoiceResult response = apiHelper.checkInvoiceCompliance(minvoice.getInvoiceHash(), minvoice.getUUID(), invoiceData);
 		System.out.print(response);

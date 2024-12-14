@@ -2421,7 +2421,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		set_Value (COLUMNNAME_UUID, uuid);
 	}
 	
-	/* UUID Column */
+	/* Invoice Issue Time */
 	public static final String COLUMNNAME_Invoice_IssueTime = "Invoice_IssueTime";
 	/**
 	 * Checkout Time (including date) of issue of Invoice

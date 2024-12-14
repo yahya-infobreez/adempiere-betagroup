@@ -1,0 +1,17 @@
+   <SignedProperties xmlns="http://uri.etsi.org/01903/v1.3.2#" Id="xadesSignedProperties">
+        <SignedSignatureProperties>
+            <SigningTime>##TIME##</SigningTime>
+            <SigningCertificate>
+                <Cert>
+                    <CertDigest>
+                        <ds:DigestMethod xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+                        <ds:DigestValue xmlns:ds="http://www.w3.org/2000/09/xmldsig#">##DIGESTVALUE##</ds:DigestValue>
+                    </CertDigest>
+                    <IssuerSerial>
+                        <ds:X509IssuerName xmlns:ds="http://www.w3.org/2000/09/xmldsig#">##ISSUERNAME##</ds:X509IssuerName>
+                        <ds:X509SerialNumber xmlns:ds="http://www.w3.org/2000/09/xmldsig#">##SERIALNUMBER##</ds:X509SerialNumber>
+                    </IssuerSerial>
+                </Cert>
+            </SigningCertificate>
+        </SignedSignatureProperties>
+    </SignedProperties>

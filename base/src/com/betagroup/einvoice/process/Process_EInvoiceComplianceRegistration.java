@@ -14,15 +14,16 @@ import org.compiere.util.CLogger;
 import com.betagroup.einvoice.ZatcaApiHelper;
 import com.betagroup.einvoice.api.model.CSRResponse;
 
-public class Process_EInvoiceRegistration extends SvrProcess {
+public class Process_EInvoiceComplianceRegistration extends SvrProcess {
 
 	private int p_AD_Org_ID;
 	private String p_UserName;
 	private String p_Password;
 	private String p_CSRFile;
 	private String p_PrivateKeyFile;
+	private String p_Otp;	
 	
-	private static CLogger s_log = CLogger.getCLogger(Process_EInvoiceRegistration.class);
+	private static CLogger s_log = CLogger.getCLogger(Process_EInvoiceComplianceRegistration.class);
 
 
 	@Override
@@ -39,7 +40,9 @@ public class Process_EInvoiceRegistration extends SvrProcess {
 			else if (name.equals("UserName"))
 				p_UserName = (String) para[i].getParameter();
 			else if (name.equals("Password"))
-				p_Password = (String) para[i].getParameter();		
+				p_Password = (String) para[i].getParameter();	
+			else if (name.equals("OTP"))
+				p_Otp = (String) para[i].getParameter();	
 			else if (name.equals("CSRFile"))
 				p_CSRFile = (String) para[i].getParameter();	
 			else if (name.equals("PrivateKeyFile"))
@@ -47,8 +50,6 @@ public class Process_EInvoiceRegistration extends SvrProcess {
 			else
 				log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);
 		}
-		if(p_AD_Org_ID <= 0)
-			throw new FillMandatoryException("AD_Org_ID");
 		if(p_AD_Org_ID <= 0)
 			throw new FillMandatoryException("AD_Org_ID");
 	}
@@ -70,15 +71,18 @@ public class Process_EInvoiceRegistration extends SvrProcess {
 //		org.setPublicKey(publicKeyEncoded);
 		
 		ZatcaApiHelper apiHelper = new ZatcaApiHelper();
-		apiHelper.setUsername(p_UserName);
-		apiHelper.setPasswd(p_Password);
+		apiHelper.setAuth(p_UserName, p_Password);
 		
-		CSRResponse response = apiHelper.registerCSR(new String(csrData));
+		CSRResponse response = apiHelper.requestCCSID(new String(csrData), p_Otp);
 		System.out.print(response);
 		
-		if(response != null && "ISSUED".equalsIgnoreCase(response.getDispositionMessage())) {
+		if(response != null && ("ISSUED".equalsIgnoreCase(response.getDispositionMessage()) 
+				|| "NOT_COMPLIANT".equalsIgnoreCase(response.getDispositionMessage()))) {
+			org.setZatcaRequestID(response.getRequestID());
 			org.setCertificate(response.getBinarySecurityToken()); // Base64 Encoded
 			org.setZatcaSecret(response.getSecret());
+			org.setZatcaStatus(response.getDispositionMessage()); // ISSUED / NOT_COMPLIANT
+			org.setZatcaIsProduction(false);
 
 		} else {
 			String msg = "Error: CSR Registration with FATOORA portal failed. "

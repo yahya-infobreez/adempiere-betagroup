@@ -47,7 +47,7 @@ import oasis.names.specification.ubl.schema.xsd.signatureaggregatecomponents_2.S
 @XmlType(name = "UBLDocumentSignaturesType", propOrder = {
     "signatureInformations"
 })
-@XmlRootElement(name = "UBLDocumentSignatures")
+@XmlRootElement(name = "UBLDocumentSignatures", namespace="urn:oasis:names:specification:ubl:schema:xsd:CommonSignatureComponents-2")
 public class UBLDocumentSignatures {
 
     @XmlElement(name = "SignatureInformation", namespace = "urn:oasis:names:specification:ubl:schema:xsd:SignatureAggregateComponents-2", required = true)

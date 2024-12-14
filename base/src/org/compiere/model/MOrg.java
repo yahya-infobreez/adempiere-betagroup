@@ -17,6 +17,7 @@
 package org.compiere.model;
 
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
@@ -272,19 +273,70 @@ public class MOrg extends X_AD_Org
 	
 
 	/**
-	 * Public key used - part of Key Pair
+	 * Request ID given by ZATCA CCSID request. This should be send for requesting PCSID
 	 */
-    public static final String COLUMNNAME_PUBLICKEY = "PUBLICKEY";
+    public static final String COLUMNNAME_ZATCA_REQUESTID = "ZATCA_REQUESTID";
     
-	public void setPublicKey(String publicKey)
+	public void setZatcaRequestID(String requestID)
 	{
-		set_Value (COLUMNNAME_PUBLICKEY, publicKey);
+		set_Value (COLUMNNAME_ZATCA_REQUESTID, requestID);
 	}
 
-	public String getPublicKey () 
+	public String getZatcaRequestID () 
 	{
-		return (String)get_Value(COLUMNNAME_PUBLICKEY);
+		return (String)get_Value(COLUMNNAME_ZATCA_REQUESTID);
 	}
+	
+
+	/**
+	 * Status of Registration
+	 */
+    public static final String COLUMNNAME_ZATCA_STATUS = "ZATCA_STATUS";
+    
+	public void setZatcaStatus(String status)
+	{
+		set_Value (COLUMNNAME_ZATCA_STATUS, status);
+	}
+
+	public String getZatcaStatus () 
+	{
+		return (String)get_Value(COLUMNNAME_ZATCA_STATUS);
+	}
+	
+	/**
+	 * Is the registration/certificate for Production or Pre-Compliance
+	 */
+    public static final String COLUMNNAME_ZATCA_ISPRODUCTION = "ZATCA_ISPRODUCTION";
+    
+	public void setZatcaIsProduction(boolean isProduction)
+	{
+		set_Value (COLUMNNAME_ZATCA_ISPRODUCTION, Boolean.valueOf(isProduction));
+	}
+
+	public boolean getZatcaIsProduction () 
+	{
+		Object oo = get_Value(COLUMNNAME_ZATCA_ISPRODUCTION);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+	
+	/* ZATCA Registration Expiry. */
+	public static final String COLUMNNAME_ZATCA_EXPIRY = "ZATCA_EXPIRY";
+
+	public Timestamp getZatcaExpiry() {
+		return (Timestamp)get_Value(COLUMNNAME_ZATCA_EXPIRY);
+	}
+	
+	public void setZatcaExpiry (Timestamp time)
+	{
+		set_Value (COLUMNNAME_ZATCA_EXPIRY, time);
+	}
+	
 	
 	/**
 	 * Public key used - part of Key Pair

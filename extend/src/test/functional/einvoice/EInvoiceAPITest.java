@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.Properties;
 
 import org.compiere.model.MInvoice;
+import org.compiere.model.MOrg;
 import org.compiere.util.Env;
 import com.betagroup.einvoice.CanonicalizeHelper;
 import com.betagroup.einvoice.EInvoiceXmlFactory;
@@ -21,7 +22,7 @@ public class EInvoiceAPITest extends AdempiereTestCase {
 		super.setUp();
 	}
 	
-	public void testCSRRequest() {
+	public void testComplianceCSIDRequest() {
 		try {
 			String userName = "TUlJQ1BUQ0NBZU9nQXdJQkFnSUdBWXp6Z0VoTk1Bb0dDQ3FHU000OUJBTUNNQlV4RXpBUkJnTlZCQU1NQ21WSmJuWnZhV05wYm1jd0hoY05NalF3TVRFd01UTXhNVFUwV2hjTk1qa3dNVEE1TWpFd01EQXdXakIxTVFzd0NRWURWUVFHRXdKVFFURVdNQlFHQTFVRUN3d05VbWw1WVdSb0lFSnlZVzVqYURFbU1DUUdBMVVFQ2d3ZFRXRjRhVzExYlNCVGNHVmxaQ0JVWldOb0lGTjFjSEJzZVNCTVZFUXhKakFrQmdOVkJBTU1IVlJUVkMwNE9EWTBNekV4TkRVdE16azVPVGs1T1RrNU9UQXdNREF6TUZZd0VBWUhLb1pJemowQ0FRWUZLNEVFQUFvRFFnQUVvV0NLYTBTYTlGSUVyVE92MHVBa0MxVklLWHhVOW5QcHgydmxmNHloTWVqeThjMDJYSmJsRHE3dFB5ZG84bXEwYWhPTW1Obzhnd25pN1h0MUtUOVVlS09Cd1RDQnZqQU1CZ05WSFJNQkFmOEVBakFBTUlHdEJnTlZIUkVFZ2FVd2dhS2tnWjh3Z1p3eE96QTVCZ05WQkFRTU1qRXRWRk5VZkRJdFZGTlVmRE10WldReU1tWXhaRGd0WlRaaE1pMHhNVEU0TFRsaU5UZ3RaRGxoT0dZeE1XVTBORFZtTVI4d0hRWUtDWkltaVpQeUxHUUJBUXdQTXprNU9UazVPVGs1T1RBd01EQXpNUTB3Q3dZRFZRUU1EQVF4TVRBd01SRXdEd1lEVlFRYURBaFNVbEpFTWpreU9URWFNQmdHQTFVRUR3d1JVM1Z3Y0d4NUlHRmpkR2wyYVhScFpYTXdDZ1lJS29aSXpqMEVBd0lEU0FBd1JRSWhBSUY4akljeHp2Q3lxVURUcDVPbXY3MlVweFBBTG1vUnl0OURZMjRqV21CUUFpQTBiYVo2WXJwcDV5SjRhaG9vb1czK09hOGtrYjMxZXZBb0hkdmdEODA2M3c9PQ==";
 			String password = "PKoGsSwpPx236yNS7CWDojV4doe1i0W+5mPodbMEW5k=";
@@ -31,10 +32,46 @@ public class EInvoiceAPITest extends AdempiereTestCase {
 //					"\n-----END CERTIFICATE REQUEST-----";
 			
 			ZatcaApiHelper apiHelper = new ZatcaApiHelper();
-			apiHelper.setUsername(userName);
-			apiHelper.setPasswd(password);
+			apiHelper.setAuth(userName, password);
+			 // Dev portal OTP: 123345 = Valid, 111111 = Invalid, 222222 = Expired
+			CSRResponse response = apiHelper.requestCCSID(csr, "123345");
+			System.out.print(response);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+	}
+	
+	public void testProductionCSIDRequest() {
+		try {
+			String userName = "TUlJQ0p6Q0NBYzJnQXdJQkFnSUdBWk9aNjJDUk1Bb0dDQ3FHU000OUJBTUNNQlV4RXpBUkJnTlZCQU1NQ21WSmJuWnZhV05wYm1jd0hoY05NalF4TWpBMk1ETXdNak0xV2hjTk1qa3hNakExTWpFd01EQXdXakJjTVFzd0NRWURWUVFHRXdKVFFURVdNQlFHQTFVRUN3d05VbWw1WVdSb0lFSnlZVzVqYURFZ01CNEdBMVVFQ2d3WFFrVlVRU0JKVGtSVlUxUlNTVVZUSUVOUFRWQkJUbGt4RXpBUkJnTlZCQU1NQ2tGRVJpMVNTVmxCUkVnd1ZqQVFCZ2NxaGtqT1BRSUJCZ1VyZ1FRQUNnTkNBQVNNdlBUeisrNzZBWEtyQmxIVVF3T1RIT3dYTEJMOHNTNXpPUXI3VktySUdHckN0K1lVRkdHRm4wMlBQbm5nQ1MxM2EwL3k1UDNOOS9wZkhIeEkzM0dqbzRIRU1JSEJNQXdHQTFVZEV3RUIvd1FDTUFBd2diQUdBMVVkRVFTQnFEQ0JwYVNCb2pDQm56RkNNRUFHQTFVRUJBdzVNUzFCUkVWTlVFbEZVa1Y4TWkxQ1JWUkJmRE10WldReU1tWXhaRGd0WlRaaE1pMHhNVEU0TFRsaU5UZ3RaRGxoT0dZeE1XVTBORFZtTVI4d0hRWUtDWkltaVpQeUxHUUJBUXdQTXprNU9UazVPVGs1T1RBd01EQXpNUTB3Q3dZRFZRUU1EQVF4TVRBd01SRXdEd1lEVlFRYURBaFNSVkpCTVRJek5ERVdNQlFHQTFVRUR3d05UV0Z1ZFdaaFkzUjFjbWx1WnpBS0JnZ3Foa2pPUFFRREFnTklBREJGQWlFQXVPWTMwNW9OcUJIYjN1cWdoc1d2cy8ra1lGUFlDTno4c3hkMFlZS3BRbzRDSUU4NEZYblcyN2ZoRnlxTU9vK3RzMG1PRS9QaEd6OHh6SGRlU3MxN3llMWo=";
+			String password = "Kaad7RNv9fEpPYUwEtYndeDiNx/AhjJFZrDLa2fU/ic=";
+			String complianceRequestID = "1234567890123"; // 1234567890123
 			
-			CSRResponse response = apiHelper.registerCSR(csr);
+			ZatcaApiHelper apiHelper = new ZatcaApiHelper();
+			apiHelper.setAuth(userName, password);
+			
+			 // Dev portal OTP: 123345 = Valid, 111111 = Invalid, 222222 = Expired
+			CSRResponse response = apiHelper.requestPCSID(complianceRequestID);
+			System.out.print(response);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+	}
+	
+	public void testProductionCSIDRenewal() {
+		try {
+			String userName = "TUlJRDNqQ0NBNFNnQXdJQkFnSVRFUUFBT0FQRjkwQWpzL3hjWHdBQkFBQTRBekFLQmdncWhrak9QUVFEQWpCaU1SVXdFd1lLQ1pJbWlaUHlMR1FCR1JZRmJHOWpZV3d4RXpBUkJnb0praWFKay9Jc1pBRVpGZ05uYjNZeEZ6QVZCZ29Ka2lhSmsvSXNaQUVaRmdkbGVIUm5ZWHAwTVJzd0dRWURWUVFERXhKUVVscEZTVTVXVDBsRFJWTkRRVFF0UTBFd0hoY05NalF3TVRFeE1Ea3hPVE13V2hjTk1qa3dNVEE1TURreE9UTXdXakIxTVFzd0NRWURWUVFHRXdKVFFURW1NQ1FHQTFVRUNoTWRUV0Y0YVcxMWJTQlRjR1ZsWkNCVVpXTm9JRk4xY0hCc2VTQk1WRVF4RmpBVUJnTlZCQXNURFZKcGVXRmthQ0JDY21GdVkyZ3hKakFrQmdOVkJBTVRIVlJUVkMwNE9EWTBNekV4TkRVdE16azVPVGs1T1RrNU9UQXdNREF6TUZZd0VBWUhLb1pJemowQ0FRWUZLNEVFQUFvRFFnQUVvV0NLYTBTYTlGSUVyVE92MHVBa0MxVklLWHhVOW5QcHgydmxmNHloTWVqeThjMDJYSmJsRHE3dFB5ZG84bXEwYWhPTW1Obzhnd25pN1h0MUtUOVVlS09DQWdjd2dnSURNSUd0QmdOVkhSRUVnYVV3Z2FLa2daOHdnWnd4T3pBNUJnTlZCQVFNTWpFdFZGTlVmREl0VkZOVWZETXRaV1F5TW1ZeFpEZ3RaVFpoTWkweE1URTRMVGxpTlRndFpEbGhPR1l4TVdVME5EVm1NUjh3SFFZS0NaSW1pWlB5TEdRQkFRd1BNems1T1RrNU9UazVPVEF3TURBek1RMHdDd1lEVlFRTURBUXhNVEF3TVJFd0R3WURWUVFhREFoU1VsSkVNamt5T1RFYU1CZ0dBMVVFRHd3UlUzVndjR3g1SUdGamRHbDJhWFJwWlhNd0hRWURWUjBPQkJZRUZFWCtZdm1tdG5Zb0RmOUJHYktvN29jVEtZSzFNQjhHQTFVZEl3UVlNQmFBRkp2S3FxTHRtcXdza0lGelZ2cFAyUHhUKzlObk1Ic0dDQ3NHQVFVRkJ3RUJCRzh3YlRCckJnZ3JCZ0VGQlFjd0FvWmZhSFIwY0RvdkwyRnBZVFF1ZW1GMFkyRXVaMjkyTG5OaEwwTmxjblJGYm5KdmJHd3ZVRkphUlVsdWRtOXBZMlZUUTBFMExtVjRkR2RoZW5RdVoyOTJMbXh2WTJGc1gxQlNXa1ZKVGxaUFNVTkZVME5CTkMxRFFTZ3hLUzVqY25Rd0RnWURWUjBQQVFIL0JBUURBZ2VBTUR3R0NTc0dBUVFCZ2pjVkJ3UXZNQzBHSlNzR0FRUUJnamNWQ0lHR3FCMkUwUHNTaHUyZEpJZk8reG5Ud0ZWbWgvcWxaWVhaaEQ0Q0FXUUNBUkl3SFFZRFZSMGxCQll3RkFZSUt3WUJCUVVIQXdNR0NDc0dBUVVGQndNQ01DY0dDU3NHQVFRQmdqY1ZDZ1FhTUJnd0NnWUlLd1lCQlFVSEF3TXdDZ1lJS3dZQkJRVUhBd0l3Q2dZSUtvWkl6ajBFQXdJRFNBQXdSUUloQUxFL2ljaG1uV1hDVUtVYmNhM3ljaThvcXdhTHZGZEhWalFydmVJOXVxQWJBaUE5aEM0TThqZ01CQURQU3ptZDJ1aVBKQTZnS1IzTEUwM1U3NWVxYkMvclhBPT0=";
+			String password = "CkYsEXfV8c1gFHAtFWoZv73pGMvh/Qyo4LzKM2h/8Hg=";
+			String csr = "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURSBSRVFVRVNULS0tLS0KTUlJQ0FEQ0NBYVlDQVFBd1hERUxNQWtHQTFVRUJoTUNVMEV4RmpBVUJnTlZCQXNNRFZKcGVXRmthQ0JDY21GdQpZMmd4SURBZUJnTlZCQW9NRjBKRlZFRWdTVTVFVlZOVVVrbEZVeUJEVDAxUVFVNVpNUk13RVFZRFZRUUREQXBCClJFWXRVa2xaUVVSSU1GWXdFQVlIS29aSXpqMENBUVlGSzRFRUFBb0RRZ0FFakx6MDgvdnUrZ0Z5cXdaUjFFTUQKa3h6c0Z5d1MvTEV1Y3prSysxU3F5Qmhxd3JmbUZCUmhoWjlOano1NTRBa3RkMnRQOHVUOXpmZjZYeHg4U045eApvNkNCNmpDQjV3WUpLb1pJaHZjTkFRa09NWUhaTUlIV01DRUdDU3NHQVFRQmdqY1VBZ1FVREJKYVFWUkRRUzFECmIyUmxMVk5wWjI1cGJtY3dnYkFHQTFVZEVRU0JxRENCcGFTQm9qQ0JuekZDTUVBR0ExVUVCQXc1TVMxQlJFVk4KVUVsRlVrVjhNaTFDUlZSQmZETXRaV1F5TW1ZeFpEZ3RaVFpoTWkweE1URTRMVGxpTlRndFpEbGhPR1l4TVdVMApORFZtTVI4d0hRWUtDWkltaVpQeUxHUUJBUXdQTXprNU9UazVPVGs1T1RBd01EQXpNUTB3Q3dZRFZRUU1EQVF4Ck1UQXdNUkV3RHdZRFZRUWFEQWhTUlZKQk1USXpOREVXTUJRR0ExVUVEd3dOVFdGdWRXWmhZM1IxY21sdVp6QUsKQmdncWhrak9QUVFEQWdOSUFEQkZBaUVBNVNoT1FrSlNIK0lNbmkyOXpqSUxaZlhBWGVOZXZXWEV1M053QnhTSgp0VVlDSUQ1VkZWMnZQZ01RWjh1MXI2Umo2REEzbEx1MiszemxPMDJWZnBLWEFwcjIKLS0tLS1FTkQgQ0VSVElGSUNBVEUgUkVRVUVTVC0tLS0tCg==";// + 
+
+			
+			ZatcaApiHelper apiHelper = new ZatcaApiHelper();
+			apiHelper.setAuth(userName, password);
+			
+			 // Dev portal OTP: 123345 = Valid, 111111 = Invalid, 222222 = Expired
+			CSRResponse response = apiHelper.renewPCSID(csr, "123345");
 			System.out.print(response);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -48,8 +85,7 @@ public class EInvoiceAPITest extends AdempiereTestCase {
 		String secret = "E3PHhMok4j9q5XWbI4D2wwraLX1crM6nrRRfNdJ+694=";
 		
 		ZatcaApiHelper apiHelper = new ZatcaApiHelper();
-		apiHelper.setUsername(key);
-		apiHelper.setPasswd(secret);
+		apiHelper.setAuth(key, secret);
 		
 		Properties ctx = new Properties();
 		Env.setContext(ctx, "AD_Client_ID", 1000000);
@@ -59,12 +95,8 @@ public class EInvoiceAPITest extends AdempiereTestCase {
 		try {
 			MInvoice minvoice = MInvoice.get(ctx, 1075742); // B2B Invoice
 			assertNotNull(minvoice);
-			Invoice xmlInvoice = EInvoiceXmlFactory.createInvoiceXml(minvoice);
-			
-			ByteArrayOutputStream os = new ByteArrayOutputStream();
-			EInvoiceXmlFactory.marshalJaxb(xmlInvoice, os, false);
-		
-			byte[] invoiceData = CanonicalizeHelper.canonicalize(os.toByteArray(), false);
+			Invoice xmlInvoice = EInvoiceXmlFactory.createInvoiceXml(minvoice);		
+			byte[] invoiceData = EInvoiceXmlFactory.canonicalize(xmlInvoice, false);
 			InvoiceResult response = apiHelper.checkInvoiceCompliance(minvoice.getInvoiceHash(), minvoice.getUUID(), invoiceData);				
 			System.out.print(response);
 		} catch (Exception e) {
@@ -79,8 +111,7 @@ public class EInvoiceAPITest extends AdempiereTestCase {
 		String secret = "E3PHhMok4j9q5XWbI4D2wwraLX1crM6nrRRfNdJ+694=";
 		
 		ZatcaApiHelper apiHelper = new ZatcaApiHelper();
-		apiHelper.setUsername(key);
-		apiHelper.setPasswd(secret);
+		apiHelper.setAuth(key, secret);
 		
 		Properties ctx = new Properties();
 		Env.setContext(ctx, "AD_Client_ID", 1000000);
@@ -90,11 +121,8 @@ public class EInvoiceAPITest extends AdempiereTestCase {
 		try {
 			MInvoice minvoice = MInvoice.get(ctx, 1075743);
 			assertNotNull(minvoice);
-			Invoice xmlInvoice = EInvoiceXmlFactory.createInvoiceXml(minvoice);
-			ByteArrayOutputStream os = new ByteArrayOutputStream();
-			EInvoiceXmlFactory.marshalJaxb(xmlInvoice, os, false);
-		
-			byte[] invoiceData = CanonicalizeHelper.canonicalize(os.toByteArray(), false);
+			Invoice xmlInvoice = EInvoiceXmlFactory.createInvoiceXml(minvoice);	
+			byte[] invoiceData = EInvoiceXmlFactory.canonicalize(xmlInvoice, false);
 			InvoiceResult response = apiHelper.checkInvoiceCompliance(minvoice.getInvoiceHash(), minvoice.getUUID(), invoiceData);				
 			System.out.print(response);
 		} catch (Exception e) {
@@ -111,8 +139,7 @@ public class EInvoiceAPITest extends AdempiereTestCase {
 		String secret = "E3PHhMok4j9q5XWbI4D2wwraLX1crM6nrRRfNdJ+694=";
 		
 		ZatcaApiHelper apiHelper = new ZatcaApiHelper();
-		apiHelper.setUsername(key);
-		apiHelper.setPasswd(secret);
+		apiHelper.setAuth(key, secret);
 		
 		Properties ctx = new Properties();
 		Env.setContext(ctx, "AD_Client_ID", 1000000);
@@ -122,10 +149,7 @@ public class EInvoiceAPITest extends AdempiereTestCase {
 			MInvoice minvoice = MInvoice.get(ctx, 1075745);
 			assertNotNull(minvoice);
 			Invoice xmlInvoice = EInvoiceXmlFactory.createInvoiceXml(minvoice);
-			ByteArrayOutputStream os = new ByteArrayOutputStream();
-			EInvoiceXmlFactory.marshalJaxb(xmlInvoice, os, false);
-		
-			byte[] invoiceData = CanonicalizeHelper.canonicalize(os.toByteArray(), false);
+			byte[] invoiceData = EInvoiceXmlFactory.canonicalize(xmlInvoice, false);
 			InvoiceResult response = apiHelper.checkInvoiceCompliance(minvoice.getInvoiceHash(), minvoice.getUUID(), invoiceData);				
 			System.out.print(response);
 		} catch (Exception e) {
@@ -140,8 +164,7 @@ public class EInvoiceAPITest extends AdempiereTestCase {
 		String secret = "E3PHhMok4j9q5XWbI4D2wwraLX1crM6nrRRfNdJ+694=";
 		
 		ZatcaApiHelper apiHelper = new ZatcaApiHelper();
-		apiHelper.setUsername(key);
-		apiHelper.setPasswd(secret);
+		apiHelper.setAuth(key, secret);
 		
 		Properties ctx = new Properties();
 		Env.setContext(ctx, "AD_Client_ID", 1000000);
@@ -151,10 +174,7 @@ public class EInvoiceAPITest extends AdempiereTestCase {
 			MInvoice minvoice = MInvoice.get(ctx, 1075750);
 			assertNotNull(minvoice);
 			Invoice xmlInvoice = EInvoiceXmlFactory.createInvoiceXml(minvoice);
-			ByteArrayOutputStream os = new ByteArrayOutputStream();
-			EInvoiceXmlFactory.marshalJaxb(xmlInvoice, os, false);
-		
-			byte[] invoiceData = CanonicalizeHelper.canonicalize(os.toByteArray(), false);
+			byte[] invoiceData = EInvoiceXmlFactory.canonicalize(xmlInvoice, false);
 			InvoiceResult response = apiHelper.checkInvoiceCompliance(minvoice.getInvoiceHash(), minvoice.getUUID(), invoiceData);				
 			System.out.print(response);
 		} catch (Exception e) {
@@ -165,12 +185,13 @@ public class EInvoiceAPITest extends AdempiereTestCase {
 	}
 
 	public void testComplianceB2CInvoice() {
-		String key = "TUlJQ01EQ0NBZGFnQXdJQkFnSUdBWk0vNDBZTU1Bb0dDQ3FHU000OUJBTUNNQlV4RXpBUkJnTlZCQU1NQ21WSmJuWnZhV05wYm1jd0hoY05NalF4TVRFNE1UVXlOelUwV2hjTk1qa3hNVEUzTWpFd01EQXdXakJuTVFzd0NRWURWUVFHRXdKVFFURVdNQlFHQTFVRUN3d05VbWw1WVdSb0lFSnlZVzVqYURFWU1CWUdBMVVFQ2d3UFFrVlVRU0JKVGtSVlUxUlNTVVZUTVNZd0pBWURWUVFEREIxQlJFVk5VRWxGVWtVdE1UQXhMVE14TWpNME5UWTNPRGt3TURBd016QldNQkFHQnlxR1NNNDlBZ0VHQlN1QkJBQUtBMElBQkdYcmNJbzFjaVZoaUtlUlE5ZTk3SURVeVhNSGpCRXZ2NGxTamxkNHErWHdRVzQ1d0pHWDdCR1R4bWZxVytibFR3S1ZuYm1GTk9iN1RJaE00a3R4WEF5amdjSXdnYjh3REFZRFZSMFRBUUgvQkFJd0FEQ0JyZ1lEVlIwUkJJR21NSUdqcElHZ01JR2RNVUl3UUFZRFZRUUVERGt4TFVGRVJVMVFTVVZTUlh3eUxUSXdNalI4TXkxbFpESXlaakZrT0MxbE5tRXlMVEV4TVRndE9XSTFPQzFrT1dFNFpqRXhaVFEwTldZeEh6QWRCZ29Ka2lhSmsvSXNaQUVCREE4ek1USXpORFUyTnpnNU1EQXdNRE14RFRBTEJnTlZCQXdNQkRFeE1EQXhEekFOQmdOVkJCb01CbEpKV1VGRVNERVdNQlFHQTFVRUR3d05UVUZPVlVaQlExUlZVa2xPUnpBS0JnZ3Foa2pPUFFRREFnTklBREJGQWlFQTIwV2dIYVMwZEZXd1Z3OU5pYnZjL3FsL0tqcDVvSDk0UGhDekprTXlQWXNDSUVxb1BzUXFzTk1oTTRRQ2dIUnNBblJCQXN6MW11VnVaQTh1MFg5cEJucjg=";
-		String secret = "E3PHhMok4j9q5XWbI4D2wwraLX1crM6nrRRfNdJ+694=";
+//		String key = "TUlJQ01EQ0NBZGFnQXdJQkFnSUdBWk0vNDBZTU1Bb0dDQ3FHU000OUJBTUNNQlV4RXpBUkJnTlZCQU1NQ21WSmJuWnZhV05wYm1jd0hoY05NalF4TVRFNE1UVXlOelUwV2hjTk1qa3hNVEUzTWpFd01EQXdXakJuTVFzd0NRWURWUVFHRXdKVFFURVdNQlFHQTFVRUN3d05VbWw1WVdSb0lFSnlZVzVqYURFWU1CWUdBMVVFQ2d3UFFrVlVRU0JKVGtSVlUxUlNTVVZUTVNZd0pBWURWUVFEREIxQlJFVk5VRWxGVWtVdE1UQXhMVE14TWpNME5UWTNPRGt3TURBd016QldNQkFHQnlxR1NNNDlBZ0VHQlN1QkJBQUtBMElBQkdYcmNJbzFjaVZoaUtlUlE5ZTk3SURVeVhNSGpCRXZ2NGxTamxkNHErWHdRVzQ1d0pHWDdCR1R4bWZxVytibFR3S1ZuYm1GTk9iN1RJaE00a3R4WEF5amdjSXdnYjh3REFZRFZSMFRBUUgvQkFJd0FEQ0JyZ1lEVlIwUkJJR21NSUdqcElHZ01JR2RNVUl3UUFZRFZRUUVERGt4TFVGRVJVMVFTVVZTUlh3eUxUSXdNalI4TXkxbFpESXlaakZrT0MxbE5tRXlMVEV4TVRndE9XSTFPQzFrT1dFNFpqRXhaVFEwTldZeEh6QWRCZ29Ka2lhSmsvSXNaQUVCREE4ek1USXpORFUyTnpnNU1EQXdNRE14RFRBTEJnTlZCQXdNQkRFeE1EQXhEekFOQmdOVkJCb01CbEpKV1VGRVNERVdNQlFHQTFVRUR3d05UVUZPVlVaQlExUlZVa2xPUnpBS0JnZ3Foa2pPUFFRREFnTklBREJGQWlFQTIwV2dIYVMwZEZXd1Z3OU5pYnZjL3FsL0tqcDVvSDk0UGhDekprTXlQWXNDSUVxb1BzUXFzTk1oTTRRQ2dIUnNBblJCQXN6MW11VnVaQTh1MFg5cEJucjg=";
+//		String secret = "E3PHhMok4j9q5XWbI4D2wwraLX1crM6nrRRfNdJ+694=";
 		
+		String key = "TUlJRDRUQ0NBNGFnQXdJQkFnSVRGd0FBTzJVVXE4RmR0Z1lLNWdBQkFBQTdaVEFLQmdncWhrak9QUVFEQWpCaU1SVXdFd1lLQ1pJbWlaUHlMR1FCR1JZRmJHOWpZV3d4RXpBUkJnb0praWFKay9Jc1pBRVpGZ05uYjNZeEZ6QVZCZ29Ka2lhSmsvSXNaQUVaRmdkbGVIUm5ZWHAwTVJzd0dRWURWUVFERXhKUVVscEZTVTVXVDBsRFJWTkRRVEV0UTBFd0hoY05NalF3TVRFMU1UY3lOVEU1V2hjTk1qa3dNVEV6TVRjeU5URTVXakIxTVFzd0NRWURWUVFHRXdKVFFURW1NQ1FHQTFVRUNoTWRUV0Y0YVcxMWJTQlRjR1ZsWkNCVVpXTm9JRk4xY0hCc2VTQk1WRVF4RmpBVUJnTlZCQXNURFZKcGVXRmthQ0JDY21GdVkyZ3hKakFrQmdOVkJBTVRIVlJUVkMwNE9EWTBNekV4TkRVdE16azVPVGs1T1RrNU9UQXdNREF6TUZZd0VBWUhLb1pJemowQ0FRWUZLNEVFQUFvRFFnQUU1VlA5ZFFXbmtpNHpSZ1VZanBORDRBdVZVNFhBVmFxc0piVlR2ZEtJOUVJZHpvSlRGRENXSEdiR0ZOemtZUDB5b05MdG8vNS84MFlEQjV2TkZ1Z1hhS09DQWdrd2dnSUZNSUd2QmdOVkhSRUVnYWN3Z2FTa2dhRXdnWjR4T3pBNUJnTlZCQVFNTWpFdFZGTlVmREl0VkZOVWZETXRaV1F5TW1ZeFpEZ3RaVFpoTWkweE1URTRMVGxpTlRndFpEbGhPR1l4TVdVME5EVm1NUjh3SFFZS0NaSW1pWlB5TEdRQkFRd1BNems1T1RrNU9UazVPVEF3TURBek1RMHdDd1lEVlFRTURBUXhNVEF3TVJFd0R3WURWUVFhREFoU1VsSkVNamt5T1RFY01Cb0dBMVVFRHd3VDJZMVRkWEJ3YkhrZ1lXTjBhWFpwZEdsbGN6QWRCZ05WSFE0RUZnUVVadkJOcHdmMFJzWTBvU2QyWXo2Tjg0aXhCRll3SHdZRFZSMGpCQmd3Rm9BVWNwUFJEbXY2SkZzVGhlckJGZk80RmZzYkJZMHdld1lJS3dZQkJRVUhBUUVFYnpCdE1Hc0dDQ3NHQVFVRkJ6QUNobDlvZEhSd09pOHZZV2xoTVM1NllYUmpZUzVuYjNZdWMyRXZRMlZ5ZEVWdWNtOXNiQzlRVWxwRmFXNTJiMmxqWlZORFFURXVaWGgwWjJGNmRDNW5iM1l1Ykc5allXeGZVRkphUlVsT1ZrOUpRMFZUUTBFeExVTkJLREVwTG1OeWREQU9CZ05WSFE4QkFmOEVCQU1DQjRBd1BBWUpLd1lCQkFHQ054VUhCQzh3TFFZbEt3WUJCQUdDTnhVSWdZYW9IWVRRK3hLRzdaMGtoODc3R2RQQVZXYUgrcVZsaGRtRVBnSUJaQUlCRWpBZEJnTlZIU1VFRmpBVUJnZ3JCZ0VGQlFjREF3WUlLd1lCQlFVSEF3SXdKd1lKS3dZQkJBR0NOeFVLQkJvd0dEQUtCZ2dyQmdFRkJRY0RBekFLQmdnckJnRUZCUWNEQWpBS0JnZ3Foa2pPUFFRREFnTkpBREJHQWlFQS9vaDRIb2FlTGh6SDFNN2YrTjBrSmZoSW42RHlzQkZaWEZNcGdnK3poeG9DSVFDVWwweEtyTGxuZEM5V25QdGVSNUx1dVF2amdQQUpvUklFd2JDeVJpSXk2dz09";
+		String secret = "TI3KWKt/poHFXT7Wf55lZE8YNfc098coQ11LRAK1sBU=";
 		ZatcaApiHelper apiHelper = new ZatcaApiHelper();
-		apiHelper.setUsername(key);
-		apiHelper.setPasswd(secret);
+		apiHelper.setAuth(key, secret);
 		
 		Properties ctx = new Properties();
 		Env.setContext(ctx, "AD_Client_ID", 1000000);
@@ -180,10 +201,7 @@ public class EInvoiceAPITest extends AdempiereTestCase {
 			MInvoice minvoice = MInvoice.get(ctx, 1075753);
 			assertNotNull(minvoice);
 			Invoice xmlInvoice = EInvoiceXmlFactory.createInvoiceXml(minvoice);
-			ByteArrayOutputStream os = new ByteArrayOutputStream();
-			EInvoiceXmlFactory.marshalJaxb(xmlInvoice, os, false);
-		
-			byte[] invoiceData = CanonicalizeHelper.canonicalize(os.toByteArray(), false);
+			byte[] invoiceData = EInvoiceXmlFactory.canonicalize(xmlInvoice, false);
 			InvoiceResult response = apiHelper.checkInvoiceCompliance(minvoice.getInvoiceHash(), minvoice.getUUID(), invoiceData);				
 			System.out.print(response);
 		} catch (Exception e) {
@@ -193,5 +211,50 @@ public class EInvoiceAPITest extends AdempiereTestCase {
 		
 	}
 	
+	public void testB2BInvoiceClearance() {	
+		Properties ctx = new Properties();
+		Env.setContext(ctx, "AD_Client_ID", 1000000);
+		Env.setContext(ctx, "AD_Org_ID", 0);
 	
+		// B2B Invoice
+		try {
+			MInvoice minvoice = MInvoice.get(ctx, 1075742); // B2B Invoice
+			assertNotNull(minvoice);
+			Invoice xmlInvoice = EInvoiceXmlFactory.createInvoiceXml(minvoice);
+			byte[] invoiceData = EInvoiceXmlFactory.canonicalize(xmlInvoice, false);
+			MOrg org = MOrg.get(ctx, minvoice.getAD_Org_ID());
+			ZatcaApiHelper apiHelper = new ZatcaApiHelper();
+			apiHelper.setAuth(org.getCertificate(), org.getZatcaSecret());
+			InvoiceResult response = apiHelper.submitInvoiceForClearance(minvoice.getInvoiceHash(), minvoice.getUUID(), invoiceData);				
+			System.out.print(response);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+	}
+		
+	public void testB2BInvoiceReporting() {
+		Properties ctx = new Properties();
+		Env.setContext(ctx, "AD_Client_ID", 1000000);
+		Env.setContext(ctx, "AD_Org_ID", 0);
+	
+		// B2B Invoice
+		try {
+			MInvoice minvoice = MInvoice.get(ctx, 1075753); // B2C Invoice
+			assertNotNull(minvoice);
+			Invoice xmlInvoice = EInvoiceXmlFactory.createInvoiceXml(minvoice);
+			byte[] invoiceData = EInvoiceXmlFactory.canonicalize(xmlInvoice, false);
+			ZatcaApiHelper apiHelper = new ZatcaApiHelper();
+			MOrg org = MOrg.get(ctx, minvoice.getAD_Org_ID());
+			apiHelper.setAuth(org.getCertificate(), org.getZatcaSecret());
+			
+			InvoiceResult response = apiHelper.submitInvoiceForReporting(minvoice.getInvoiceHash(), minvoice.getUUID(), invoiceData);				
+			System.out.print(response);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+	}
 }

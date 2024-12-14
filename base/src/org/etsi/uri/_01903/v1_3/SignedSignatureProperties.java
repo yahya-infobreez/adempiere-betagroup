@@ -9,6 +9,7 @@
 package org.etsi.uri._01903.v1_3;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -63,7 +64,8 @@ public class SignedSignatureProperties {
 
     @XmlElement(name = "SigningTime")
     @XmlSchemaType(name = "dateTime")
-    protected XMLGregorianCalendar signingTime;
+//    protected XMLGregorianCalendar signingTime;
+    protected String signingTime;
     @XmlElement(name = "SigningCertificate")
     protected SigningCertificate signingCertificate;
     @XmlElement(name = "SignaturePolicyIdentifier")
@@ -86,7 +88,7 @@ public class SignedSignatureProperties {
      *     {@link XMLGregorianCalendar }
      *     
      */
-    public XMLGregorianCalendar getSigningTime() {
+    public String getSigningTime() {
         return signingTime;
     }
 
@@ -98,12 +100,14 @@ public class SignedSignatureProperties {
      *     {@link XMLGregorianCalendar }
      *     
      */
-    public void setSigningTime(XMLGregorianCalendar value) {
-        this.signingTime = value;
-    }
+//    public void setSigningTime(XMLGregorianCalendar value) {
+//        this.signingTime = value;
+//    }
     
+    public static DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");	
     public void setSigningTime(LocalDateTime datetime) throws Exception {
-        this.signingTime = QRUtil.getXmlTime(datetime);
+//        this.signingTime = QRUtil.getXmlTime(datetime);
+    	this.signingTime = datetime.format(timeFormatter);
     }
 
     /**

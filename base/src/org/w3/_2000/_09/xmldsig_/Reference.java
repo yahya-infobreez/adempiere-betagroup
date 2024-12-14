@@ -55,9 +55,9 @@ public class Reference {
 
     @XmlElement(name = "Transforms")
     protected Transforms transforms;
-    @XmlElement(name = "DigestMethod", required = true)
+    @XmlElement(name = "DigestMethod", namespace="http://www.w3.org/2000/09/xmldsig#", required = true)
     protected DigestMethod digestMethod;
-    @XmlElement(name = "DigestValue", required = true)
+    @XmlElement(name = "DigestValue", namespace="http://www.w3.org/2000/09/xmldsig#", required = true)
 //    protected byte[] digestValue;
     protected String digestValue;
     @XmlAttribute(name = "Id")

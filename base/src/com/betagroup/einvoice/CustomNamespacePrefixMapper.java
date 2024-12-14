@@ -3,18 +3,42 @@ package com.betagroup.einvoice;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
+import javax.xml.namespace.NamespaceContext;
+
 import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
+import com.sun.xml.bind.v2.runtime.output.NamespaceContextImpl;
 
 public class CustomNamespacePrefixMapper extends NamespacePrefixMapper {
-	
-	
 
     @Override
-
     public String[] getPreDeclaredNamespaceUris() {
         return new String[] {
-        		"urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" 
+        		"urn:oasis:names:specification:ubl:schema:xsd:Invoice-2", 
+    			"urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2",
+    			"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2",
+    			"urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
+    			"urn:oasis:names:specification:ubl:schema:xsd:SignatureAggregateComponents-2",
+    			"urn:oasis:names:specification:ubl:schema:xsd:SignatureBasicComponents-2",
+    			"urn:oasis:names:specification:ubl:schema:xsd:CommonSignatureComponents-2" 
         	}; // Your namespace URI
+    }
+    
+    @Override
+    public String[] getPreDeclaredNamespaceUris2() {
+    	return new String[] {
+//    			"ext", "urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2",
+//    			"cac", "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2",
+//    			"cbc", "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
+//    			"sac", "urn:oasis:names:specification:ubl:schema:xsd:SignatureAggregateComponents-2",
+//    			"sbc", "urn:oasis:names:specification:ubl:schema:xsd:SignatureBasicComponents-2",
+//    			"sig", "urn:oasis:names:specification:ubl:schema:xsd:CommonSignatureComponents-2", 
+    		};
+    }
+    
+    @Override
+    public String[] getContextualNamespaceDecls() {
+    	return new String[] {};
+
     }
     
 	@Override
@@ -37,6 +61,8 @@ public class CustomNamespacePrefixMapper extends NamespacePrefixMapper {
         	return "xades";
         } else if("urn:oasis:names:specification:ubl:schema:xsd:Invoice-2".equals(namespaceUri)) {
         	return "";
+//        } else {
+//        	return "";
         }
 
         return suggestion; // Default suggestion if not matched

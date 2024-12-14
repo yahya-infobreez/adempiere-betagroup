@@ -1,15 +1,12 @@
 package com.betagroup.einvoice;
 
 import java.util.Base64;
-
+import org.compiere.model.MSysConfig;
 import org.compiere.util.KeyNamePair;
-import org.python.core.StdoutWrapper;
-
 import com.betagroup.einvoice.api.model.CSRRequest;
 import com.betagroup.einvoice.api.model.CSRResponse;
 import com.betagroup.einvoice.api.model.ClearedInvoiceResult;
 import com.betagroup.einvoice.api.model.InvoiceRequest;
-import com.betagroup.einvoice.api.model.InvoiceRequest2;
 import com.betagroup.einvoice.api.model.InvoiceResult;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,8 +47,14 @@ public class ZatcaApiHelper extends GenericApi {
 	 */
 	public static String FATOORA_API_SIMULATION_URL = "https://gw-fatoora.zatca.gov.sa/e-invoicing/simulation";
 	public static String FATOORA_API_DEVELOPER_PORTAL_URL = "https://gw-fatoora.zatca.gov.sa/e-invoicing/developer-portal";
-	public static String FATOORA_API_URL = "https://gw-fatoora.zatca.gov.sa/e-invoicing/core";
+	public static String FATOORA_API_PRODUCTION_URL = "https://gw-fatoora.zatca.gov.sa/e-invoicing/core";
 
+	/** Possible values are 
+	 * <li>sim</li>
+	 * <li>dev</li>
+	 * <li>prod</li>
+	 */
+	public static String FATOORA_API_TARGET= "FATOORA_API_TARGET";
 	
 	/**
 	 * Issues an X509 Compliance Cryptographic Stamp Identifier (CCSID/Certificate) (CSID) based on submitted CSR.(complianceCertificate)
@@ -94,6 +97,27 @@ public class ZatcaApiHelper extends GenericApi {
 	 */
 	public static String API_ReportingModelEndpointS = "/invoices/reporting/single";
 	
+	private String baseUrl;
+	
+	
+	public ZatcaApiHelper() {
+		// Get the target portal from Sysconfig
+		String apiTarget = MSysConfig.getValue(FATOORA_API_TARGET, "dev");
+		switch(apiTarget) {
+		case "sim":
+			baseUrl = FATOORA_API_SIMULATION_URL;
+			break;
+		case "dev":
+			baseUrl = FATOORA_API_DEVELOPER_PORTAL_URL;
+			break;
+		case "prod":
+			default:
+			baseUrl = FATOORA_API_PRODUCTION_URL;
+			break;			
+		}
+	}
+	
+	
 	/**
 	 * Invoke Register CSR API
 	 * Requires userName, password to be set. @see {@link #setUsername(String)}, {@link #setPasswd(String)}
@@ -101,12 +125,16 @@ public class ZatcaApiHelper extends GenericApi {
 	 * @return
 	 * @throws Exception
 	 */
-	public CSRResponse registerCSR(String csr) throws Exception {
+	public CSRResponse requestCCSID(String csr, String otp) throws Exception {
 		CSRRequest data = new CSRRequest();
 		data.setCsr(csr);
-		KeyNamePair result = invokePostApi(FATOORA_API_DEVELOPER_PORTAL_URL+API_ComplianceCSIDCertificate, data);
+		String url = baseUrl+API_ComplianceCSIDCertificate;
+        addHeader("OTP", otp);
+		
+		KeyNamePair result = invokePostApi(url, data);
 		
 		System.out.println("Result: " + result);
+		// 428 = Renewed. Need to redo compliance
 		if(result.getKey() == 200 || result.getKey() == 202) {
 			String resultData = result.getName();
 			if(resultData != null && resultData.startsWith("{") && resultData.endsWith("}")) { // Is Json
@@ -122,6 +150,58 @@ public class ZatcaApiHelper extends GenericApi {
 		}
 	}
 	
+	public CSRResponse requestPCSID(String complianceRequestID) throws Exception {
+		CSRRequest data = new CSRRequest();
+		data.setCompliance_request_id(complianceRequestID);
+		String url = baseUrl+API_CryptographicStampIdentifierCertificateEndpointS;
+		// Add additional headers to the request
+		addHeader("CurrentCCSID", userName); // The token is already set as user		
+		
+		KeyNamePair result = invokePostApi(url, data);
+		
+		System.out.println("Result: " + result);
+		// 428 = Renewed. Need to redo compliance
+		if(result.getKey() == 200 || result.getKey() == 202 || result.getKey() == 428) {
+			String resultData = result.getName();
+			if(resultData != null && resultData.startsWith("{") && resultData.endsWith("}")) { // Is Json
+		        ObjectMapper objectMapper = new ObjectMapper();
+		        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+				CSRResponse response = objectMapper.readValue(resultData, CSRResponse.class);		
+				return response;
+			} else {
+				throw new Exception("CSR Request failed. " + result);
+			}
+		} else {
+			throw new Exception("CSR Request failed. " + result);
+		}
+	}
+	
+	public CSRResponse renewPCSID(String csr, String otp) throws Exception {
+		CSRRequest data = new CSRRequest();
+		data.setCsr(csr);
+		String url = baseUrl+API_CryptographicStampIdentifierCertificateEndpointS;
+		// Add additional headers to the request
+		addHeader("CurrentCCSID", userName); // The token is already set as user		
+        addHeader("OTP", otp);
+		
+		KeyNamePair result = invokePatchApi(url, data);
+		
+		System.out.println("Result: " + result);
+		// 428 = Renewed. Need to redo compliance
+		if(result.getKey() == 200 || result.getKey() == 202 || result.getKey() == 428) {
+			String resultData = result.getName();
+			if(resultData != null && resultData.startsWith("{") && resultData.endsWith("}")) { // Is Json
+		        ObjectMapper objectMapper = new ObjectMapper();
+		        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+				CSRResponse response = objectMapper.readValue(resultData, CSRResponse.class);		
+				return response;
+			} else {
+				throw new Exception("CSR Renewal Request failed. " + result);
+			}
+		} else {
+			throw new Exception("CSR Renewal Request failed. " + result);
+		}
+	}
 	
 	public InvoiceResult checkInvoiceCompliance(String hash, String uuid, byte[] invoiceData) throws Exception {
 		InvoiceRequest invoiceRequest = new InvoiceRequest();
@@ -129,7 +209,7 @@ public class ZatcaApiHelper extends GenericApi {
 		invoiceRequest.setUuid(uuid);
 		invoiceRequest.setInvoice(Base64.getEncoder().encodeToString(invoiceData));
 
-		KeyNamePair result = invokePostApi(FATOORA_API_DEVELOPER_PORTAL_URL+API_ComplianceInvoice, invoiceRequest);
+		KeyNamePair result = invokePostApi(baseUrl+API_ComplianceInvoice, invoiceRequest);
 		
 		System.out.println("Result: " + result);
 		if(result.getKey() == 200 || result.getKey() == 202) {
@@ -147,15 +227,18 @@ public class ZatcaApiHelper extends GenericApi {
 		}
 	}
 	
-	public ClearedInvoiceResult submitB2BInvoiceForClearance(String hash, String uuid, byte[] invoiceData) throws Exception {
-		InvoiceRequest2 request = new InvoiceRequest2();
+	public ClearedInvoiceResult submitInvoiceForClearance(String hash, String uuid, byte[] invoiceData) throws Exception {
+//		InvoiceRequest2 request = new InvoiceRequest2();
 		InvoiceRequest invoiceRequest = new InvoiceRequest();
 		invoiceRequest.setInvoiceHash(hash);
 		invoiceRequest.setUuid(uuid);
 		invoiceRequest.setInvoice(Base64.getEncoder().encodeToString(invoiceData));
-		request.setValue(invoiceRequest);
-		request.setSummary("Standard Invoice"); //"Standard Invoice", "Simplified Invoice"
-		KeyNamePair result = invokePostApi(FATOORA_API_DEVELOPER_PORTAL_URL+API_ClearanceModelEndpointS, request);
+//		request.setValue(invoiceRequest);
+//		request.setSummary("Standard Invoice"); //"Standard Invoice", "Simplified Invoice"
+		
+		addHeader("Clearance-Status", "1"); // 0 = Disabled, 1= Enabled
+
+		KeyNamePair result = invokePostApi(baseUrl+API_ClearanceModelEndpointS, invoiceRequest); //request);
 		
 		System.out.println("Result: " + result);
 		if(result.getKey() == 200 || result.getKey() == 202) {
@@ -174,15 +257,16 @@ public class ZatcaApiHelper extends GenericApi {
 	}
 
 	
-	public InvoiceResult submitB2CInvoiceForReporting(String hash, String uuid, byte[] invoiceData) throws Exception {
-		InvoiceRequest2 request = new InvoiceRequest2();
+	public InvoiceResult submitInvoiceForReporting(String hash, String uuid, byte[] invoiceData) throws Exception {
+//		InvoiceRequest2 request = new InvoiceRequest2();
 		InvoiceRequest invoiceRequest = new InvoiceRequest();
 		invoiceRequest.setInvoiceHash(hash);
 		invoiceRequest.setUuid(uuid);
 		invoiceRequest.setInvoice(Base64.getEncoder().encodeToString(invoiceData));
-		request.setValue(invoiceRequest);
-		request.setSummary("Simplified Invoice"); //"Standard Invoice", "Simplified Invoice"
-		KeyNamePair result = invokePostApi(FATOORA_API_DEVELOPER_PORTAL_URL+API_ReportingModelEndpointS, request);
+//		request.setValue(invoiceRequest);
+//		request.setSummary("Simplified Invoice"); //"Standard Invoice", "Simplified Invoice"
+		addHeader("Clearance-Status", "0"); // 0 = Disabled, 1= Enabled
+		KeyNamePair result = invokePostApi(baseUrl+API_ReportingModelEndpointS, invoiceRequest); //request);
 		
 		System.out.println("Result: " + result);
 		if(result.getKey() == 200 || result.getKey() == 202) {
@@ -193,10 +277,10 @@ public class ZatcaApiHelper extends GenericApi {
 		        InvoiceResult response = objectMapper.readValue(resultData, InvoiceResult.class);		
 				return response;
 			} else {
-				throw new Exception("Invoice clearance failed. " + result);
+				throw new Exception("Invoice reporting failed. " + result);
 			}
 		} else {
-			throw new Exception("CSR Request failed. " + result);
+			throw new Exception("Invoice reporting failed. " + result);
 		}
 	}
 }

@@ -52,7 +52,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
     "keyInfo",
     "objects"
 })
-@XmlRootElement(name = "Signature")
+@XmlRootElement(name = "Signature", namespace="http://www.w3.org/2000/09/xmldsig#")
 public class Signature {
 
     @XmlElement(name = "SignedInfo", required = true)

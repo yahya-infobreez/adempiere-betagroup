@@ -4,6 +4,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.nio.file.Files;
 import java.util.Properties;
 
 import org.compiere.model.MInvoice;
@@ -81,7 +82,9 @@ public class EInvoiceXmlFactoryTest extends AdempiereTestCase {
 		MInvoice minvoice = MInvoice.get(ctx, 1075216);
 		assertNotNull(minvoice);
 		try {
-			Invoice xmlInvoice = EInvoiceXmlFactory.loadXml(new File("/tmp/eInvoice42470ARI.xml"));
+			FileInputStream in = new FileInputStream("/tmp/eInvoice42470ARI.xml");
+			Invoice xmlInvoice = EInvoiceXmlFactory.loadXml(in);
+			in.close();
 			assertNotNull(xmlInvoice);
 			
 		
@@ -117,6 +120,10 @@ public class EInvoiceXmlFactoryTest extends AdempiereTestCase {
 					.replaceAll("\\\\", "_")
 					.replaceAll("/", "_");
 			File inputFile = new File(System.getProperty("java.io.tmpdir"),  fileName + ".xml");
+	    	// Write the Invoice XML into tmp file first
+	    	BufferedOutputStream outStream1 = new BufferedOutputStream(new FileOutputStream(inputFile));
+	    	EInvoiceXmlFactory.marshalJaxb(xmlInvoice, outStream1, false);
+	    	outStream1.close();
 			ZatcaSDKProcessHelper.validateXml(inputFile);			
 		} catch (Exception e) {			
 			e.printStackTrace();
@@ -141,6 +148,9 @@ public class EInvoiceXmlFactoryTest extends AdempiereTestCase {
 					.replaceAll("\\\\", "_")
 					.replaceAll("/", "_");
 			File inputFile = new File(System.getProperty("java.io.tmpdir"),  fileName + ".xml");
+	    	BufferedOutputStream outStream1 = new BufferedOutputStream(new FileOutputStream(inputFile));
+	    	EInvoiceXmlFactory.marshalJaxb(xmlInvoice, outStream1, false);
+	    	outStream1.close();
 			ZatcaSDKProcessHelper.validateXml(inputFile);			
 		} catch (Exception e) {			
 			e.printStackTrace();
@@ -184,10 +194,11 @@ public class EInvoiceXmlFactoryTest extends AdempiereTestCase {
 		Env.setContext(ctx, "AD_Client_ID", 1000000);
 		Env.setContext(ctx, "AD_Org_ID", 0);
 	
-		MInvoice minvoice = MInvoice.get(ctx, 1075750); //Debit Note
+		MInvoice minvoice = MInvoice.get(ctx, 1075750); //Debit Note-B2C
 		assertNotNull(minvoice);
 		try {
 			Invoice xmlInvoice = EInvoiceXmlFactory.createInvoiceXml(minvoice);
+			byte[] invoiceData = EInvoiceXmlFactory.canonicalize(xmlInvoice, false);
 			assertNotNull(xmlInvoice);
 			
 			String fileName = "eInvoice" + xmlInvoice.getID().getValue()
@@ -196,9 +207,36 @@ public class EInvoiceXmlFactoryTest extends AdempiereTestCase {
 					.replaceAll("/", "_");
 			File inputFile = new File(System.getProperty("java.io.tmpdir"),  fileName + ".xml");
 		    	// Write the Invoice XML into tmp file first
-		    	BufferedOutputStream outStream1 = new BufferedOutputStream(new FileOutputStream(inputFile));
-		    	EInvoiceXmlFactory.marshalJaxb(xmlInvoice, outStream1, false);
-		    	outStream1.close();
+		    Files.write(inputFile.toPath(), invoiceData);
+		    	
+			ZatcaSDKProcessHelper.validateXml(inputFile);	
+			
+		} catch (Exception e) {			
+			e.printStackTrace();
+			fail(e.getMessage());
+		} finally {
+		}
+	}
+	
+	public void testValidateB2CInvoice() {
+		Properties ctx = new Properties();
+		Env.setContext(ctx, "AD_Client_ID", 1000000);
+		Env.setContext(ctx, "AD_Org_ID", 0);
+	
+		MInvoice minvoice = MInvoice.get(ctx, 1075753); // B2C Invoice
+		assertNotNull(minvoice);
+		try {
+			Invoice xmlInvoice = EInvoiceXmlFactory.createInvoiceXml(minvoice);
+			byte[] invoiceData = EInvoiceXmlFactory.canonicalize(xmlInvoice, false);
+			assertNotNull(xmlInvoice);
+			
+			String fileName = "eInvoice" + xmlInvoice.getID().getValue()
+					.replaceAll("\\s+", "_")
+					.replaceAll("\\\\", "_")
+					.replaceAll("/", "_");
+			File inputFile = new File(System.getProperty("java.io.tmpdir"),  fileName + ".xml");
+		    	// Write the Invoice XML into tmp file first
+			Files.write(inputFile.toPath(), invoiceData);
 		    	
 			ZatcaSDKProcessHelper.validateXml(inputFile);	
 			
@@ -233,7 +271,7 @@ public class EInvoiceXmlFactoryTest extends AdempiereTestCase {
 		}
 	}
 	
-	public void testMarshalKeyInfo() {
+	public void testMarshalKeyInfo() throws Exception {
 		String certificateData = "MIIE4zCCBImgAwIBAgITegAALzfpPGY2F7fidQABAAAvNzAKBggqhkjOPQQDAjBiMRUwEwYKCZImiZPy";
 		X509Data x509Data = new X509Data().addX509Certificate(certificateData);
 		KeyInfo keyInfo = new KeyInfo(); 
@@ -241,7 +279,7 @@ public class EInvoiceXmlFactoryTest extends AdempiereTestCase {
 		EInvoiceXmlFactory.marshalJaxb(keyInfo, System.out, true);
 	}
 
-	public void testMarshalX509Data() {
+	public void testMarshalX509Data() throws Exception {
 		String certificateData = "MIIE4zCCBImgAwIBAgITegAALzfpPGY2F7fidQABAAAvNzAKBggqhkjOPQQDAjBiMRUwEwYKCZImiZPy";
 		X509Data x509Data = new X509Data().addX509Certificate(certificateData); 
 		EInvoiceXmlFactory.marshalJaxb(x509Data, System.out, true);

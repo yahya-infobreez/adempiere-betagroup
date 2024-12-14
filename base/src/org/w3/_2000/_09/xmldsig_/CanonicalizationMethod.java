@@ -44,7 +44,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "CanonicalizationMethodType", propOrder = {
     "content"
 })
-@XmlRootElement(name = "CanonicalizationMethod")
+@XmlRootElement(name = "CanonicalizationMethod", namespace="http://www.w3.org/2000/09/xmldsig#")
 public class CanonicalizationMethod {
 
     @XmlMixed

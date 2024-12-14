@@ -8,18 +8,28 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigDecimal;
+import java.nio.file.Files;
 import java.security.InvalidParameterException;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.stream.Collectors;
+
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MBPartner;
@@ -568,13 +578,6 @@ public class EInvoiceXmlFactory {
 			invoice.getAdditionalDocumentReferences().add(qrCode);
 //		}
 		minvoice.saveEx();
-		
-		FileOutputStream out = new FileOutputStream("/tmp/test-einvoice-final.xml");
-//		marshalJaxb(invoice, out, false);
-		out.write(canonicalize(invoice, false));
-		out.close();
-		
-		
 		return invoice;
 	}
 	
@@ -674,7 +677,7 @@ public class EInvoiceXmlFactory {
 		PrivateKey privateKey = DigitalSignatureHelper.getPrivateKey(org.getPrivateKey());
 		java.security.Signature signature = java.security.Signature.getInstance("SHA256withECDSA");
 		signature.initSign(privateKey);
-		signature.update(invoiceHash); // not encoded with base64
+		signature.update(QRUtil.convertToHexString(invoiceHash).getBytes()); // not encoded with base64, but to Hex
 		byte[] digitalSignature = signature.sign();
         // Encode the signature to Base64 for easy display
         String signatureBase64 = Base64.getEncoder().encodeToString(digitalSignature);
@@ -686,40 +689,43 @@ public class EInvoiceXmlFactory {
          * X509 Certificate( After completing CCSID API, it will return (binary security token),
          * take this value and decode it using base 64, the output is X509 certificate.) 
          */
-        byte[] decodedCertificate = Base64.getDecoder().decode(org.getCertificate());
-        byte[] certificateHash = QRUtil.generateSHA256Hash(decodedCertificate);
+        byte[] x509Certificate = Base64.getDecoder().decode(org.getCertificate());
+        byte[] certificateHash = QRUtil.generateHashHex(x509Certificate);
         String certificateHashBase64 = Base64.getEncoder().encodeToString(certificateHash);
         
 
         // Step 5: Generate Signed Properties Hash
-		SignedProperties signedProperties = getSignedProperties(certificateHashBase64, new String(decodedCertificate));	
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		marshalJaxb(signedProperties, out, true);
-
-		String signedPropertiesHash = Base64.getEncoder().encodeToString(QRUtil.generateSHA256Hash(out.toByteArray()));
+		SignedProperties signedProperties = getSignedProperties(certificateHashBase64, new String(x509Certificate));	
+		// Create hash later.. after adding to document and then extracting. 
+		// Marshalling SignedProperties directly causes issues with namespaces and indentation, which affects hash value
+		// Extract Signed Properties and then update SignatureProperties hash
+		byte[] signedPropertiesData = extractSignedProperties(signedProperties);
+//		ByteArrayOutputStream out = new ByteArrayOutputStream();
+//		marshalJaxb(signedProperties, out, true);
 
 		// Second Reference = SignatureProperties
+		String signedPropertiesHash = Base64.getEncoder().encodeToString(QRUtil.generateHashHex(signedPropertiesData));
 		Reference reference2 = new Reference();
 		reference2.setType("http://www.w3.org/2000/09/xmldsig#SignatureProperties");
 		reference2.setURI("#xadesSignedProperties");
 		reference2.setDigestMethod(new DigestMethod("http://www.w3.org/2001/04/xmlenc#sha256"));
 		reference2.setDigestValue(signedPropertiesHash); // Already base64 encoded
-		signedInfo.getReferences().add(reference2);
+		signedInfo.getReferences().add(reference2); 
 		
 		// Step 6: Populate The UBL Extensions Output		
 		Signature dsSignature = new Signature(); 
+		dsSignature.setId("signature");
 		dsSignature.setSignedInfo(signedInfo);			
 		dsSignature.setSignatureValue(new SignatureValue(signatureBase64));	
-		
+
 		// Derive ECDSA Signature of ZATCA certificate
-		byte[] cert2 = Base64.getDecoder().decode(org.getCertificate());
-		X509Certificate x509Cert = DigitalSignatureHelper.decode(new String(cert2));
+		X509Certificate x509Cert = DigitalSignatureHelper.decode(new String(x509Certificate));
 		String x509Base64 = Base64.getEncoder().encodeToString(x509Cert.getEncoded());
 		X509Data x509Data = new X509Data().addX509Certificate(x509Base64);
 		KeyInfo keyInfo = new KeyInfo(); 
 		keyInfo.getContent().add(x509Data);
-		dsSignature.setKeyInfo(keyInfo);	//************** // TODO
-		Object dsObject = new Object(); // 
+		dsSignature.setKeyInfo(keyInfo);
+		Object dsObject = new Object(); 
 		dsObject.getContent().add(new QualifyingProperties("signature", signedProperties));
 		dsSignature.getObjects().add(dsObject);
 		signInfo.setSignature(dsSignature); 
@@ -1099,14 +1105,14 @@ public class EInvoiceXmlFactory {
 
 	
 	
-	public static Invoice loadXml(File inFile) throws Exception {
+	public static Invoice loadXml(InputStream in) throws Exception {
 		// Create a Marshaller object
 //		try {
 			JAXBContext jaxbContext = JAXBContext.newInstance(Invoice.class);
 			Unmarshaller umarshaller = jaxbContext.createUnmarshaller();
 
 			// Marshal the root element to an XML document	
-			Invoice invoice = (Invoice) umarshaller.unmarshal(inFile);
+			Invoice invoice = (Invoice) umarshaller.unmarshal(in);
 			return invoice;
 //		} catch (JAXBException e) {
 //			throw e; //new Exception("Failed to save XML Invoice", e);
@@ -1114,7 +1120,7 @@ public class EInvoiceXmlFactory {
 	}
 	
 	public static byte[] generateHash(Invoice invoice) throws Exception {
-		Invoice invoiceCopy = invoice; //deepCopyJaxb(invoice);
+//		Invoice invoiceCopy = invoice; //deepCopyJaxb(invoice);
 //		// Remove *[local-name()=׳Invoice׳]//*[local-name()=׳UBLExtensions׳]
 //		invoiceCopy.setUBLExtensions(null);	
 //		// remove QR. //*[local-name()=׳AdditionalDocumentReference׳] [cbc:ID[normalize-space(text()) = ׳QR׳]]
@@ -1132,21 +1138,11 @@ public class EInvoiceXmlFactory {
 //		// [local-name()=׳Invoice׳]//*[local-name()=׳Signature׳]
 //		invoiceCopy.getSignatures().clear();
 		
-		FileOutputStream out = new FileOutputStream("/tmp/test-einvoice-prehash.xml");
-		marshalJaxb(invoice, out, false);
-		out.close();
-//		FileOutputStream out2 = new FileOutputStream("/tmp/test-einvoice-stripped.xml");
-//		marshalJaxb(invoiceCopy, out2, false);
-//		out2.close();
-
-		byte[] canonicalXml = canonicalize(invoiceCopy, true);
-		FileOutputStream out3 = new FileOutputStream("/tmp/test-einvoice-canon.xml");
-		out3.write(canonicalXml);
-		out3.close();
-		
-		byte[] invoiceHash = QRUtil.generateSHA256Hash(canonicalXml);
-		return invoiceHash;
+		byte[] canonicalXml = canonicalize(invoice, true);
+		return QRUtil.generateSHA256Hash(canonicalXml);
+//		return QRUtil.generateHashHex(canonicalXml);
 	}
+
 	
 	/*
 	 * public static File generateHash(Invoice invoice) throws Exception { String
@@ -1185,7 +1181,7 @@ public class EInvoiceXmlFactory {
 	 * @return
 	 * @throws IOException 
 	 */
-	private static <T> T deepCopyJaxb(T object) throws IOException {
+	private static <T> T deepCopyJaxb(T object) throws Exception {
 //		  try {
 //			Class<T> clazz = (Class<T>) object.getClass();
 //		    JAXBContext jaxbContext = JAXBContext.newInstance(clazz);
@@ -1218,26 +1214,40 @@ public class EInvoiceXmlFactory {
 		  }
 	}
 
-	public static <T> void marshalJaxb(T object, OutputStream out, boolean isFragment) {
+	private static void marshalDocument(Document document, OutputStream out) throws Exception {
+	    // Now format the Document
+	    TransformerFactory transformerFactory = TransformerFactory.newInstance();
+	    Transformer transformer = transformerFactory.newTransformer();
+	    transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+	    transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4"); // Set indent amount
+
+	    // Output the formatted XML
+	    DOMSource source = new DOMSource(document);
+	    StreamResult result = new StreamResult(out); // or any other output stream
+	    transformer.transform(source, result);
+		
+	}
+
+	public static <T> void marshalJaxb(T jaxbObject, OutputStream out, boolean isFragment) throws Exception {
 		  try {
 			  CustomNamespacePrefixMapper customMapper = new CustomNamespacePrefixMapper();
 			  JAXBContext jaxbContext = null;
-			  if(!(object instanceof Invoice)) {
+			  if(!(jaxbObject instanceof Invoice)) {
 					jaxbContext = JAXBContext.newInstance(customMapper.getPackages());
 			  } else {
-				  jaxbContext = JAXBContext.newInstance(object.getClass());
+				  jaxbContext = JAXBContext.newInstance(jaxbObject.getClass());
 			  }
 			Marshaller marshaller = jaxbContext.createMarshaller();
-	        marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-	        if(isFragment) {
-	        	marshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
-	        }
-	        // Set the custom NamespacePrefixMapper
-	        marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", customMapper);
-			marshaller.marshal(object, out);	
+		    marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+		    marshaller.setProperty(Marshaller.JAXB_FRAGMENT, isFragment?Boolean.TRUE:Boolean.FALSE);
+
+		    // Set the custom NamespacePrefixMapper
+		    marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", customMapper);
+			marshaller.marshal(jaxbObject, out);	
 		  } catch (JAXBException e) {
 		      throw new RuntimeException(e);
 		  }
+//		marshalDocument(marshalToDocument(jaxbObject), out);
 	}	
 
     public static Document marshalToDocument(java.lang.Object jaxbObject) throws Exception {
@@ -1263,16 +1273,97 @@ public class EInvoiceXmlFactory {
 //    	Document doc = marshalToDocument(invoiceXml);
     	ByteArrayOutputStream out = new ByteArrayOutputStream();
     	marshalJaxb(invoiceXml, out, false);
-    	byte[] canonicalXml = CanonicalizeHelper.canonicalize(out.toByteArray(), strip);
-    	return canonicalXml;    	
+
+		byte[] processedXml = out.toByteArray();
+		if(strip) {
+			String xsltPathStripped = "/resources/invoice-stripped.xsl"; // Removes the specified blocks for creating Hash & Signature
+			processedXml = CanonicalizeHelper.transform(processedXml, xsltPathStripped);
+		}  
+		String processedXml2 = new String(processedXml).replaceAll("xmlns=\"\" ", "").replaceAll("xmlns:ns10=\"urn:oasis:names:specification:ubl:schema:xsd:Invoice-2\" ", "");
+
+		byte[] finalXml = ZatcaSDKProcessHelper.formatXml(processedXml2.getBytes());
+		// Make final corrections to namespaces, etc
+		String finalXmlString = new String(finalXml)
+				.replaceFirst("<sig:UBLDocumentSignatures.*>", "<sig:UBLDocumentSignatures>")
+				.replaceFirst("<ds:Signature Id=\"signature\">", "<ds:Signature xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\" Id=\"signature\">")
+				.replaceFirst("<xades:QualifyingProperties Target=\"signature\">", 
+						"<xades:QualifyingProperties xmlns:xades=\"http://uri.etsi.org/01903/v1.3.2#\" Target=\"signature\">");
+
+		finalXml = ZatcaSDKProcessHelper.canonicalizeXml(finalXmlString.getBytes(), true);
+//    	byte[] finalXml2 = CanonicalizeHelper.canonicalize(out.toByteArray(), strip);
+		
+//		// Make final corrections to namespaces, etc
+//		String finalXmlString = new String(finalXml)
+//				.replaceFirst("<sig:UBLDocumentSignatures.*>", "<sig:UBLDocumentSignatures>")
+//				.replaceFirst("<ds:Signature Id=\"signature\">", "<ds:Signature xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\" Id=\"signature\">")
+//				.replaceFirst("<xades:QualifyingProperties Target=\"signature\">", 
+//						"<xades:QualifyingProperties xmlns:xades=\"http://uri.etsi.org/01 903/v1.3.2#\" Target=\"signature\">");
+    	return finalXml;//String.getBytes();
     }
 
+    /**
+     * Extract canonical form of SignedProperties tag from the QualifyingProperties/Invoice xml
+     * @param signedPropertiesXml
+     * @return
+     * @throws Exception
+     */
+    public static <T> byte[] extractSignedProperties(T signedPropertiesXml) throws Exception {    	
+    	ByteArrayOutputStream out = new ByteArrayOutputStream();
+//    	marshalSignedProperties(signedPropertiesXml, out);
+    	marshalJaxb(signedPropertiesXml, out, false);
+		String xsltPath = "/resources/signedProperties.xsl";
+
+		byte[] inputXml = ZatcaSDKProcessHelper.formatXml(out.toByteArray());
+		inputXml = ZatcaSDKProcessHelper.canonicalizeXml(inputXml, false);
+    	byte[] canonicalXml = CanonicalizeHelper.transform(inputXml, xsltPath);
+    	
+    	
+    	// Expected out format
+    			//      String signedPropertiesData = 
+//    			"                                    <xades:SignedProperties xmlns:xades=\"http://uri.etsi.org/01903/v1.3.2#\" Id=\"xadesSignedProperties\">\n" + 
+//    			"                                        <xades:SignedSignatureProperties>\n" + 
+//    			"                                            <xades:SigningTime>2024-12-11T11:33:47</xades:SigningTime>\n" + 
+//    			"                                            <xades:SigningCertificate>\n" + 
+//    			"                                                <xades:Cert>\n" + 
+//    			"                                                    <xades:CertDigest>\n" + 
+//    			"                                                        <ds:DigestMethod xmlns:ds=\\\"http://www.w3.org/2000/09/xmldsig#\\\" Algorithm=\"http://www.w3.org/2001/04/xmlenc#sha256\"/>\n" + 
+//    			"                                                        <ds:DigestValue xmlns:ds=\\\"http://www.w3.org/2000/09/xmldsig#\\\">MHdLMEVWZGNsV1dZeGVpS3UwaFdSU1ZXcGF1S0FmZXN1Vm9HblVabUpJVT0=</ds:DigestValue>\n" + 
+//    			"                                                    </xades:CertDigest>\n" + 
+//    			"                                                    <xades:IssuerSerial>\n" + 
+//    			"                                                        <ds:X509IssuerName xmlns:ds=\\\"http://www.w3.org/2000/09/xmldsig#\\\">CN=PRZEINVOICESCA4-CA, DC=extgazt, DC=gov, DC=local</ds:X509IssuerName>\n" + 
+//    			"                                                        <ds:X509SerialNumber xmlns:ds=\\\"http://www.w3.org/2000/09/xmldsig#\\\">379112742831380471835263969587287663520528387</ds:X509SerialNumber>\n" + 
+//    			"                                                    </xades:IssuerSerial>\n" + 
+//    			"                                                </xades:Cert>\n" + 
+//    			"                                            </xades:SigningCertificate>\n" + 
+//    			"                                        </xades:SignedSignatureProperties>\n" + 
+//    			"                                    </xades:SignedProperties>";
+    	String signedPropString = new String(canonicalXml);
+    	
+    	// Do post-processing to adjust namespace usage and spaces
+    			// TODO But samples from ZATCA shows first line not indented..
+			signedPropString = signedPropString.replaceFirst("<xades:SignedProperties.*Id=\"xadesSignedProperties\">",
+					"<xades:SignedProperties xmlns:xades=\"http://uri.etsi.org/01903/v1.3.2#\"  Id=\"xadesSignedProperties\">")
+    			.replace("<ds:DigestMethod", "<ds:DigestMethod xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\"")
+    			.replace("<ds:DigestValue>", "<ds:DigestValue xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\">")
+    			.replace("<ds:X509IssuerName>", "<ds:X509IssuerName xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\">")
+    			.replace("<ds:X509SerialNumber>", "<ds:X509SerialNumber xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\">")
+    			.trim();
+//    	    	signedPropString = "                                    ".concat(signedPropString); // indent first line by 9 tabs/36 spaces. Other lines are already indented
+    	signedPropString = Arrays.asList(signedPropString.split("\n")).stream()
+    			// Prefix 18 spaces
+    		.map(l->"                                    ".concat(l)).collect(Collectors.joining("\n"));
+//			byte[] signedPropData = ZatcaSDKProcessHelper.canonicalizeXml(signedPropString.getBytes(), true);
+    	Files.write(File.createTempFile("signedProperties", ".xml").toPath(), //signedPropData); 
+    		signedPropString.getBytes());
+    	return signedPropString.getBytes();	
+    }
+    
 	/**
 	 * Extract the Invoice signature from XML
 	 * @param invoiceXml
 	 * @return
 	 */
-	public static String getInvoiceSignature(Invoice invoiceXml) {
+	public static String getInvoiceSignature(Invoice invoiceXml) { // TODO Wrong..
 		oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2.Signature x =
 				(invoiceXml.getSignatures() != null && !invoiceXml.getSignatures().isEmpty()) ? invoiceXml.getSignatures().get(0) : null;
 		

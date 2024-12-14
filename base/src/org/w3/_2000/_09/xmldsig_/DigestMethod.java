@@ -45,7 +45,7 @@ import org.w3c.dom.Element;
 @XmlType(name = "DigestMethodType", propOrder = {
     "content"
 })
-@XmlRootElement(name = "DigestMethod")
+@XmlRootElement(name = "DigestMethod", namespace="http://www.w3.org/2000/09/xmldsig#")
 public class DigestMethod {
 
     @XmlMixed

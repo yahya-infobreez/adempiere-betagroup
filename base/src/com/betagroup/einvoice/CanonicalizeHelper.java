@@ -22,6 +22,7 @@ public class CanonicalizeHelper {
         // Create a Transformer to convert the Document to a canonical form
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = transformerFactory.newTransformer();
+        transformer.setOutputProperty("encoding", "UTF-8");
         transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
         transformer.setOutputProperty(OutputKeys.INDENT, "no");
         transformer.setOutputProperty(OutputKeys.METHOD, "xml");
@@ -34,37 +35,37 @@ public class CanonicalizeHelper {
     }
     
     /**
-     * Returns canonicalized XML - after applying transform using XSLT. 
-     * @param xmlDocument
-     * @param strip - Strip specified tags for creating Invoice Hash
+     * Returns canonicalized XML
+     * @param xmlDocument  XML data after applying transform using XSLT. 
      * @return
      * @throws Exception
      */
-    public static byte[] canonicalize(byte[] xmlDocument, boolean strip) throws Exception {
+    public static byte[] canonicalize(byte[] xmlDocument) throws Exception {
+        Init.init();
+        Canonicalizer canon = Canonicalizer.getInstance("http://www.w3.org/2006/12/xml-c14n11");
+        byte[] canonOut = canon.canonicalize(xmlDocument);
+        return canonOut;
+    }
+    
+    public static byte[] transform(byte[] xmlDocument, String xsltPath) throws Exception {
     	try(ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();) {
-    		String xsltPathStripped = "/resources/invoice-stripped.xsl"; // Removes the specified blocks for creating Hash & Signature
-    		String xsltPathFull = "/resources/invoice-full.xsl";
-	        Transformer transformer = getTransformer(strip?xsltPathStripped: xsltPathFull);
+	        Transformer transformer = getTransformer(xsltPath, false);
 	        StreamResult xmlOutput = new StreamResult(byteArrayOutputStream);
 	        ByteArrayInputStream xmlInputStream = new ByteArrayInputStream(xmlDocument);
 	        transformer.transform(new StreamSource(xmlInputStream), xmlOutput);
 	
-	        Init.init();
-	        Canonicalizer canon = Canonicalizer.getInstance("http://www.w3.org/2006/12/xml-c14n11");
-	        byte[] canonIn = byteArrayOutputStream.toByteArray();
-	        byte[] canonOut = canon.canonicalize(canonIn);
-	        return canonOut;
+	        return byteArrayOutputStream.toByteArray();
     	}
     }
 
 	static TransformerFactory transformerFactory = TransformerFactory.newInstance();
-    private static Transformer getTransformer(String xsltPath) throws TransformerConfigurationException, IOException {
+    private static Transformer getTransformer(String xsltPath, boolean indent) throws TransformerConfigurationException, IOException {
         transformerFactory.setAttribute("http://javax.xml.XMLConstants/property/accessExternalDTD", "");
         transformerFactory.setAttribute("http://javax.xml.XMLConstants/property/accessExternalStylesheet", "");
         try (InputStream inputStream = CanonicalizeHelper.class.getResourceAsStream(xsltPath);){
             Transformer transformer = transformerFactory.newTransformer(new StreamSource(inputStream));
             transformer.setOutputProperty("encoding", "UTF-8");
-            transformer.setOutputProperty("indent", "no");
+            transformer.setOutputProperty("indent", indent?"yes":"no");
             transformer.setOutputProperty("omit-xml-declaration", "yes");
             return transformer;
         }

@@ -47,7 +47,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
     "signedProperties",
     "unsignedProperties"
 })
-@XmlRootElement(name = "QualifyingProperties")
+@XmlRootElement(name = "QualifyingProperties", namespace="http://uri.etsi.org/01903/v1.3.2#")
 public class QualifyingProperties {
 
     @XmlElement(name = "SignedProperties")

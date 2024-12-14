@@ -72,5 +72,13 @@ public class QRUtilTest extends TestCase {
 		ArrayList<String> qrData2 = QRUtil.decodeQR(qr2);
 		qrData2.stream().forEach(d-> {System.out.println(d);});
 	}
-
+	
+	public void testHash256() throws Exception {
+		String prevHashString1 = "NWZlY2ViNjZmZmM4NmYzOGQ5NTI3ODZjNmQ2OTZjNzljMmRiYzIzOWRkNGU5MWI0NjcyOWQ3M2EyN2ZiNTdlOQ==";
+		String prevHashString = Base64.getEncoder().encodeToString(QRUtil.generateHashHex("0".getBytes()));
+		System.out.println("Expected = " + prevHashString1);
+		System.out.println("Actual = " + prevHashString);
+		assertEquals(prevHashString1, prevHashString);
+	}
+	
 }

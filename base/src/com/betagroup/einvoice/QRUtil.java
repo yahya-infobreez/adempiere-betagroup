@@ -2,6 +2,7 @@ package com.betagroup.einvoice;
 
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -20,6 +21,8 @@ import java.util.Base64.Encoder;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
+
+import org.bouncycastle.util.encoders.UTF8;
 
 public class QRUtil {
 
@@ -51,16 +54,16 @@ public class QRUtil {
     }
     
     
-    public static DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HHmmss.SSSX");	
+
 	/** Utility function to get XML date from LocalTime */
-	public static  XMLGregorianCalendar getXmlTime(LocalDateTime datetime) throws DatatypeConfigurationException {
-//		String datetimeString = datetime.atOffset(ZoneOffset.UTC).format(timeFormatter);
-        XMLGregorianCalendar calendar = //DatatypeFactory.newInstance().newXMLGregorianCalendar(datetimeString);
-        		DatatypeFactory.newInstance().newXMLGregorianCalendar(datetime.getYear(), datetime.getMonthValue(),
-        				datetime.getDayOfMonth(), datetime.getHour(), datetime.getMinute(), datetime.getSecond(),
-        				BigDecimal.valueOf(datetime.getNano()).scaleByPowerOfTen(-6).stripTrailingZeros().intValue(), 0 /*UTC*/);
-		return calendar;
-	}
+//	public static  XMLGregorianCalendar getXmlTime(LocalDateTime datetime) throws DatatypeConfigurationException {
+////		String datetimeString = datetime.atOffset(ZoneOffset.UTC).format(timeFormatter);
+//        XMLGregorianCalendar calendar = //DatatypeFactory.newInstance().newXMLGregorianCalendar(datetimeString);
+//        		DatatypeFactory.newInstance().newXMLGregorianCalendar(datetime.getYear(), datetime.getMonthValue(),
+//        				datetime.getDayOfMonth(), datetime.getHour(), datetime.getMinute(), datetime.getSecond(),
+//        				BigDecimal.valueOf(datetime.getNano()).scaleByPowerOfTen(-6).stripTrailingZeros().intValue(), 0 /*UTC*/);
+//		return calendar;
+//	}
     
     public static String generateQR(String name, String vatNo, Timestamp time, BigDecimal grandTotal, BigDecimal vatAmt /* Phase-1 fields */
     		/*  */ ) {
@@ -70,16 +73,21 @@ public class QRUtil {
 		return qr;
     }
     
-    
-    public static byte[] generateSHA256Hash(byte[] input) throws NoSuchAlgorithmException {
-
+    /** Generate sha256 hash */
+    public static byte[] generateSHA256Hash(byte[] input) throws Exception {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] hashBytes = digest.digest(input);
-        // Convert byte array to hexadecimal string
-//        return convertToHexString(hashBytes);
+        byte[] hashBytes = digest.digest(input); 
         return hashBytes;
     }
     
+	/** Returns Invoice Hash Hex String - not base64 encoded */
+	public static byte[] generateHashHex(byte[] input) throws Exception {
+		byte[] sha256Hash = QRUtil.generateSHA256Hash(input);
+        // Convert byte array to hexadecimal string
+        byte[] hashBytes = QRUtil.convertToHexString(sha256Hash).getBytes();
+        return hashBytes;
+	}
+	
     // hexToASCII(convertToHexString(new byte[]) == copy the bytes !!
 //	public static String convertUsingTLVToBase64(String...params) {
 //        String retValue = "";

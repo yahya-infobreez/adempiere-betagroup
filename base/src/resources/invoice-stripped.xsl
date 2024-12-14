@@ -5,10 +5,15 @@
                 xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
                 xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2"
                 xmlns:ext="urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2"
-                exclude-result-prefixes="xs"
+		      	exclude-result-prefixes="xs"
                 version="2.0">
+<!--            xmlns:xades= "http://uri.etsi.org/01903/v1.3.2#"    
+				xmlns:sac= "urn:oasis:names:specification:ubl:schema:xsd:SignatureAggregateComponents-2"
+		        xmlns:sbc= "urn:oasis:names:specification:ubl:schema:xsd:SignatureBasicComponents-2"
+		        xmlns:sig= "urn:oasis:names:specification:ubl:schema:xsd:CommonSignatureComponents-2" -->
+		        
     <xsl:output omit-xml-declaration="yes" indent="no"/>
-    <xsl:strip-space elements="*"/>
+<!--     <xsl:strip-space elements="*"/>  -->
     <xsl:template match="node() | @*">
         <xsl:copy>
             <xsl:apply-templates select="node() | @*"/>

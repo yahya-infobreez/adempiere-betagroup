@@ -2,10 +2,14 @@ package com.betagroup.einvoice;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -17,18 +21,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class GenericApi {
     protected String passwd;
 	protected String userName;
+	private Map<String, String> extraHeaders;
 
+	public GenericApi() {
+		extraHeaders = new HashMap<String, String>();
+	}
 
-	public void setPasswd(String passwd) {
+	public void setAuth(String userName, String passwd) {
+		this.userName = userName;
 		this.passwd = passwd;
 	}
 
-
-	public void setUsername(String userName) {
-		this.userName = userName;
+	public void addHeader(String header, String value) {
+		extraHeaders.put(header, value);
 	}
-
-
+	
 	public String invokeGetApi(String url) throws Exception {
 //        HttpTransport httpTransport = new NetHttpTransport();
 //		HttpRequest request = httpTransport.createRequestFactory().buildGetRequest(new GenericUrl(url, false));
@@ -48,6 +55,7 @@ public class GenericApi {
         // Example of a GET request
 
     	HttpGet getRequest = new HttpGet(url);
+    	extraHeaders.forEach((k,v)->getRequest.addHeader(k, v));
     	getRequest.setHeader("Content-Type", "application/json");
         		
 
@@ -57,8 +65,15 @@ public class GenericApi {
         return response;
     }
 
+	public KeyNamePair invokePatchApi(String url, Object data) throws Exception {
+		return invokePostOrPatchApi(url, data, true);
+	}
 
 	public KeyNamePair invokePostApi(String url, Object data) throws Exception {
+		return invokePostOrPatchApi(url, data, false);
+	}
+	
+	private KeyNamePair invokePostOrPatchApi(String url, Object data, boolean isPatch) throws Exception {
 //		GsonFactory gsonFactory = new GsonFactory();
 //		String dataJson = gsonFactory.toString(data);
 //		log.warning("POST API : " + url + " Data: " + dataJson) ;
@@ -79,7 +94,10 @@ public class GenericApi {
 		DefaultHttpClient httpClient = new DefaultHttpClient();
         // Example of a POST request
 
-        HttpPost postRequest = new HttpPost(url);
+		// Renewal API requires PATCH request
+		HttpEntityEnclosingRequestBase postRequest = isPatch ? new HttpPatch(url) : new HttpPost(url);
+    	extraHeaders.forEach((k,v)->postRequest.addHeader(k, v));
+		
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonData = objectMapper.writeValueAsString(data);
         StringEntity entity = new StringEntity(jsonData);
@@ -92,7 +110,6 @@ public class GenericApi {
         postRequest.setHeader("Accept-Language", "en"); // en / ar // default = en
 
         //   -H "accept-language: en"  -H "Clearance-Status: 1" // TODO what are these?
-        postRequest.setHeader("OTP", "123345"); // 123345 = Valid, 111111 = Invalid, 222222 = Expired
 
         HttpResponse response = httpClient.execute(postRequest);
         System.out.println(response);

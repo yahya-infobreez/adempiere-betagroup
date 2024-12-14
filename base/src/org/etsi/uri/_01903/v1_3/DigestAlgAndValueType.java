@@ -45,7 +45,7 @@ public class DigestAlgAndValueType {
     @XmlElement(name = "DigestMethod", namespace = "http://www.w3.org/2000/09/xmldsig#", required = true)
     protected DigestMethod digestMethod;
     @XmlElement(name = "DigestValue", namespace = "http://www.w3.org/2000/09/xmldsig#", required = true)
-    protected byte[] digestValue;
+    protected String digestValue;
     
     public DigestAlgAndValueType() {
 		// TODO Auto-generated constructor stub
@@ -53,7 +53,7 @@ public class DigestAlgAndValueType {
    
     public DigestAlgAndValueType(String algorithm, String value) {
 		digestMethod = new DigestMethod(algorithm);
-		digestValue = value.getBytes();
+		digestValue = value;
 	}
 
     /**
@@ -87,7 +87,7 @@ public class DigestAlgAndValueType {
      *     possible object is
      *     byte[]
      */
-    public byte[] getDigestValue() {
+    public String getDigestValue() {
         return digestValue;
     }
 
@@ -98,7 +98,7 @@ public class DigestAlgAndValueType {
      *     allowed object is
      *     byte[]
      */
-    public void setDigestValue(byte[] value) {
+    public void setDigestValue(String value) {
         this.digestValue = value;
     }
 

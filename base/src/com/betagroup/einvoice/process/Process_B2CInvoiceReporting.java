@@ -75,40 +75,39 @@ public class Process_B2CInvoiceReporting extends SvrProcess{
 		MOrg org = MOrg.get(getCtx(), minvoice.getAD_Org_ID());
 		MClient client = MClient.get(getCtx(), minvoice.getAD_Client_ID());
 		Invoice invoiceXml = EInvoiceXmlFactory.createInvoiceXml(minvoice);
+		byte[] invoiceData = EInvoiceXmlFactory.canonicalize(invoiceXml, false);
+		
+		// Save the XML
+		String xmlFileName = client.getVatNumber()+invoiceXml.getIssueDate().toString()+minvoice.getDocumentNo();
+		MAttachment attachment = minvoice.getAttachment();
+		if(attachment == null) {
+			attachment = minvoice.createAttachment();
+		}
+		attachment.addEntry(xmlFileName, invoiceData);
+		attachment.saveEx();
 
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		EInvoiceXmlFactory.marshalJaxb(invoiceXml, out, false);
-		byte[] invoiceData = out.toByteArray();
-
-		// Send for compliance check
+		// Send for reporting
 		ZatcaApiHelper apiHelper = new ZatcaApiHelper();
-		apiHelper.setUsername(org.getCertificate());
-		apiHelper.setPasswd(org.getZatcaSecret());
+		apiHelper.setAuth(org.getCertificate(), org.getZatcaSecret());
 		
-		ClearedInvoiceResult response = apiHelper.submitB2BInvoiceForClearance(minvoice.getInvoiceHash(), minvoice.getUUID(), invoiceData);
-		System.out.print(response);
-		
-		if(response != null && response.getClearedInvoice() != null) {
-//			minvoice.setValidationMsg(response.toString()); // Base64 Encoded
-//			if(response.getErrors() != null && !response.getErrors().isEmpty()) {
-//				minvoice.seteInvoiceStatus("Invalid");
-//			}
-			minvoice.saveEx();
+		try {
+			InvoiceResult response = apiHelper.submitInvoiceForReporting(minvoice.getInvoiceHash(), minvoice.getUUID(), invoiceData);
+			System.out.print(response);
 			
-			// Save the XML
-			String xmlFileName = client.getVatNumber()+invoiceXml.getIssueDate().toString()+minvoice.getDocumentNo();
-			MAttachment attachment = minvoice.getAttachment();
-			if(attachment == null) {
-				attachment = minvoice.createAttachment();
+			if(response != null) {
+				minvoice.setEInvoiceMessage(response.toString()); // Base64 Encoded
+				if(response.getErrors() != null && !response.getErrors().isEmpty()) {
+					minvoice.setEInvoiceStatus("Failed");
+				}
+			} else {
+				String msg = "Error: Invoice Reporting with FATOORA portal failed. Invoice# " + minvoice.getDocumentNo() + "\n"
+						+ response != null ? response.getErrors().toString() : "Reason unknown";
+				s_log.saveError("Invoice Reporting failed", msg);
+				return msg;
 			}
-			byte[] clearedInvoice = Base64.getDecoder().decode(response.getClearedInvoice()); // Save cleared invoice				
-			attachment.addEntry(xmlFileName, clearedInvoice);
-			attachment.saveEx();
-
-		} else {
-			String msg = "Error: CSR Registration with FATOORA portal failed. "
-					+ response != null ? response.getErrors().toString() : "Reason unknown";
-			s_log.saveError("ZatcaRegistrationFailed", msg);
+		} catch(Exception ex) {
+			String msg = "Error: Invoice Reporting with FATOORA portal failed. Invoice# " + minvoice.getDocumentNo() + "\n" + ex.getMessage();
+			s_log.saveError("Invoice Reporting failed" , msg);
 			return msg;
 		}
 		

@@ -50,14 +50,14 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
     "signatureMethod",
     "references"
 })
-@XmlRootElement(name = "SignedInfo")
+@XmlRootElement(name = "SignedInfo", namespace="http://www.w3.org/2000/09/xmldsig#")
 public class SignedInfo {
 
-    @XmlElement(name = "CanonicalizationMethod", required = true)
+    @XmlElement(name = "CanonicalizationMethod", namespace="http://www.w3.org/2000/09/xmldsig#", required = true)
     protected CanonicalizationMethod canonicalizationMethod;
-    @XmlElement(name = "SignatureMethod", required = true)
+    @XmlElement(name = "SignatureMethod", namespace="http://www.w3.org/2000/09/xmldsig#", required = true)
     protected SignatureMethod signatureMethod;
-    @XmlElement(name = "Reference", required = true)
+    @XmlElement(name = "Reference", namespace="http://www.w3.org/2000/09/xmldsig#", required = true)
     protected List<Reference> references;
     @XmlAttribute(name = "Id")
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)

@@ -35,7 +35,7 @@ openssl x509 -in certificate.pem -text -noout
  */
 public class CSRRequest {
 	String csr;
-	List<MessageModel> errors;
+	String compliance_request_id;
 
 	public String getCsr() {
 		return csr;
@@ -45,17 +45,17 @@ public class CSRRequest {
 		this.csr = csr;
 	}
 
-	public List<MessageModel> getErrors() {
-		return errors;
+	public String getCompliance_request_id() {
+		return compliance_request_id;
 	}
 
-	public void setErrors(List<MessageModel> errors) {
-		this.errors = errors;
+	public void setCompliance_request_id(String compliance_request_id) {
+		this.compliance_request_id = compliance_request_id;
 	}
 
 	@Override
 	public String toString() {
-		return "CSRRequest [csr=" + csr + ", errors=" + errors + "]";
+		return "CSRRequest [csr=" + csr + ", compliance_request_id=" + compliance_request_id + "]";
 	}
 	
 	

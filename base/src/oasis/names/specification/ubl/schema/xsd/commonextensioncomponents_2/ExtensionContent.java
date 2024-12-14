@@ -41,7 +41,7 @@ import oasis.names.specification.ubl.schema.xsd.commonsignaturecomponents_2.UBLD
 @XmlType(name = "ExtensionContentType", propOrder = {
     "any"
 })
-@XmlRootElement(name = "ExtensionContent")
+@XmlRootElement(name = "ExtensionContent", namespace="urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2")
 public class ExtensionContent {
 
     @XmlAnyElement(lax = true)
