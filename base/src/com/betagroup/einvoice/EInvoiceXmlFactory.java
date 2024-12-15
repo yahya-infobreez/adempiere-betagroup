@@ -690,12 +690,11 @@ public class EInvoiceXmlFactory {
          * take this value and decode it using base 64, the output is X509 certificate.) 
          */
         byte[] x509Certificate = Base64.getDecoder().decode(org.getCertificate());
-        byte[] certificateHash = QRUtil.generateHashHex(x509Certificate);
-        String certificateHashBase64 = Base64.getEncoder().encodeToString(certificateHash);
-        
+        byte[] certificateHashHex = QRUtil.generateHashHex(x509Certificate);
+        String certificateHashHexBase64 = Base64.getEncoder().encodeToString(certificateHashHex);       
 
         // Step 5: Generate Signed Properties Hash
-		SignedProperties signedProperties = getSignedProperties(certificateHashBase64, new String(x509Certificate));	
+		SignedProperties signedProperties = getSignedProperties(certificateHashHexBase64, new String(x509Certificate));	
 		// Create hash later.. after adding to document and then extracting. 
 		// Marshalling SignedProperties directly causes issues with namespaces and indentation, which affects hash value
 		// Extract Signed Properties and then update SignatureProperties hash
@@ -1342,20 +1341,22 @@ public class EInvoiceXmlFactory {
     	// Do post-processing to adjust namespace usage and spaces
     			// TODO But samples from ZATCA shows first line not indented..
 			signedPropString = signedPropString.replaceFirst("<xades:SignedProperties.*Id=\"xadesSignedProperties\">",
-					"<xades:SignedProperties xmlns:xades=\"http://uri.etsi.org/01903/v1.3.2#\"  Id=\"xadesSignedProperties\">")
+					"<xades:SignedProperties xmlns:xades=\"http://uri.etsi.org/01903/v1.3.2#\" Id=\"xadesSignedProperties\">")
     			.replace("<ds:DigestMethod", "<ds:DigestMethod xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\"")
     			.replace("<ds:DigestValue>", "<ds:DigestValue xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\">")
     			.replace("<ds:X509IssuerName>", "<ds:X509IssuerName xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\">")
     			.replace("<ds:X509SerialNumber>", "<ds:X509SerialNumber xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\">")
+    			.replaceAll("\n", "").replaceAll(">\s+<", "><")
     			.trim();
 //    	    	signedPropString = "                                    ".concat(signedPropString); // indent first line by 9 tabs/36 spaces. Other lines are already indented
-    	signedPropString = Arrays.asList(signedPropString.split("\n")).stream()
-    			// Prefix 18 spaces
-    		.map(l->"                                    ".concat(l)).collect(Collectors.joining("\n"));
+//    	signedPropString = Arrays.asList(signedPropString.split("\n")).stream()
+//    		.map(l->"                                    ".concat(l)).collect(Collectors.joining("\n")); // Prefix 9 tabs (36 spaces)
+
+			byte[] signedPropData = signedPropString.trim().getBytes();
 //			byte[] signedPropData = ZatcaSDKProcessHelper.canonicalizeXml(signedPropString.getBytes(), true);
-    	Files.write(File.createTempFile("signedProperties", ".xml").toPath(), //signedPropData); 
-    		signedPropString.getBytes());
-    	return signedPropString.getBytes();	
+
+    	Files.write(File.createTempFile("signedProperties", ".xml").toPath(), signedPropData); 
+    	return signedPropData;
     }
     
 	/**

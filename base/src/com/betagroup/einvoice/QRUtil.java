@@ -84,7 +84,7 @@ public class QRUtil {
 	public static byte[] generateHashHex(byte[] input) throws Exception {
 		byte[] sha256Hash = QRUtil.generateSHA256Hash(input);
         // Convert byte array to hexadecimal string
-        byte[] hashBytes = QRUtil.convertToHexString(sha256Hash).getBytes();
+        byte[] hashBytes = QRUtil.convertToHexString(sha256Hash).getBytes(StandardCharsets.UTF_8);
         return hashBytes;
 	}
 	
