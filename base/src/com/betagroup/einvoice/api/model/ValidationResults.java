@@ -3,8 +3,6 @@ package com.betagroup.einvoice.api.model;
 import java.util.List;
 
 public class ValidationResults {
-	String invoiceHash;
-	String status; // PASS, ERROR, Not Reported
 	List<MessageModel> infoMessages;
 	List<MessageModel> warningMessages;
 	List<MessageModel> errorMessages;
@@ -14,19 +12,6 @@ public class ValidationResults {
 	String qrSellertStatus;
 	String qrBuyertStatus;
 	
-	
-	public String getInvoiceHash() {
-		return invoiceHash;
-	}
-	public void setInvoiceHash(String invoiceHash) {
-		this.invoiceHash = invoiceHash;
-	}
-	public String getStatus() {
-		return status;
-	}
-	public void setStatus(String status) {
-		this.status = status;
-	}
 	public List<MessageModel> getInfoMessages() {
 		return infoMessages;
 	}
@@ -44,6 +29,12 @@ public class ValidationResults {
 	}
 	public void setErrorMessages(List<MessageModel> errorMessages) {
 		this.errorMessages = errorMessages;
+	}
+	@Override
+	public String toString() {
+		return "ValidationResults [infoMessages=" + infoMessages + ", warningMessages=" + warningMessages
+				+ ", errorMessages=" + errorMessages + ", reportingStatus=" + reportingStatus + ", clearanceStatus="
+				+ clearanceStatus + ", qrSellertStatus=" + qrSellertStatus + ", qrBuyertStatus=" + qrBuyertStatus + "]";
 	}
 
 	

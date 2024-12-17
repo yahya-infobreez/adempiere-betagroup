@@ -105,7 +105,9 @@ public class GenericApi {
         postRequest.setHeader("Content-Type", "application/json");
 //        postRequest.setHeader("Accept", "application/json, text/plain");
         postRequest.setHeader("Accept", "*/*");
-        postRequest.setHeader(HttpHeaders.AUTHORIZATION, getAuthHeader(userName, passwd));
+        if(userName != null && passwd != null) {
+        	postRequest.setHeader(HttpHeaders.AUTHORIZATION, getAuthHeader(userName, passwd));
+        }
         postRequest.setHeader("Accept-Version", "V2"); // Required by portal
         postRequest.setHeader("Accept-Language", "en"); // en / ar // default = en
 
@@ -120,7 +122,8 @@ public class GenericApi {
 
 	
 	public String getAuthHeader(String username, String passwd) throws Exception {
-
+		if(userName == null || passwd == null)
+			return null;
 		String auth = username + ":" + passwd;
 		byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes(StandardCharsets.UTF_8));
 

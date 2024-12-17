@@ -14,7 +14,10 @@ public class ClearedInvoiceResult extends InvoiceResult {
 
 	@Override
 	public String toString() {
-		return "ClearedInvoiceResult [clearedInvoice=" + clearedInvoice + "]";
+		return super.toString() 
+				+ (clearedInvoice != null ? ("Invoice: " + clearedInvoice.length()):"");
 	}
+
+	
 	
 }

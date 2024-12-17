@@ -8,6 +8,7 @@ import com.betagroup.einvoice.api.model.CSRResponse;
 import com.betagroup.einvoice.api.model.ClearedInvoiceResult;
 import com.betagroup.einvoice.api.model.InvoiceRequest;
 import com.betagroup.einvoice.api.model.InvoiceResult;
+import com.betagroup.einvoice.api.model.ValidationResults;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -102,7 +103,7 @@ public class ZatcaApiHelper extends GenericApi {
 	
 	public ZatcaApiHelper() {
 		// Get the target portal from Sysconfig
-		String apiTarget = MSysConfig.getValue(FATOORA_API_TARGET, "dev");
+		String apiTarget = MSysConfig.getValue(FATOORA_API_TARGET, "sim");
 		switch(apiTarget) {
 		case "sim":
 			baseUrl = FATOORA_API_SIMULATION_URL;
@@ -133,7 +134,7 @@ public class ZatcaApiHelper extends GenericApi {
 		
 		KeyNamePair result = invokePostApi(url, data);
 		
-		System.out.println("Result: " + result);
+		System.out.println("API: " + url + " Result: " + result);
 		// 428 = Renewed. Need to redo compliance
 		if(result.getKey() == 200 || result.getKey() == 202) {
 			String resultData = result.getName();
@@ -252,7 +253,15 @@ public class ZatcaApiHelper extends GenericApi {
 				throw new Exception("Invoice clearance failed. " + result);
 			}
 		} else {
-			throw new Exception("Invoice clearance failed. " + result);
+			String resultData = result.getName();
+			if(resultData != null && resultData.startsWith("{") && resultData.endsWith("}")) { // Is Json
+		        ObjectMapper objectMapper = new ObjectMapper();
+		        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		        ClearedInvoiceResult response = objectMapper.readValue(resultData, ClearedInvoiceResult.class);		
+				return response;
+			} else {
+				throw new Exception("Invoice reporting failed. " + result);
+			}
 		}
 	}
 
@@ -280,7 +289,15 @@ public class ZatcaApiHelper extends GenericApi {
 				throw new Exception("Invoice reporting failed. " + result);
 			}
 		} else {
-			throw new Exception("Invoice reporting failed. " + result);
+			String resultData = result.getName();
+			if(resultData != null && resultData.startsWith("{") && resultData.endsWith("}")) { // Is Json
+		        ObjectMapper objectMapper = new ObjectMapper();
+		        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		        InvoiceResult response = objectMapper.readValue(resultData, InvoiceResult.class);		
+				return response;
+			} else {
+				throw new Exception("Invoice reporting failed. " + result);
+			}
 		}
 	}
 }

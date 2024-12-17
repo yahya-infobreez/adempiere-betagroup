@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Properties;
 
 import org.compiere.model.MInvoice;
@@ -13,6 +14,7 @@ import org.w3._2000._09.xmldsig_.KeyInfo;
 import org.w3._2000._09.xmldsig_.X509Data;
 
 import com.betagroup.einvoice.EInvoiceXmlFactory;
+import com.betagroup.einvoice.QRUtil;
 import com.betagroup.einvoice.ZatcaSDKProcessHelper;
 
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2.AttachmentType;
@@ -211,6 +213,32 @@ public class EInvoiceXmlFactoryTest extends AdempiereTestCase {
 		    	
 			ZatcaSDKProcessHelper.validateXml(inputFile);	
 			
+		} catch (Exception e) {			
+			e.printStackTrace();
+			fail(e.getMessage());
+		} finally {
+		}
+	}
+	
+	public void testExtractQRCode() {
+		Properties ctx = new Properties();
+		Env.setContext(ctx, "AD_Client_ID", 1000000);
+		Env.setContext(ctx, "AD_Org_ID", 0);
+	
+		MInvoice minvoice = MInvoice.get(ctx, 1075753); // B2C Invoice
+		assertNotNull(minvoice);
+		try {
+			Invoice xmlInvoice = EInvoiceXmlFactory.createInvoiceXml(minvoice);
+			byte[] invoiceData = EInvoiceXmlFactory.canonicalize(xmlInvoice, false);
+			assertNotNull(xmlInvoice);
+
+			String qrCode = xmlInvoice.getAdditionalDocumentReferences().stream()
+					.filter(ref->"QR".equals(ref.getID().getValue()))
+					.map(ref->ref.getAttachment().getEmbeddedDocumentBinaryObject().getValue())
+					.findFirst().orElse(null);
+			assertNotNull(qrCode);
+			ArrayList<String> qrData = QRUtil.decodeQR(qrCode);
+			System.out.println(qrData);
 		} catch (Exception e) {			
 			e.printStackTrace();
 			fail(e.getMessage());

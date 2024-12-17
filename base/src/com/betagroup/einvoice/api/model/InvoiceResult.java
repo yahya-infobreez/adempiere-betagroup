@@ -2,11 +2,15 @@ package com.betagroup.einvoice.api.model;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+
 public class InvoiceResult {
 	String invoiceHash;
+	@JsonAlias({"reportingStatus", "clearanceStatus"})
 	String status;
 	List<MessageModel> warnings;
 	List<MessageModel> errors;
+	ValidationResults validationResults;
 	
 	public String getInvoiceHash() {
 		return invoiceHash;
@@ -32,11 +36,19 @@ public class InvoiceResult {
 	public void setErrors(List<MessageModel> errors) {
 		this.errors = errors;
 	}
+	
+	public ValidationResults getValidationResults() {
+		return validationResults;
+	}
+	public void setValidationResults(ValidationResults validationResults) {
+		this.validationResults = validationResults;
+	}
 	@Override
 	public String toString() {
 		return "InvoiceResult [invoiceHash=" + invoiceHash + ", status=" + status + ", warnings=" + warnings
-				+ ", errors=" + errors + "]";
+				+ ", errors=" + errors + ", validationResults=" + validationResults + "]";
 	}
+	
 	
 	
 	/* TODO Also shows another model

@@ -1346,7 +1346,7 @@ public class EInvoiceXmlFactory {
     			.replace("<ds:DigestValue>", "<ds:DigestValue xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\">")
     			.replace("<ds:X509IssuerName>", "<ds:X509IssuerName xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\">")
     			.replace("<ds:X509SerialNumber>", "<ds:X509SerialNumber xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\">")
-    			.replaceAll("\n", "").replaceAll(">\s+<", "><")
+    			.replaceAll("\n", "").replaceAll(">\\s+<", "><")
     			.trim();
 //    	    	signedPropString = "                                    ".concat(signedPropString); // indent first line by 9 tabs/36 spaces. Other lines are already indented
 //    	signedPropString = Arrays.asList(signedPropString.split("\n")).stream()

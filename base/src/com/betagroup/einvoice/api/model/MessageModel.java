@@ -31,5 +31,11 @@ public class MessageModel {
 	public void setMessage(String message) {
 		this.message = message;
 	}
+	@Override
+	public String toString() {
+		return "MessageModel [type=" + type + ", category=" + category + ", code=" + code + ", message=" + message
+				+ "]";
+	}
+	
 	
 }

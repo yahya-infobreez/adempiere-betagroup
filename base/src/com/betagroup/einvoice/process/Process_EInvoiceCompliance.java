@@ -1,14 +1,5 @@
 package com.betagroup.einvoice.process;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.codec.binary.Hex;
-import org.compiere.model.MAttachment;
 import org.compiere.model.MClient;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MOrder;
@@ -16,60 +7,46 @@ import org.compiere.model.MOrg;
 import org.compiere.process.ProcessInfoParameter;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.CLogger;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-
-import com.betagroup.einvoice.CanonicalizeHelper;
 import com.betagroup.einvoice.EInvoiceXmlFactory;
-import com.betagroup.einvoice.QRUtil;
 import com.betagroup.einvoice.ZatcaApiHelper;
-import com.betagroup.einvoice.api.model.CSRResponse;
 import com.betagroup.einvoice.api.model.InvoiceResult;
 
 import oasis.names.specification.ubl.schema.xsd.invoice_2.Invoice;
 
-import java.util.*;
 import java.util.logging.Level;
 
 
-public class Process_CheckInvoiceCompliance extends SvrProcess{
+public class Process_EInvoiceCompliance extends SvrProcess{
 
 	private int p_C_Invoice_ID;
-	private int p_C_Order_ID;
-	private static CLogger s_log = CLogger.getCLogger(Process_CheckInvoiceCompliance.class);
+	private static CLogger s_log = CLogger.getCLogger(Process_EInvoiceCompliance.class);
 
 
 	protected void prepare()
 	{
-		ProcessInfoParameter[] para = getParameter();
-		for (int i = 0; i < para.length; i++)
-		{
-			String name = para[i].getParameterName();
-			if (para[i].getParameter() == null)
-				;
-			else if (name.equals("C_Order_ID"))
-				p_C_Order_ID = ((BigDecimal)para[i].getParameter()).intValue();
-			else if (name.equals("C_Invoice_ID"))
-				p_C_Invoice_ID = ((BigDecimal)para[i].getParameter()).intValue();
-			else
-				log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);
+		p_C_Invoice_ID = getRecord_ID();
+		if(p_C_Invoice_ID == 0) {
+			ProcessInfoParameter[] para = getParameter();
+			for (int i = 0; i < para.length; i++)
+			{
+				String name = para[i].getParameterName();
+				if (para[i].getParameter() == null)
+					;
+				else if (name.equals("C_Invoice_ID"))
+					p_C_Invoice_ID = ((BigDecimal)para[i].getParameter()).intValue();
+				else
+					log.log(Level.SEVERE, "prepare - Unknown Parameter: " + name);
+			}
 		}
 	}
 
 	protected String doIt() throws Exception 
 	{
 		MInvoice minvoice = null;
-		MOrder morder = null;
 		if (p_C_Invoice_ID != 0)
 		{
 			minvoice = MInvoice.get(getCtx(), p_C_Invoice_ID);
-			morder = (MOrder) minvoice.getC_Order();
-			
-		} else {
-			morder = new MOrder(getCtx(), p_C_Order_ID, null);
-			p_C_Invoice_ID = morder.getC_Invoice_ID();
-			minvoice = MInvoice.get(getCtx(), p_C_Invoice_ID);
-		}
+		} 
 		if(minvoice == null) {
 			throw new Exception("No invoice found ");
 		}
