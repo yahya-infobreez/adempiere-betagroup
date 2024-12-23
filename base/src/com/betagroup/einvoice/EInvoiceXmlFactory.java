@@ -569,8 +569,7 @@ public class EInvoiceXmlFactory {
 		 cac:AdditionalDocumentReference / cac:Attachment / cbc:EmbeddedDocumentBinaryObject /@mimeCode = text/plain
 		*/
 		// Set QR etc in case of Simplified Invoice. For Tax Invoice, it will be provided by ZATCA after uploading
-
-//		if(minvoice.isSimplifiedInvoice()) {
+		if(minvoice.isSimplifiedInvoice()) {
 			String companyName = org.getName2() != null ? org.getName2() : client.getName2();			
 			// Derive ECDSA Signature of ZATCA certificate
 			byte[] cert2 = Base64.getDecoder().decode(org.getCertificate());
@@ -589,7 +588,7 @@ public class EInvoiceXmlFactory {
 			qrCode.setAttachment(attachQrCode);
 			qrCode.setID("QR");
 			invoice.getAdditionalDocumentReferences().add(qrCode);
-//		}
+		}
 		minvoice.saveEx();
 		return invoice;
 	}
