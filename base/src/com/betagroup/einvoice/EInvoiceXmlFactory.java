@@ -3,7 +3,6 @@ package com.betagroup.einvoice;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -14,10 +13,10 @@ import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Base64;
-import java.util.stream.Collectors;
-
+import java.util.HashMap;
+import java.util.List;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -26,7 +25,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -34,6 +32,7 @@ import javax.xml.transform.stream.StreamResult;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerLocation;
+import org.compiere.model.MCharge;
 import org.compiere.model.MClient;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
@@ -42,6 +41,7 @@ import org.compiere.model.MLocation;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrg;
 import org.compiere.model.MOrgInfo;
+import org.compiere.model.MProduct;
 import org.compiere.model.MTax;
 import org.compiere.util.Env;
 import org.etsi.uri._01903.v1_3.CertIDType;
@@ -62,6 +62,9 @@ import org.w3._2000._09.xmldsig_.Transforms;
 import org.w3._2000._09.xmldsig_.X509Data;
 import org.w3._2000._09.xmldsig_.X509IssuerSerialType;
 import org.w3c.dom.Document;
+
+import com.betagroup.einvoice.EInvoiceXmlFactory.InvoiceTax;
+import com.sun.javafx.collections.MappingChange.Map;
 
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2.AddressType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2.AttachmentType;
@@ -485,7 +488,11 @@ public class EInvoiceXmlFactory {
 		// BT-5 Currency for sum of invoice line net amount // BR-KSA-CL-02 // ISO 4217 alpha-3
 		// cac:LegalMonetaryTotal / cbc:LineExtensionAmount @currencyID
 		MonetaryTotalType monetaryTotalType = new MonetaryTotalType();
-		monetaryTotalType.setLineExtensionAmount(minvoice.getTotalLines().subtract(roundOffAmt), currency); // TODO Should exclude charge/allowance
+		BigDecimal prepaidAmt = minvoice.getAdvanceTotal(); //minvoice.getAdvanceAmt().add(minvoice.getAdvanceTax());
+		boolean isPrepaymentInvoice = minvoice.isPrepaymentInvoice();
+		monetaryTotalType.setLineExtensionAmount((isPrepaymentInvoice? minvoice.getTotalLines() :
+				minvoice.getTotalLinesBeforeAdvance()) //
+				.subtract(roundOffAmt), currency); // TODO Should exclude charge/allowance
 		
 
 		// BT-107 Sum of allowances on document level // Optional // Sum of Line Level allowances
@@ -505,7 +512,16 @@ public class EInvoiceXmlFactory {
 		// TODO Calculation depends on How charge/discount is handled at Document level		
 		// BT-5 Currency for invoice total amount without VAT
 		// cac:LegalMonetaryTotal / cbc:TaxExclusiveAmount @currencyID
-		monetaryTotalType.setTaxExclusiveAmount(minvoice.getTotalLines().subtract(roundOffAmt), currency);
+		monetaryTotalType.setTaxExclusiveAmount((isPrepaymentInvoice? minvoice.getTotalLines() :
+			minvoice.getTotalLinesBeforeAdvance())
+				.subtract(roundOffAmt), currency);
+		
+		
+		// Pre-Paid amount	// Optional
+		// cac:LegalMonetaryTotal / cbc:PrepaidAmount
+		// Currency for pre-paid amount	// Optional
+		// cac:LegalMonetaryTotal / cbc:PrepaidAmount @currencyID
+		monetaryTotalType.setPrepaidAmount(prepaidAmt, currency);
 		
 		// BT-112 Invoice total amount with VAT		// BR-KSA-F-04
 		// If VAT total is not entered, Gross Total to be entered Statement - "Amount includes VAT"
@@ -513,14 +529,10 @@ public class EInvoiceXmlFactory {
 		// Currency for invoice total amount with VAT
 		// cac:LegalMonetaryTotal / cbc:TaxInclusiveAmount @currencyID
 		// Note: This amount excludes RoundOff. Round off is shown separately
-		monetaryTotalType.setTaxInclusiveAmount(minvoice.getGrandTotal().subtract(roundOffAmt), currency);
-		
-		// Pre-Paid amount	// Optional
-		// cac:LegalMonetaryTotal / cbc:PrepaidAmount
-		// Currency for pre-paid amount	// Optional
-		// cac:LegalMonetaryTotal / cbc:PrepaidAmount @currencyID
-		BigDecimal prepaidAmt = minvoice.getPrepaidAmt();
-		monetaryTotalType.setPrepaidAmount(prepaidAmt, currency);
+		monetaryTotalType.setTaxInclusiveAmount(minvoice.getGrandTotal()
+				.add(prepaidAmt) // GrandTotal is the Payable amount after Advance is adjusted
+				.subtract(roundOffAmt), currency); // RoundOff is considered extra
+
 		
 		// Rounding amount		// Optional
 		// cac:LegalMonetaryTotal/cbc:PayableRoundingAmount
@@ -533,16 +545,17 @@ public class EInvoiceXmlFactory {
 		// cac:LegalMonetaryTotal / cbc:PayableAmount		
 		// BT-5 Currency for amount due for payment
 		// cac:LegalMonetaryTotal / cbc:PayableAmount @currencyID
-		monetaryTotalType.setPayableAmount(minvoice.getOpenAmt(false, null), currency); // TODO This is valid after allocation is done for pre-payment
+		// GrandTotal field has new Payable Amt after adjusting Advance Amount
+		monetaryTotalType.setPayableAmount(minvoice.getGrandTotal(), currency); 
 		// Note: openAmt(creditmemoAdjusted=false), as we always want the amount +ve)
+		// TODO openAmt() is valid after allocation is done for pre-payment, 
 		
 		// Finally add to Invoice
 		invoice.setLegalMonetaryTotal(monetaryTotalType);
 		
-		processTax(invoice, minvoice);
-
-		processLines(invoice, minvoice); 
+		java.util.Map<String, InvoiceTax> taxMap = processLines(invoice, minvoice); 
 		
+		processTax(invoice, minvoice, taxMap); // This should be called after #processLines()
 		
 		String[] signPair = fillSignatureDetails(invoice, org);
 		String invoiceSignature = signPair[1];
@@ -812,21 +825,23 @@ public class EInvoiceXmlFactory {
 
 	}
 
-	private static void processTax(Invoice invoice, MInvoice minvoice) {
-
+	private static void processTax(Invoice invoice, MInvoice minvoice, java.util.Map<String, InvoiceTax> taxMap) {
+		BigDecimal taxTotalAmt = taxMap.entrySet().stream()
+				.map(t->t.getValue().tax)
+				.reduce(BigDecimal::add).orElse(BigDecimal.ZERO);
 		// BT-110 Invoice total VAT amount	// Σ VAT category tax amount (BT-117) (TODO Note that this is NOT SUM(LineTotal)
 		// BR-CO-14, BR-DEC-13, BR-KSA-EN16931-08, BR-KSA-EN16931-09, BR-KSA-F-04
 		// cac:TaxTotal / cbc:TaxAmount		
 		// BT-5 Currency for total VAT amount	// 
 		// cac:TaxTotal / cbc:TaxAmount @currencyID
 		TaxTotalType taxTotal = new TaxTotalType();
-		taxTotal.setTaxAmount(minvoice.getTaxTotal(), "SAR"); // TODO This shall be the converted amount in SAR
+		taxTotal.setTaxAmount(taxTotalAmt, "SAR"); // TODO This shall be the converted amount in SAR
 		invoice.getTaxTotals().add(taxTotal);
 		
 		// Note: There should be 2 copies of taxTotal. One each with & without subTotal details included
 		// TODO The second one may be in Invoice currency
 		TaxTotalType taxTotal1 = new TaxTotalType();
-		taxTotal1.setTaxAmount(minvoice.getTaxTotal(), "SAR");		
+		taxTotal1.setTaxAmount(taxTotalAmt, "SAR");		
 
 		// BT-111 Invoice total VAT amount in accounting currency // TODO Duplicate of BT-110??
 		// To be used when the VAT accounting currency (BT-6) differs from the Invoice currency code (BT-5)
@@ -842,89 +857,101 @@ public class EInvoiceXmlFactory {
 			VAT category tax amount (BT-117) = VAT category taxable amount (BT-116) × (VAT rate (BT-119) ÷ 100)
 		*/
 
-		MInvoiceTax[] taxes = minvoice.getTaxes(false);
-		for (MInvoiceTax tax : taxes) {
-			if(tax.getC_Tax_ID() == 1000005) // TODO remove hardcoding
-				continue; // Special tax added for Round Off etc
-			
-			TaxSubtotal subTotal = new TaxSubtotal();
-			// BR-45, BR-DEC-19, BR-S-08, BR-E-08, BR-Z-08, BR-O-08, BR-CO-18 
-			// cac:TaxTotal / cac:TaxSubtotal / cbc:TaxableAmount
-			// BT-5 Currency for VAT category taxable amount
-			// cac:TaxTotal / cac:TaxSubtotal / cbc:TaxableAmount /@currencyID
-			subTotal.setTaxableAmount(tax.getTaxBaseAmt(), "SAR");
-						
-			// BT-117 VAT category tax amount
-			// BR-46, BR-CO-17, BR-S-09, BR-Z-09, BR-E-09, BR-O-09, BR-DEC-20, BR-CO-18 
-			// cac:TaxTotal / cac:TaxSubtotal / cbc:TaxAmount
-			// BT-5 Currency for category tax amount
-			// cac:TaxTotal / cac:TaxSubtotal / cbc:TaxAmount /@currencyID			
-			subTotal.setTaxAmount(tax.getTaxAmt(), "SAR");		
-			/*
-			 * Reason for not setting Currency. TODO confirm
-			 * [BR-KSA-EN16931-09]-Only one tax total (BG-22) without tax subtotals (BG-23) must be provided when tax currency code is provided
-			 */
-			
-			// BT-118 VAT category code // Valid Catogories are: S=Standard rated, Z=Zero rated, E=Exempt from VAT, O=Not subject to VAT
-			// BR-47, BR-Z-01, BR-E-01, BR-O-01, BR-CO-18, BR-CL-18
-			// cac:TaxTotal / cac:TaxSubtotal / cac:TaxCategory / cbc:ID
-			// BT-119 VAT category rate	
-			//cac:TaxTotal / cac:TaxSubtotal / cac:TaxCategory / cbc:Percent			
-			// KSA-21	Tax scheme ID	// BR-CO-18  = VAT
-			// cac:TaxTotal / cac:TaxSubtotal / cac:TaxCategory / cac:TaxScheme / cbc:ID
-			TaxCategoryType taxCategory = new TaxCategoryType();
-			String taxCategoryCode = getTaxCategoryCode((MTax) tax.getC_Tax());
-			taxCategory.setID(new ID("UN/ECE 5305", taxCategoryCode));
-			if(!"O".equals(taxCategoryCode)) { // Except in case of 'Not subject to VAT'
-				taxCategory.setPercent(tax.getC_Tax().getRate());
-			}
-			taxCategory.setTaxScheme("VAT");
- 
-			if("E".equals(taxCategoryCode) ||
-					"O".equals(taxCategoryCode)) {
-				// BT-121 VAT exemption reason code // BR-KSA-23, BR-KSA-24, BR-KSA-69, BR-KSA-CL-04 
-				// must exist if tax category is 'Z', or 'E' or ‘O’,
-				// cac:TaxTotal / cac:TaxSubtotal / cac:TaxCategory / cbc:TaxExemptionReasonCode
-				// BT-120 VAT exemption reason text = Tax treatment applied to the supply	// BR-KSA-83, BR-KSA-F-06
-				// cac:TaxTotal / cac:TaxSubtotal /cac:TaxCategory / cbc:TaxExemptionReason
-				/* BT-121 VAT exemption reason code Valid values are as follows. TODO Confirm if English/Arabic to be used
-				 E = Exempt from Tax التوريدات المعفاة
-				 	VATEX-SA-29 Financial services 	الخدمات المالية
-				 	VATEX-SA-29-7 Life insurance services	عقد تأمين على الحياة
-				 	VATEX-SA-30 Real estate transactions 	 التوريدات العقارية المعفاة من الضريبة
-				 S = Standard rate/ التوريدات الخاضعة للضريبة
-		
-				Z = Zero rated goods 	التوريدات الخاضعة لنسبة الصفر
-					VATEX-SA-32		Export of goods صادرات السلع من المملكة
-					 VATEX-SA-33 	Export of services صادرات الخدمات من المملكة
-					 VATEX-SA-34-1 	The international transport of Goods النقل الدولي للسلع
-					VATEX-SA-34-2	international transport of passengers النقل الدولي للركاب
-					VATEX-SA-34-3	services directly connected and incidental to a Supply of international passenger transportً
-					 				الخدمات المرتبطة مباشرة أو عرضيابتوريد النقل الدولي للركاب			
-					VATEX-SA-34-4	Supply of a qualifying means of transport توريد وسائل النقل المؤهلة
-					VATEX-SA-34-5	Any services relating to Goods or passenger transportation, as defined in article twenty five of these Regulations
-								الخدمات ذات الصلة بنقل السلع أوالركاب، وفقا ً للتعريف الوارد بالمادة الخامسة والعشرين من الالئحةالتنفيذية لنظام ضريبة القيامة
-					VATEX-SA-35		Medicines and medical equipment ألدوية والمعدات الطبية
-					VATEX-SA-36		Qualifying metals المعادن المؤهلة
-					VATEX-SA-EDU 	Private education to citizen الخدمات التعليمية الخاصة للمواطنين
-					VATEX-SA-HEA	Private healthcare to citizen الخدمات الصحية الخاصة للمواطنين
-					VATEX-SA-MLTRY	supply of qualified military goods توريد السلع العسكرية المؤهلة
-					
-				O = Services outside scope of tax / Not subject to VAT/ التوريدات الغير خاضعة للضريبة
-					VATEX-SA-OOS	Reason = Free Text
-					
-				 */
-				MOrder order = (MOrder) minvoice.getC_Order();
-				// TODO Either one of these may be enough
-				taxCategory.setTaxExemptionReasonCode(order != null ? order.getVatExceptionReason():"Unknown");
-				taxCategory.getTaxExemptionReasons().add(new TaxExemptionReason(order != null ? order.getVatExceptionReasonText():"Unknown"));
-			}
-			subTotal.setTaxCategory(taxCategory);
-			taxTotal1.getTaxSubtotals().add(subTotal);
-		}
+//		MInvoiceTax[] taxes = minvoice.getTaxes(false);
+//		for (MInvoiceTax tax : taxes) {
+//			if(tax.getC_Tax_ID() == 1000005) // TODO remove hardcoding
+//				continue; // Special tax added for Round Off etc
+//			
+//			TaxSubtotal taxSubtotal = getTaxSubTotal(minvoice, (MTax) tax.getC_Tax(), 
+//					tax.getTaxBaseAmt(), tax.getTaxAmt());
+//			taxTotal1.getTaxSubtotals().add(taxSubtotal);
+//		}
+		// Need to re-calculate the tax - as InvoiceTax table has values adjusted for pre-payment
+		taxMap.entrySet().forEach(t->{
+			TaxSubtotal taxSubtotal = getTaxSubTotal(minvoice, t.getValue().mtax, 
+					t.getValue().taxable, t.getValue().tax);
+			taxTotal1.getTaxSubtotals().add(taxSubtotal);
+		});
 		invoice.getTaxTotals().add(taxTotal1);
 	}
 
+	private static TaxSubtotal getTaxSubTotal(MInvoice minvoice, MTax tax, BigDecimal taxableAmt, BigDecimal taxAmt) {
+		TaxSubtotal subTotal = new TaxSubtotal();
+		// BR-45, BR-DEC-19, BR-S-08, BR-E-08, BR-Z-08, BR-O-08, BR-CO-18 
+		// cac:TaxTotal / cac:TaxSubtotal / cbc:TaxableAmount
+		// BT-5 Currency for VAT category taxable amount
+		// cac:TaxTotal / cac:TaxSubtotal / cbc:TaxableAmount /@currencyID
+		subTotal.setTaxableAmount(taxableAmt, "SAR");
+					
+		// BT-117 VAT category tax amount
+		// BR-46, BR-CO-17, BR-S-09, BR-Z-09, BR-E-09, BR-O-09, BR-DEC-20, BR-CO-18 
+		// cac:TaxTotal / cac:TaxSubtotal / cbc:TaxAmount
+		// BT-5 Currency for category tax amount
+		// cac:TaxTotal / cac:TaxSubtotal / cbc:TaxAmount /@currencyID			
+		subTotal.setTaxAmount(taxAmt, "SAR");		
+		/*
+		 * Reason for not setting Currency. TODO confirm
+		 * [BR-KSA-EN16931-09]-Only one tax total (BG-22) without tax subtotals (BG-23) must be provided when tax currency code is provided
+		 */
+		
+		// BT-118 VAT category code // Valid Catogories are: S=Standard rated, Z=Zero rated, E=Exempt from VAT, O=Not subject to VAT
+		// BR-47, BR-Z-01, BR-E-01, BR-O-01, BR-CO-18, BR-CL-18
+		// cac:TaxTotal / cac:TaxSubtotal / cac:TaxCategory / cbc:ID
+		// BT-119 VAT category rate	
+		//cac:TaxTotal / cac:TaxSubtotal / cac:TaxCategory / cbc:Percent			
+		// KSA-21	Tax scheme ID	// BR-CO-18  = VAT
+		// cac:TaxTotal / cac:TaxSubtotal / cac:TaxCategory / cac:TaxScheme / cbc:ID
+		TaxCategoryType taxCategory = new TaxCategoryType();
+		String taxCategoryCode = getTaxCategoryCode((MTax) tax);
+		taxCategory.setID(new ID("UN/ECE 5305", taxCategoryCode));
+		if(!"O".equals(taxCategoryCode)) { // Except in case of 'Not subject to VAT'
+			taxCategory.setPercent(tax.getRate());
+		}
+		taxCategory.setTaxScheme("VAT");
+
+		if("E".equals(taxCategoryCode) ||
+				"O".equals(taxCategoryCode)) {
+			// BT-121 VAT exemption reason code // BR-KSA-23, BR-KSA-24, BR-KSA-69, BR-KSA-CL-04 
+			// must exist if tax category is 'Z', or 'E' or ‘O’,
+			// cac:TaxTotal / cac:TaxSubtotal / cac:TaxCategory / cbc:TaxExemptionReasonCode
+			// BT-120 VAT exemption reason text = Tax treatment applied to the supply	// BR-KSA-83, BR-KSA-F-06
+			// cac:TaxTotal / cac:TaxSubtotal /cac:TaxCategory / cbc:TaxExemptionReason
+			/* BT-121 VAT exemption reason code Valid values are as follows. TODO Confirm if English/Arabic to be used
+			 E = Exempt from Tax التوريدات المعفاة
+			 	VATEX-SA-29 Financial services 	الخدمات المالية
+			 	VATEX-SA-29-7 Life insurance services	عقد تأمين على الحياة
+			 	VATEX-SA-30 Real estate transactions 	 التوريدات العقارية المعفاة من الضريبة
+			 S = Standard rate/ التوريدات الخاضعة للضريبة
+	
+			Z = Zero rated goods 	التوريدات الخاضعة لنسبة الصفر
+				VATEX-SA-32		Export of goods صادرات السلع من المملكة
+				 VATEX-SA-33 	Export of services صادرات الخدمات من المملكة
+				 VATEX-SA-34-1 	The international transport of Goods النقل الدولي للسلع
+				VATEX-SA-34-2	international transport of passengers النقل الدولي للركاب
+				VATEX-SA-34-3	services directly connected and incidental to a Supply of international passenger transportً
+				 				الخدمات المرتبطة مباشرة أو عرضيابتوريد النقل الدولي للركاب			
+				VATEX-SA-34-4	Supply of a qualifying means of transport توريد وسائل النقل المؤهلة
+				VATEX-SA-34-5	Any services relating to Goods or passenger transportation, as defined in article twenty five of these Regulations
+							الخدمات ذات الصلة بنقل السلع أوالركاب، وفقا ً للتعريف الوارد بالمادة الخامسة والعشرين من الالئحةالتنفيذية لنظام ضريبة القيامة
+				VATEX-SA-35		Medicines and medical equipment ألدوية والمعدات الطبية
+				VATEX-SA-36		Qualifying metals المعادن المؤهلة
+				VATEX-SA-EDU 	Private education to citizen الخدمات التعليمية الخاصة للمواطنين
+				VATEX-SA-HEA	Private healthcare to citizen الخدمات الصحية الخاصة للمواطنين
+				VATEX-SA-MLTRY	supply of qualified military goods توريد السلع العسكرية المؤهلة
+				
+			O = Services outside scope of tax / Not subject to VAT/ التوريدات الغير خاضعة للضريبة
+				VATEX-SA-OOS	Reason = Free Text
+				
+			 */
+			MOrder order = (MOrder) minvoice.getC_Order();
+			// TODO Either one of these may be enough
+			taxCategory.setTaxExemptionReasonCode(order != null ? order.getVatExceptionReason():"Unknown");
+			taxCategory.getTaxExemptionReasons().add(new TaxExemptionReason(order != null ? order.getVatExceptionReasonText():"Unknown"));
+		}
+		subTotal.setTaxCategory(taxCategory);
+		return subTotal;
+	}
+	
 	private static String getTaxCategoryCode(MTax tax) {
 		String taxCategoryCode = "";
 		switch(tax.getC_TaxCategory().getName()) {
@@ -936,7 +963,31 @@ public class EInvoiceXmlFactory {
 		return taxCategoryCode;
 	}
 
-	private static void processLines(Invoice invoice, MInvoice minvoice) {
+	static class InvoiceTax {
+		String taxCategory;
+		MTax mtax;
+		BigDecimal taxable;
+		BigDecimal tax;
+		
+		public InvoiceTax(String taxCategory, MTax mtax) {
+			this.taxCategory = taxCategory;
+			taxable = BigDecimal.ZERO;
+			tax = BigDecimal.ZERO;
+			this.mtax = mtax;
+		}
+	}
+	
+	private static java.util.Map<String,InvoiceTax> processLines(Invoice invoice, MInvoice minvoice) throws Exception {
+		HashMap<String, InvoiceTax> taxMap = new HashMap<String, EInvoiceXmlFactory.InvoiceTax>(); 
+		MCharge prepaymentCharge = minvoice.getPrepaymentCharge(); // used in Prepayment invoices
+		if(prepaymentCharge == null) {
+			throw new AdempiereException("Prepayment Charge not defined");
+		}
+		
+		MProduct prepaymentAdjustmentProduct = minvoice.getPrepaymentAdjustmentProduct();
+		if(prepaymentAdjustmentProduct == null) {
+			throw new AdempiereException("Prepayment Adjustment product not defined");
+		}
 		for (MInvoiceLine mline : minvoice.getLines()) {
 			if(mline.isRoundOffLine())
 				continue; // RoundOff handled separately
@@ -944,37 +995,74 @@ public class EInvoiceXmlFactory {
 			// BT-126	Invoice line identifier		// BR-21, BR-16	// 
 			// cac:InvoiceLine /  cbc:ID
 			line.setID(new ID(String.valueOf(mline.getLine())));
-	
-			// TODO Skip Prepayment for now
-			// Prepayment Data as Invoice Line to be added, if If Pre-Paid amount (BT-113) is included
-			// KSA-26 	Prepayment ID // BR-KSA-73 // The sequential number (Invoice number BT-1) of the associated Prepayment invoice(s).
-			// cac:InvoiceLine / cac:DocumentReference / cbc:ID
-	
-			// KSA-27 Prepayment UUID	// BR-KSA-73	// Optional
-			// cac:InvoiceLine / cac:DocumentReference / cbc:UUID
+			String currency = minvoice.getCurrencyISO();	
 			
-			// Prepayment Issue Date (KSA-28) – Issue date (BT-2) of the prepayment invoice(s)
-			// cac:InvoiceLine / cac:DocumentReference / cbc:IssueDate
+			boolean isPrepaymentInvoice = minvoice.isPrepaymentInvoice();
+			boolean isPrepaymentLine = isPrepaymentInvoice && mline.getC_Charge_ID() > 0 && prepaymentCharge != null 
+					&& prepaymentCharge.get_ID() == mline.getC_Charge_ID();
 			
-			// Prepayment Issue Time (KSA-29) – Issue time (KSA-25) of the prepayment invoice(s)
-			// cac:InvoiceLine / cac:DocumentReference / cbc:IssueTime
-	
-			// Prepayment Document Type	Code (KSA-30) – Invoice type code (BT-3) must be 386
-			// cac:InvoiceLine / cac:DocumentReference / cbc:DocumentTypeCode
-	
-			// BT-129 Invoiced quantity	// BR-22
-			// cac:InvoiceLine / cbc:InvoicedQuantity	
-			// BT-130 Invoiced quantity unit of measure	// Optional
-			// cac:InvoiceLine / cbc:InvoicedQuantity @ unitCode
-			line.setInvoicedQuantity(mline.getQtyEntered(), mline.getC_UOM().getUOMSymbol()); // No UoM conversion
-
-	
-			// BT-131 Invoice line net amount	// BR-24	// BR-KSA-EN16931-11,  BR-KSA-F-04, BR-KSA-82
-			// cac:InvoiceLine  / cbc:LineExtensionAmount 	
-			// BT-5 Currency for invoice line net amount	 // BR-KSA-CL-02
-			// cac:InvoiceLine  / cbc:LineExtensionAmount @currencyID
-			String currency = minvoice.getCurrencyISO();
-			line.setLineExtensionAmount(mline.getLineNetAmt().setScale(2), currency);
+			boolean isPrepaymentAdjustmentLine = mline.getM_Product_ID() > 0 && prepaymentAdjustmentProduct != null 
+					&& prepaymentAdjustmentProduct.get_ID() == mline.getM_Product_ID();
+			
+			// Handle lines in Prepayment Invoice
+			if(isPrepaymentAdjustmentLine) { // Handle pre-payment adjustment lines in real invoices
+				List<MInvoice> prepayInvoiceList = minvoice.getRefAdvanceInvoices(); 
+				if(prepayInvoiceList == null) {
+					throw new AdempiereException("Reference to Prepayment Invoice missing");
+				}
+				// TODO Multiple references allowed. 
+				for(MInvoice prepayDoc:prepayInvoiceList) { 	
+					DocumentReferenceType prepayRef = new DocumentReferenceType();
+					// Prepayment Data as Invoice Line to be added, if If Pre-Paid amount (BT-113) is included
+					// KSA-26 	Prepayment ID // BR-KSA-73 // The sequential number (Invoice number BT-1) of the associated Prepayment invoice(s).
+					// cac:InvoiceLine / cac:DocumentReference / cbc:ID
+					prepayRef.setID(prepayDoc.getDocumentNo());
+			
+					// KSA-27 Prepayment UUID	// BR-KSA-73	// Optional
+					// cac:InvoiceLine / cac:DocumentReference / cbc:UUID
+					prepayRef.setUUID(prepayDoc.getUUID());
+					
+					Timestamp invoiceIssueTime = prepayDoc.getInvoiceIssueTime() != null ? prepayDoc.getInvoiceIssueTime() : prepayDoc.getDateInvoiced();
+					// Prepayment Issue Date (KSA-28) – Issue date (BT-2) of the prepayment invoice(s)
+					// cac:InvoiceLine / cac:DocumentReference / cbc:IssueDate
+					prepayRef.setIssueDate(invoiceIssueTime.toLocalDateTime().toLocalDate());
+					
+					// Prepayment Issue Time (KSA-29) – Issue time (KSA-25) of the prepayment invoice(s)
+					// cac:InvoiceLine / cac:DocumentReference / cbc:IssueTime
+					prepayRef.setIssueTime(invoiceIssueTime.toLocalDateTime());
+			
+					// Prepayment Document Type	Code (KSA-30) – Invoice type code (BT-3) must be 386
+					// cac:InvoiceLine / cac:DocumentReference / cbc:DocumentTypeCode
+					prepayRef.setDocumentTypeCode("386");
+			
+					// Add reference to line
+					line.getDocumentReferences().add(prepayRef);
+				}
+					
+				// BT-129 Invoiced quantity	// BR-22
+				// cac:InvoiceLine / cbc:InvoicedQuantity	
+				// BT-130 Invoiced quantity unit of measure	// Optional
+				// cac:InvoiceLine / cbc:InvoicedQuantity @ unitCode
+				line.setInvoicedQuantity(BigDecimal.ZERO.setScale(2), "PCE"); // Hardcode qty & unit
+				
+				// BT-131 Invoice line net amount	// BR-24	// BR-KSA-EN16931-11,  BR-KSA-F-04, BR-KSA-82
+				// cac:InvoiceLine  / cbc:LineExtensionAmount 	
+				// BT-5 Currency for invoice line net amount	 // BR-KSA-CL-02
+				// cac:InvoiceLine  / cbc:LineExtensionAmount @currencyID
+				line.setLineExtensionAmount(BigDecimal.ZERO.setScale(2), currency); // Hardcode Net Amount to zero
+			} else { // TODO Confirm line settings for Pre-payment invoice
+				// BT-129 Invoiced quantity	// BR-22
+				// cac:InvoiceLine / cbc:InvoicedQuantity	
+				// BT-130 Invoiced quantity unit of measure	// Optional
+				// cac:InvoiceLine / cbc:InvoicedQuantity @ unitCode
+				line.setInvoicedQuantity(mline.getQtyEntered(), mline.getC_UOM().getUOMSymbol()); // No UoM conversion
+				
+				// BT-131 Invoice line net amount	// BR-24	// BR-KSA-EN16931-11,  BR-KSA-F-04, BR-KSA-82
+				// cac:InvoiceLine  / cbc:LineExtensionAmount 	
+				// BT-5 Currency for invoice line net amount	 // BR-KSA-CL-02
+				// cac:InvoiceLine  / cbc:LineExtensionAmount @currencyID
+				line.setLineExtensionAmount(mline.getLineNetAmt().setScale(2), currency);
+			}
 	
 			// Invoice line allowance indicator //*** SKIP - as not applicable
 			// cac:InvoiceLine / cac:AllowanceCharge / cbc:ChargeIndicator	
@@ -1016,25 +1104,60 @@ public class EInvoiceXmlFactory {
 			// BT-145 Code for the reason for invoice line charge 
 			// cac:InvoiceLine / cac:AllowanceCharge / cbc:AllowanceChargeReasonCode With cbc:ChargeIndicator="true"
 	
-			// KSA-11 VAT line amount
-			// cac:InvoiceLine / cac:TaxTotal / cbc:TaxAmount
-			// BT-5 Currency for VAT line amount
-			// cac:InvoiceLine / cac:TaxTotal / cbc:TaxAmount @currencyID
 			TaxTotalType lineTax = new TaxTotalType();
-			lineTax.setTaxAmount(mline.getTaxAmt().setScale(2), currency);	
-	
-			// KSA-12 Line amount inclusive VAT ?? // TODO CROSS CHECK
-			// cac:InvoiceLine / cac:TaxTotal / cbc:RoundingAmount	
-			// Currency for line amount inclusive VAT
-			// cac:InvoiceLine / cac:TaxTotal / cbc:RoundingAmount @curencyID
-			// Line Total is including Tax, in case of Exclusive pricelist. // TODO Handle inclusive pricelist
-			lineTax.setRoundingAmount(mline.getLineTotalAmt().setScale(2), currency); 
-	
-			// KSA-31 Prepayment VAT Category Taxable Amount
-			// cac:InvoiceLine / cac:TaxTotal / cac:TaxSubtotal / cbc:TaxableAmount	
-			// BT-5 Currency for Prepayment VAT category Taxable Amount
-			// cac:InvoiceLine / cac:TaxTotal / cac:TaxSubtotal / cbc:TaxAmount @currencyID
-			// *** Skip
+			if(!isPrepaymentAdjustmentLine) {
+				// KSA-11 VAT line amount
+				// cac:InvoiceLine / cac:TaxTotal / cbc:TaxAmount
+				// BT-5 Currency for VAT line amount
+				// cac:InvoiceLine / cac:TaxTotal / cbc:TaxAmount @currencyID
+				lineTax.setTaxAmount(mline.getTaxAmt().setScale(2), currency);	
+		
+				// KSA-12 Line amount inclusive VAT ?? // TODO CROSS CHECK
+				// cac:InvoiceLine / cac:TaxTotal / cbc:RoundingAmount	
+				// Currency for line amount inclusive VAT
+				// cac:InvoiceLine / cac:TaxTotal / cbc:RoundingAmount @curencyID
+				// Line Total is including Tax, in case of Exclusive pricelist. // TODO Handle inclusive pricelist
+				lineTax.setRoundingAmount(mline.getLineTotalAmt().setScale(2), currency); 
+				
+				// Fill TaxMap to get real tax
+				// Fill the MAP to adjust InvoiceTax table later
+				MTax mtax = (MTax) mline.getC_Tax();
+				String taxCategory = getTaxCategoryCode(mtax);
+				InvoiceTax invoiceTax = taxMap.get(taxCategory);
+				if(invoiceTax == null) {
+					invoiceTax = new InvoiceTax(taxCategory, mtax);
+				}
+				invoiceTax.taxable = invoiceTax.taxable.add(mline.getLineNetAmt());
+				invoiceTax.tax = invoiceTax.tax.add(mline.getTaxAmt());
+				taxMap.put(taxCategory, invoiceTax);
+			} else {
+				// KSA-11 VAT line amount
+				// cac:InvoiceLine / cac:TaxTotal / cbc:TaxAmount
+				// BT-5 Currency for VAT line amount
+				// cac:InvoiceLine / cac:TaxTotal / cbc:TaxAmount @currencyID
+				lineTax.setTaxAmount(BigDecimal.ZERO.setScale(2), currency); // Hardcode Net Amount to zero
+		
+				// KSA-12 Line amount inclusive VAT ?? // TODO CROSS CHECK
+				// cac:InvoiceLine / cac:TaxTotal / cbc:RoundingAmount	
+				// Currency for line amount inclusive VAT
+				// cac:InvoiceLine / cac:TaxTotal / cbc:RoundingAmount @curencyID
+				// Line Total is including Tax, in case of Exclusive pricelist. // TODO Handle inclusive pricelist
+				lineTax.setRoundingAmount(BigDecimal.ZERO.setScale(2), currency); // Hardcode Net Amount to zero
+				
+				// KSA-31 Prepayment VAT Category Taxable Amount
+				// cac:InvoiceLine / cac:TaxTotal / cac:TaxSubtotal / cbc:TaxableAmount	
+				// BT-5 Currency for Prepayment VAT category Taxable Amount
+				// cac:InvoiceLine / cac:TaxTotal / cac:TaxSubtotal / cbc:TaxAmount @currencyID
+				//----
+				// KSA-33 Prepayment VAT Category Code
+				// cac:InvoiceLine / cac:TaxTotal / cac:TaxSubtotal / cac:TaxCategory /  cbc:ID	
+				// KSA-34 Prepayment VAT rate
+				// cac:InvoiceLine / cac:TaxTotal / cac:TaxSubtotal / cac:TaxCategory / cbc:Percent	
+				TaxSubtotal taxSubtotal = getTaxSubTotal(minvoice, (MTax) mline.getC_Tax(), 
+						mline.getLineNetAmt().negate(), mline.getTaxAmt().negate()); // Amount should be submitted +ve
+								
+				lineTax.getTaxSubtotals().add(taxSubtotal);	
+			}
 			
 			line.getTaxTotals().add(lineTax);
 			
@@ -1059,19 +1182,13 @@ public class EInvoiceXmlFactory {
 			MTax tax = (MTax) mline.getC_Tax();
 			TaxCategoryType taxCategory = new TaxCategoryType(getTaxCategoryCode(tax), tax.getRate());
 			line.getItem().getClassifiedTaxCategories().add(taxCategory);
-	
-			// KSA-33 Prepayment VAT Category Code
-			// cac:InvoiceLine / cac:TaxTotal / cac:TaxSubtotal / cac:TaxCategory /  cbc:ID	
-			// KSA-34 Prepayment VAT rate
-			// cac:InvoiceLine / cac:TaxTotal / cac:TaxSubtotal / cac:TaxCategory / cbc:Percent
-	
 			
 			PriceType priceType = new PriceType();
 			// BT-146 Item net price
 			// cac:InvoiceLine / cac:Price / cbc:PriceAmount
 			// BT-5 Currency for item net price
 			// cac:InvoiceLine / cac:Price / cbc:PriceAmount @ currencyID
-			priceType.setPriceAmount(mline.getPriceEntered(), currency); // Unit Price
+			priceType.setPriceAmount(isPrepaymentAdjustmentLine? BigDecimal.ZERO.setScale(2).setScale(2) : mline.getPriceEntered(), currency); // Unit Price
 	
 			
 			// BT-149 Item price base quantity
@@ -1099,6 +1216,7 @@ public class EInvoiceXmlFactory {
 
 			invoice.getInvoiceLines().add(line);
 		}
+		return taxMap;
 	}
 	
 

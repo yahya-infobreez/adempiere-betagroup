@@ -9,6 +9,8 @@
 package oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -283,6 +285,13 @@ public class DocumentReferenceType {
     public void setIssueTime(IssueTime value) {
         this.issueTime = value;
     }
+    
+    public void setIssueTime(LocalDateTime datetime) throws Exception {
+        this.issueTime = new IssueTime();
+        datetime = datetime.truncatedTo(ChronoUnit.SECONDS);
+        this.issueTime.setValue(datetime); 
+    }
+
 
     /**
      * 
@@ -310,6 +319,11 @@ public class DocumentReferenceType {
      */
     public void setDocumentTypeCode(DocumentTypeCode value) {
         this.documentTypeCode = value;
+    }
+    
+    public void setDocumentTypeCode(String value) {
+        this.documentTypeCode = new DocumentTypeCode();
+        this.documentTypeCode.setValue(value);
     }
 
     /**

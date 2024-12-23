@@ -88,12 +88,13 @@ public class EInvoiceAPITest extends AdempiereTestCase {
 		apiHelper.setAuth(key, secret);
 		
 		Properties ctx = new Properties();
-		Env.setContext(ctx, "AD_Client_ID", 1000000);
-		Env.setContext(ctx, "AD_Org_ID", 0);
+		Env.setContext(ctx, "#AD_Client_ID", 1000000);
+		Env.setContext(ctx, "#AD_Org_ID", 0);
+		Env.setCtx(ctx);
 	
 		// B2B Invoice
 		try {
-			MInvoice minvoice = MInvoice.get(ctx, 1075742); // B2B Invoice
+			MInvoice minvoice = MInvoice.get(ctx, 1075758); // B2B Invoice
 			assertNotNull(minvoice);
 			Invoice xmlInvoice = EInvoiceXmlFactory.createInvoiceXml(minvoice);		
 			byte[] invoiceData = EInvoiceXmlFactory.canonicalize(xmlInvoice, false);
@@ -114,8 +115,9 @@ public class EInvoiceAPITest extends AdempiereTestCase {
 		apiHelper.setAuth(key, secret);
 		
 		Properties ctx = new Properties();
-		Env.setContext(ctx, "AD_Client_ID", 1000000);
-		Env.setContext(ctx, "AD_Org_ID", 0);
+		Env.setContext(ctx, "#AD_Client_ID", 1000000);
+		Env.setContext(ctx, "#AD_Org_ID", 0);
+		Env.setCtx(ctx);
 		
 		//		B2B Credit Note with Charge 1075743=24902ARC		
 		try {
@@ -142,8 +144,9 @@ public class EInvoiceAPITest extends AdempiereTestCase {
 		apiHelper.setAuth(key, secret);
 		
 		Properties ctx = new Properties();
-		Env.setContext(ctx, "AD_Client_ID", 1000000);
-		Env.setContext(ctx, "AD_Org_ID", 0);
+		Env.setContext(ctx, "#AD_Client_ID", 1000000);
+		Env.setContext(ctx, "#AD_Org_ID", 0);
+		Env.setCtx(ctx);
 			
 		try {
 			MInvoice minvoice = MInvoice.get(ctx, 1075745);
@@ -167,8 +170,9 @@ public class EInvoiceAPITest extends AdempiereTestCase {
 		apiHelper.setAuth(key, secret);
 		
 		Properties ctx = new Properties();
-		Env.setContext(ctx, "AD_Client_ID", 1000000);
-		Env.setContext(ctx, "AD_Org_ID", 0);
+		Env.setContext(ctx, "#AD_Client_ID", 1000000);
+		Env.setContext(ctx, "#AD_Org_ID", 0);
+		Env.setCtx(ctx);
 			
 		try {
 			MInvoice minvoice = MInvoice.get(ctx, 1075750);
@@ -194,8 +198,9 @@ public class EInvoiceAPITest extends AdempiereTestCase {
 		apiHelper.setAuth(key, secret);
 		
 		Properties ctx = new Properties();
-		Env.setContext(ctx, "AD_Client_ID", 1000000);
-		Env.setContext(ctx, "AD_Org_ID", 0);
+		Env.setContext(ctx, "#AD_Client_ID", 1000000);
+		Env.setContext(ctx, "#AD_Org_ID", 0);
+		Env.setCtx(ctx);
 			
 		try {
 			MInvoice minvoice = MInvoice.get(ctx, 	
@@ -220,15 +225,16 @@ public class EInvoiceAPITest extends AdempiereTestCase {
 	
 	public void testB2BInvoiceClearance() {	
 		Properties ctx = new Properties();
-		Env.setContext(ctx, "AD_Client_ID", 1000000);
-		Env.setContext(ctx, "AD_Org_ID", 0);
+		Env.setContext(ctx, "#AD_Client_ID", 1000000);
+		Env.setContext(ctx, "#AD_Org_ID", 0);
+		Env.setCtx(ctx);
 	
 		// B2B Invoice
 		try {
-			MInvoice minvoice = MInvoice.get(ctx, 
+			MInvoice minvoice = MInvoice.get(ctx, 1075757);
 //												1075746); // B2B Debit Note
 												//1075742); // B2B Invoice
-												1075745); // B2B credit Note
+//												1075745); // B2B credit Note
 
 			assertNotNull(minvoice);
 			Invoice xmlInvoice = EInvoiceXmlFactory.createInvoiceXml(minvoice);
@@ -245,15 +251,16 @@ public class EInvoiceAPITest extends AdempiereTestCase {
 		
 	}
 		
-	public void testB2BInvoiceReporting() {
+	public void testB2CInvoiceReporting() {
 		Properties ctx = new Properties();
-		Env.setContext(ctx, "AD_Client_ID", 1000000);
-		Env.setContext(ctx, "AD_Org_ID", 0);
+		Env.setContext(ctx, "#AD_Client_ID", 1000000);
+		Env.setContext(ctx, "#AD_Org_ID", 0);
+		Env.setCtx(ctx);
 	
 		// B2B Invoice
 		try {
-			MInvoice minvoice = MInvoice.get(ctx, 
-													1075750);	// B2C DebitNote
+			MInvoice minvoice = MInvoice.get(ctx, 	1075760);
+//													1075750);	// B2C DebitNote
 //													1075753); // B2C Invoice
 //													1075754); // B2C Credit Note
 			assertNotNull(minvoice);

@@ -59,8 +59,8 @@ public class EInvoiceXmlFactoryTest extends AdempiereTestCase {
 
 	public void testWriteXml() {
 		Properties ctx = new Properties();
-		Env.setContext(ctx, "AD_Client_ID", 1000000);
-		Env.setContext(ctx, "AD_Org_ID", 0);
+		Env.setContext(ctx, "#AD_Client_ID", 1000000);
+		Env.setContext(ctx, "#AD_Org_ID", 0);
 		MInvoice minvoice = MInvoice.get(ctx, 1075742);
 
 		assertNotNull(minvoice);
@@ -79,8 +79,8 @@ public class EInvoiceXmlFactoryTest extends AdempiereTestCase {
 	
 	public void testDeepCopyXml() {
 		Properties ctx = new Properties();
-		Env.setContext(ctx, "AD_Client_ID", 1000000);
-		Env.setContext(ctx, "AD_Org_ID", 0);
+		Env.setContext(ctx, "#AD_Client_ID", 1000000);
+		Env.setContext(ctx, "#AD_Org_ID", 0);
 		MInvoice minvoice = MInvoice.get(ctx, 1075216);
 		assertNotNull(minvoice);
 		try {
@@ -110,9 +110,9 @@ public class EInvoiceXmlFactoryTest extends AdempiereTestCase {
 	
 	public void testValidateInvoiceB2B1() {
 		Properties ctx = new Properties();
-		Env.setContext(ctx, "AD_Client_ID", 1000000);
-		Env.setContext(ctx, "AD_Org_ID", 0);
-		MInvoice minvoice = MInvoice.get(ctx, 1075741);
+		Env.setContext(ctx, "#AD_Client_ID", 1000000);
+		Env.setContext(ctx, "#AD_Org_ID", 0);
+		MInvoice minvoice = MInvoice.get(ctx, 1075758); //1075741);
 		assertNotNull(minvoice);
 		try {
 			Invoice xmlInvoice = EInvoiceXmlFactory.createInvoiceXml(minvoice);
@@ -136,8 +136,8 @@ public class EInvoiceXmlFactoryTest extends AdempiereTestCase {
 	
 	public void testValidateInvoiceB2B2() {
 		Properties ctx = new Properties();
-		Env.setContext(ctx, "AD_Client_ID", 1000000);
-		Env.setContext(ctx, "AD_Org_ID", 0);
+		Env.setContext(ctx, "#AD_Client_ID", 1000000);
+		Env.setContext(ctx, "#AD_Org_ID", 0);
 	
 		MInvoice minvoice = MInvoice.get(ctx, 1075742);
 		// 1075739=42470ARI	1075740=42471ARI
@@ -163,8 +163,8 @@ public class EInvoiceXmlFactoryTest extends AdempiereTestCase {
 	
 	public void testValidateCreditNoteB2B1() {
 		Properties ctx = new Properties();
-		Env.setContext(ctx, "AD_Client_ID", 1000000);
-		Env.setContext(ctx, "AD_Org_ID", 0);
+		Env.setContext(ctx, "#AD_Client_ID", 1000000);
+		Env.setContext(ctx, "#AD_Org_ID", 0);
 	
 		MInvoice minvoice = MInvoice.get(ctx, 1075745); // Credit Note from RMA
 		assertNotNull(minvoice);
@@ -193,8 +193,8 @@ public class EInvoiceXmlFactoryTest extends AdempiereTestCase {
 	
 	public void testValidateDebitNoteB2B1() {
 		Properties ctx = new Properties();
-		Env.setContext(ctx, "AD_Client_ID", 1000000);
-		Env.setContext(ctx, "AD_Org_ID", 0);
+		Env.setContext(ctx, "#AD_Client_ID", 1000000);
+		Env.setContext(ctx, "#AD_Org_ID", 0);
 	
 		MInvoice minvoice = MInvoice.get(ctx, 1075750); //Debit Note-B2C
 		assertNotNull(minvoice);
@@ -222,8 +222,8 @@ public class EInvoiceXmlFactoryTest extends AdempiereTestCase {
 	
 	public void testExtractQRCode() {
 		Properties ctx = new Properties();
-		Env.setContext(ctx, "AD_Client_ID", 1000000);
-		Env.setContext(ctx, "AD_Org_ID", 0);
+		Env.setContext(ctx, "#AD_Client_ID", 1000000);
+		Env.setContext(ctx, "#AD_Org_ID", 0);
 	
 		MInvoice minvoice = MInvoice.get(ctx, 1075753); // B2C Invoice
 		assertNotNull(minvoice);
@@ -248,10 +248,10 @@ public class EInvoiceXmlFactoryTest extends AdempiereTestCase {
 	
 	public void testValidateB2CInvoice() {
 		Properties ctx = new Properties();
-		Env.setContext(ctx, "AD_Client_ID", 1000000);
-		Env.setContext(ctx, "AD_Org_ID", 0);
+		Env.setContext(ctx, "#AD_Client_ID", 1000000);
+		Env.setContext(ctx, "#AD_Org_ID", 0);
 	
-		MInvoice minvoice = MInvoice.get(ctx, 1075753); // B2C Invoice
+		MInvoice minvoice = MInvoice.get(ctx, 1075758); // B2C Invoice
 		assertNotNull(minvoice);
 		try {
 			Invoice xmlInvoice = EInvoiceXmlFactory.createInvoiceXml(minvoice);
@@ -279,8 +279,8 @@ public class EInvoiceXmlFactoryTest extends AdempiereTestCase {
 	
 	public void testSignInvoice() {
 		Properties ctx = new Properties();
-		Env.setContext(ctx, "AD_Client_ID", 1000000);
-		Env.setContext(ctx, "AD_Org_ID", 0);
+		Env.setContext(ctx, "#AD_Client_ID", 1000000);
+		Env.setContext(ctx, "#AD_Org_ID", 0);
 		MInvoice minvoice = MInvoice.get(ctx, 1075742); // 1075216 = 42235ARI,  1075283=24884ARC, 1075286=42273ARI, 1075323=12634APC
 		// 1074762 = 11932ARD, 1074815=16390APD, 1074995=16414APD, 1074714=11925ARD
 		assertNotNull(minvoice);

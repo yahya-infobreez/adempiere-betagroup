@@ -64,25 +64,21 @@ public class Process_EInvoiceCompliance extends SvrProcess{
 		System.out.print(response);
 		
 		if(response != null) {
-//			minvoice.setValidationMsg(response.toString()); // Base64 Encoded
-//			if(response.getErrors() != null && !response.getErrors().isEmpty()) {
-//				minvoice.seteInvoiceStatus("Invalid");
-//			}
-			minvoice.saveEx();
-
 			if(response.getErrors() != null && !response.getErrors().isEmpty()) {
-			} else {
-				String msg = "Error: CSR Registration with FATOORA portal failed. "
+				String msg = "Error: Invoice submission for Compliance with FATOORA portal failed. "
 						+ response.getErrors().toString();
-				s_log.saveError("ZatcaRegistrationFailed", msg);
+				s_log.saveError("ZatcaComplianceFailed", msg);
 				return msg;
+			} else {
+				String msg = "Success: Invoice submission for Compliance with FATOORA portal completed successfully. "
+						+ minvoice.toString() + "\nResponse: " + response.toString();
+				return "Success";
 			}
 		} else {
-			String msg = "Error: CSR Registration with FATOORA portal failed. Reason unknown";
-			s_log.saveError("ZatcaRegistrationFailed", msg);
+			String msg = "Error: Invoice submission for Compliance with FATOORA portal failed. Reason unknown";
+			s_log.saveError("ZatcaComplianceFailed", msg);
 			return msg;
 		}
-		return null;
 	}
 }
 

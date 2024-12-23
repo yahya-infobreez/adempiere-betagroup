@@ -25,7 +25,6 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -43,8 +42,6 @@ import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.eevolution.model.MPPProductBOM;
 import org.eevolution.model.MPPProductBOMLine;
-
-import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_2.UUID;
 
 
 /**
@@ -2486,6 +2483,12 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		return false;
 	}
 	
+	public boolean isPrepaymentInvoice () 
+	{
+		String docType = getC_DocType_ID() > 0 ? getC_DocType().getName():null;
+		return "Prepayment Invoice (Customer)".equals(docType);
+	}
+	
 	/** Previous Invoice ID 
 	 * Set Previous Invoice in the same Sequence, for chaining the Invoices in a sequence.
 	 * Each Solution Unit/terminal may have different sequences and hence different previous Invoice ID
@@ -2686,10 +2689,57 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		return Env.ZERO;
 	}
 
-	public BigDecimal getPrepaidAmt() {
-		// TODO Fill this value by querying Advance payments
-		return Env.ZERO;
+	MCharge prepaymentCharge = null;
+	public MCharge getPrepaymentCharge() {
+		if(prepaymentCharge == null) {
+			String sql = "Name = '521239-CUSTOMER DOWN PAYMENT'";
+			prepaymentCharge = new Query(getCtx(), MCharge.Table_Name, sql, null)
+					.setOnlyActiveRecords(true).setClient_ID().firstOnly();
+		}
+		return prepaymentCharge;
 	}
+	
+	MProduct prepaymentAdjustmentProduct = null;
+	public MProduct getPrepaymentAdjustmentProduct() {
+		if(prepaymentAdjustmentProduct == null) {
+			// Product Value=ADVANCE-DEDUCTION Name=ADVANCE DEDUCTION IN CUSTOMER INVOICE ID=1254152
+			String sql = "Value = 'ADVANCE-DEDUCTION'";
+			prepaymentAdjustmentProduct = new Query(getCtx(), MProduct.Table_Name, sql, null)
+					.setOnlyActiveRecords(true).setClient_ID().firstOnly();
+		}
+		return prepaymentAdjustmentProduct;
+	}
+//	public BigDecimal[] getPrepaidAmt() {
+//		// Prepayment is saved as Lines with special Charge
+////		int downPaymentChargeId = DB.getSQLValue(null, 
+////				"SELECT C_Charge_ID FROM C_Charge WHERE Name = '521239-CUSTOMER DOWN PAYMENT'"
+////				+ " AND AD_Client_ID=?", Env.getAD_Client_ID(getCtx()));
+////		if(downPaymentChargeId > 0) {
+//			CPreparedStatement stmt = null;
+//			ResultSet rs = null;
+//			try {
+//				String sql = "SELECT sum(LineNetAmt), sum(TaxAmt) FROM C_InvoiceLine il"
+//						+ " JOIN C_Charge c on c.C_Charge_ID = il.C_Charge_ID"
+//						+ " where C_Invoice_ID = ? "
+//						+ " AND c.Name = ? ";
+//				stmt = DB.prepareStatement(sql, get_TrxName());
+//				stmt.setInt(1, get_ID());
+//				stmt.setString(2, "'521239-CUSTOMER DOWN PAYMENT'");
+//				rs = stmt.executeQuery(sql);
+//				if(rs.next()) {					
+//					BigDecimal advanceAmt = rs.getBigDecimal(1);
+//					BigDecimal advanceAmtTax = rs.getBigDecimal(2);
+//					return new BigDecimal[] {advanceAmt, advanceAmtTax};
+//				}
+//			} catch(Exception ex) {
+//				throw new AdempiereException("Unable to get Prepaid Amt fo Invoice", ex);
+//			}finally {
+//				DB.close(rs, stmt);
+//			}
+////		}
+//		
+//			return new BigDecimal[] {BigDecimal.ZERO, BigDecimal.ZERO};
+//	}
 
 	public BigDecimal getRoundOffAmt() {
 		// Created as a Line with Product M_Product_ID=1204744 DECIMAL-ROUND_DECIMAL ROUND OFF IN CUSTOMER INVOICE
@@ -2716,5 +2766,89 @@ public class MInvoice extends X_C_Invoice implements DocAction
 		
 		return lastId > 0 ? lastId : 0; // Avoid -1
 	}
+	
+	
+    public static final String COLUMNNAME_AdvanceAmt = "ADV_AMT";
+	public void setAdvanceAmt (BigDecimal advanceAmt)
+	{
+		set_ValueNoCheck (COLUMNNAME_AdvanceAmt, advanceAmt);
+	}
+
+	/** Get Advance amount paid against this Invoice
+	  */
+	public BigDecimal getAdvanceAmt () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AdvanceAmt);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+	
+    public static final String COLUMNNAME_AdvanceTax = "ADV_TAX";
+	public void setAdvanceTax (BigDecimal advanceAmt)
+	{
+		set_ValueNoCheck (COLUMNNAME_AdvanceTax, advanceAmt);
+	}
+
+	/** Get Tax for the Advance amount paid against this Invoice
+	  */
+	public BigDecimal getAdvanceTax () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AdvanceTax);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+	
+	
+    public static final String COLUMNNAME_AdvanceTotal = "ADV_TOTAL";
+	public void setAdvanceTotal (BigDecimal advanceTotal)
+	{
+		set_ValueNoCheck (COLUMNNAME_AdvanceTotal, advanceTotal);
+	}
+
+	/** Get Tax for the Advance amount paid against this Invoice
+	  */
+	public BigDecimal getAdvanceTotal () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AdvanceTotal);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+	
+	public static final String COLUMNNAME_TotalLinesBeforeAdvance = "TotLine_BefAdv";
+	public BigDecimal getTotalLinesBeforeAdvance () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TotalLinesBeforeAdvance);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+	
+	public static final String COLUMNNAME_RefAdvanceInvoiceDocNos = "REF_ADVINV_DOC";
+	public String getRefAdvanceInvoiceDocs() {
+		return (String)get_Value(COLUMNNAME_RefAdvanceInvoiceDocNos);
+	}
+	
+//	public void setRefAdvanceInvoices (String refInvDocs)
+//	{
+//		set_Value (COLUMNNAME_RefAdvanceInvoiceDocNos, refInvDocs);
+//	}
+	
+	public List<MInvoice> getRefAdvanceInvoices() {
+		String docNos = (String)get_Value(COLUMNNAME_RefAdvanceInvoiceDocNos);
+		String[] docs = docNos != null ? docNos.split(","):null;
+		if(docs == null || docs.length == 0)
+			return null;
+		int prepayDocId = DB.getSQLValue(null, "SELECT C_DocType_ID from C_DocType WHERE Name = 'Prepayment Invoice (Customer)' AND AD_Client_ID=?",
+				getAD_Client_ID());
+		List<MInvoice> refPrepayInvoices = new Query(getCtx(), MInvoice.Table_Name,
+					"C_DocType_ID=? AND C_Bpartner_ID=? AND DocumentNo IN (?)", null)
+					.setParameters(prepayDocId, getC_BPartner_ID(), docNos)
+					.list();
+		return refPrepayInvoices;
+	}
+
 	
 }	//	MInvoice

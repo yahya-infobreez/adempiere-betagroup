@@ -127,11 +127,13 @@ public class Process_EInvoiceClearanceAndReporting extends SvrProcess{
 				minvoice.setQRCode(qrCode);
 			}
 			minvoice.saveEx();
+			String msg = "Success: Invoice submission for Clearance with FATOORA portal completed successfully. "
+					+ minvoice.toString() + "\nResponse: " + response.toString();
 			return status;
 		} catch(Exception ex) {
 			ex.printStackTrace();
 			String msg = "Error: Invoice Clearance with FATOORA portal failed. Invoice# " + minvoice.getDocumentNo() + "\n" + ex.getMessage();
-			s_log.saveError("Invoice Reporting failed" , msg);
+			s_log.saveError("Invoice Clearance failed" , msg);
 			return msg;
 		}
 	}
@@ -172,6 +174,8 @@ public class Process_EInvoiceClearanceAndReporting extends SvrProcess{
 			}
 			minvoice.setEInvoiceStatus(status);
 			minvoice.saveEx();
+			String msg = "Success: Invoice submission for Reporting with FATOORA portal completed successfully. "
+					+ minvoice.toString() + "\nResponse: " + response.toString();
 			return status;
 			//}
 		} catch(Exception ex) {
