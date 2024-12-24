@@ -2692,7 +2692,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	MCharge prepaymentCharge = null;
 	public MCharge getPrepaymentCharge() {
 		if(prepaymentCharge == null) {
-			String sql = "Name = '521239-CUSTOMER DOWN PAYMENT'";
+			String sql = "Name like '%-CUSTOMER DOWN PAYMENT'";
 			prepaymentCharge = new Query(getCtx(), MCharge.Table_Name, sql, null)
 					.setOnlyActiveRecords(true).setClient_ID().firstOnly();
 		}
@@ -2749,8 +2749,13 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	}
 
 	public BigDecimal getTaxTotal() {
-		MInvoiceTax[] taxes = getTaxes(false);
-		BigDecimal totalAmt = Arrays.asList(taxes).stream().map(t->t.getTaxAmt()).reduce(Env.ZERO, BigDecimal::add);
+		// ZATCA QR needs total VAT before Prepayment adjustment
+		MProduct prepaymentProduct = getPrepaymentAdjustmentProduct();
+		BigDecimal totalAmt = Arrays.asList(getLines(" AND NVL(M_Product_ID,0) != " + prepaymentProduct.get_ID()))
+				.stream().map(l->l.getTaxAmt())
+				.reduce(BigDecimal::add).orElse(BigDecimal.ZERO);
+//		MInvoiceTax[] taxes = getTaxes(false);
+//		BigDecimal totalAmt = Arrays.asList(taxes).stream().map(t->t.getTaxAmt()).reduce(Env.ZERO, BigDecimal::add);
 		return totalAmt;
 	}
 	
