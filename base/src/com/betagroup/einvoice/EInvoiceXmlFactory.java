@@ -13,7 +13,6 @@ import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
@@ -36,7 +35,6 @@ import org.compiere.model.MCharge;
 import org.compiere.model.MClient;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
-import org.compiere.model.MInvoiceTax;
 import org.compiere.model.MLocation;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrg;
@@ -62,9 +60,6 @@ import org.w3._2000._09.xmldsig_.Transforms;
 import org.w3._2000._09.xmldsig_.X509Data;
 import org.w3._2000._09.xmldsig_.X509IssuerSerialType;
 import org.w3c.dom.Document;
-
-import com.betagroup.einvoice.EInvoiceXmlFactory.InvoiceTax;
-import com.sun.javafx.collections.MappingChange.Map;
 
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2.AddressType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_2.AttachmentType;
@@ -489,9 +484,10 @@ public class EInvoiceXmlFactory {
 		// cac:LegalMonetaryTotal / cbc:LineExtensionAmount @currencyID
 		MonetaryTotalType monetaryTotalType = new MonetaryTotalType();
 		BigDecimal prepaidAmt = minvoice.getAdvanceTotal(); //minvoice.getAdvanceAmt().add(minvoice.getAdvanceTax());
-		boolean isPrepaymentInvoice = minvoice.isPrepaymentInvoice();
-		monetaryTotalType.setLineExtensionAmount((isPrepaymentInvoice? minvoice.getTotalLines() :
-				minvoice.getTotalLinesBeforeAdvance()) //
+		boolean isAdvanceNotApplicable = minvoice.isPrepaymentInvoice() 
+				|| invoiceDocType.equals("AR Credit Memo") || invoiceDocType.equals("AR Debit Memo");
+		monetaryTotalType.setLineExtensionAmount((isAdvanceNotApplicable ? minvoice.getTotalLines() :
+					minvoice.getTotalLinesBeforeAdvance()) //
 				.subtract(roundOffAmt), currency); // TODO Should exclude charge/allowance
 		
 
@@ -512,7 +508,7 @@ public class EInvoiceXmlFactory {
 		// TODO Calculation depends on How charge/discount is handled at Document level		
 		// BT-5 Currency for invoice total amount without VAT
 		// cac:LegalMonetaryTotal / cbc:TaxExclusiveAmount @currencyID
-		monetaryTotalType.setTaxExclusiveAmount((isPrepaymentInvoice? minvoice.getTotalLines() :
+		monetaryTotalType.setTaxExclusiveAmount((isAdvanceNotApplicable ? minvoice.getTotalLines() :
 			minvoice.getTotalLinesBeforeAdvance())
 				.subtract(roundOffAmt), currency);
 		
