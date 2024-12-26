@@ -2848,10 +2848,23 @@ public class MInvoice extends X_C_Invoice implements DocAction
 			return null;
 		int prepayDocId = DB.getSQLValue(null, "SELECT C_DocType_ID from C_DocType WHERE Name = 'Prepayment Invoice (Customer)' AND AD_Client_ID=?",
 				getAD_Client_ID());
+
+		ArrayList<Object> params = new ArrayList<Object>();
+		StringBuilder inClause = new StringBuilder();
+		params.add(Integer.valueOf(prepayDocId));
+		params.add(getC_BPartner_ID());
+		for(String doc:docs) {
+			inClause.append("?,");
+			params.add(doc);
+		}
+		inClause = inClause.deleteCharAt(inClause.length()-1);
 		List<MInvoice> refPrepayInvoices = new Query(getCtx(), MInvoice.Table_Name,
-					"C_DocType_ID=? AND C_Bpartner_ID=? AND DocumentNo IN (?)", null)
-					.setParameters(prepayDocId, getC_BPartner_ID(), docNos)
+					"C_DocType_ID=? AND C_Bpartner_ID=? AND DocumentNo IN ("+inClause.toString()+")", null)
+					.setParameters(params)
 					.list();
+		if(refPrepayInvoices.size() != docs.length) {
+			throw new AdempiereException("Unable to load Prepayment Invoices. " + docNos);
+		}
 		return refPrepayInvoices;
 	}
 
