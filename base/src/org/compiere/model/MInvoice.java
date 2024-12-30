@@ -1934,7 +1934,7 @@ public class MInvoice extends X_C_Invoice implements DocAction
 	}
 	
 	private int getNextInvoiceCounterValue() {
-		MSequence sq = new Query(getCtx(), MSequence.Table_Name, "Name=? and AD_Org_ID IN (0, ?) ", null)
+		MSequence sq = new Query(getCtx(), MSequence.Table_Name, "Name=? and AD_Org_ID IN (0, ?) ", get_TrxName())
 				.setParameters("EINVOICE_ICV_SEQ", getAD_Org_ID()).setClient_ID()
 				.setOrderBy("AD_Org_ID DESC")
 				.first();
