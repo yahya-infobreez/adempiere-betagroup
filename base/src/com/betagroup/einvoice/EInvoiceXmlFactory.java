@@ -133,7 +133,7 @@ public class EInvoiceXmlFactory {
 		String invoiceTypeCode = null;
 		if(minvoice.isSimplifiedInvoice()) {
 			invoiceTypeCode = "02";
-		} else { // Simplified
+		} else { // Standard Inv.
 			invoiceTypeCode = "01";
 		}
 		
@@ -165,7 +165,7 @@ public class EInvoiceXmlFactory {
 		} else  if(invoiceDocType.equals("Prepayment Invoice (Customer)")) { //if("PPI".equals(minvoice.getC_DocType().getDocBaseType())) {
 			invoiceType = "386"; // Prepayment Invoice // TODO
 		} else {
-			throw new AdempiereException("Invoice invoice type for eInvoice");
+			throw new AdempiereException("Invalid invoice type for eInvoice");
 		}
 		invoice.setInvoiceTypeCode(invoiceTypeCode, invoiceType);
 		
@@ -217,7 +217,7 @@ public class EInvoiceXmlFactory {
 		// KSA-16 = Invoice counter value 	// cac:AdditionalDocumentReferene / cbc:UUID where cac:AdditionalDocumentReferene / cbc:ID = ICV
 		// BR-KSA-34 = The invoice counter value (KSA-16) contains only digits. ==> Means use ID?
 		DocumentReferenceType counterValue = new DocumentReferenceType();
-		counterValue.setUUID(String.valueOf(minvoice.get_ID()));
+		counterValue.setUUID(String.valueOf(minvoice.getICV()));
 		counterValue.setID("ICV");
 		invoice.getAdditionalDocumentReferences().add(counterValue);
 		
