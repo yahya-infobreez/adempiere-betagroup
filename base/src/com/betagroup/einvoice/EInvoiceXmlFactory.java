@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.security.InvalidParameterException;
 import java.security.PrivateKey;
@@ -1038,13 +1039,13 @@ public class EInvoiceXmlFactory {
 				// cac:InvoiceLine / cbc:InvoicedQuantity	
 				// BT-130 Invoiced quantity unit of measure	// Optional
 				// cac:InvoiceLine / cbc:InvoicedQuantity @ unitCode
-				line.setInvoicedQuantity(BigDecimal.ZERO.setScale(2), "PCE"); // Hardcode qty & unit
+				line.setInvoicedQuantity(BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP), "PCE"); // Hardcode qty & unit
 				
 				// BT-131 Invoice line net amount	// BR-24	// BR-KSA-EN16931-11,  BR-KSA-F-04, BR-KSA-82
 				// cac:InvoiceLine  / cbc:LineExtensionAmount 	
 				// BT-5 Currency for invoice line net amount	 // BR-KSA-CL-02
 				// cac:InvoiceLine  / cbc:LineExtensionAmount @currencyID
-				line.setLineExtensionAmount(BigDecimal.ZERO.setScale(2), currency); // Hardcode Net Amount to zero
+				line.setLineExtensionAmount(BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP), currency); // Hardcode Net Amount to zero
 			} else { // TODO Confirm line settings for Pre-payment invoice
 				// BT-129 Invoiced quantity	// BR-22
 				// cac:InvoiceLine / cbc:InvoicedQuantity	
@@ -1056,7 +1057,7 @@ public class EInvoiceXmlFactory {
 				// cac:InvoiceLine  / cbc:LineExtensionAmount 	
 				// BT-5 Currency for invoice line net amount	 // BR-KSA-CL-02
 				// cac:InvoiceLine  / cbc:LineExtensionAmount @currencyID
-				line.setLineExtensionAmount(mline.getLineNetAmt().setScale(2), currency);
+				line.setLineExtensionAmount(mline.getLineNetAmt().setScale(2, RoundingMode.HALF_UP), currency);
 			}
 	
 			// Invoice line allowance indicator //*** SKIP - as not applicable
@@ -1105,14 +1106,14 @@ public class EInvoiceXmlFactory {
 				// cac:InvoiceLine / cac:TaxTotal / cbc:TaxAmount
 				// BT-5 Currency for VAT line amount
 				// cac:InvoiceLine / cac:TaxTotal / cbc:TaxAmount @currencyID
-				lineTax.setTaxAmount(mline.getTaxAmt().setScale(2), currency);	
+				lineTax.setTaxAmount(mline.getTaxAmt().setScale(2, RoundingMode.HALF_UP), currency);	
 		
 				// KSA-12 Line amount inclusive VAT ?? // TODO CROSS CHECK
 				// cac:InvoiceLine / cac:TaxTotal / cbc:RoundingAmount	
 				// Currency for line amount inclusive VAT
 				// cac:InvoiceLine / cac:TaxTotal / cbc:RoundingAmount @curencyID
 				// Line Total is including Tax, in case of Exclusive pricelist. // TODO Handle inclusive pricelist
-				lineTax.setRoundingAmount(mline.getLineTotalAmt().setScale(2), currency); 
+				lineTax.setRoundingAmount(mline.getLineTotalAmt().setScale(2, RoundingMode.HALF_UP), currency); 
 				
 				// Fill TaxMap to get real tax
 				// Fill the MAP to adjust InvoiceTax table later
@@ -1123,21 +1124,21 @@ public class EInvoiceXmlFactory {
 					invoiceTax = new InvoiceTax(taxCategory, mtax);
 				}
 				invoiceTax.taxable = invoiceTax.taxable.add(mline.getLineNetAmt());
-				invoiceTax.tax = invoiceTax.tax.add(mline.getTaxAmt());
+				invoiceTax.tax = invoiceTax.tax.add(mline.getTaxAmt()); // This will be overwritten later to do rounding at cataegory level
 				taxMap.put(taxCategory, invoiceTax);
 			} else {
 				// KSA-11 VAT line amount
 				// cac:InvoiceLine / cac:TaxTotal / cbc:TaxAmount
 				// BT-5 Currency for VAT line amount
 				// cac:InvoiceLine / cac:TaxTotal / cbc:TaxAmount @currencyID
-				lineTax.setTaxAmount(BigDecimal.ZERO.setScale(2), currency); // Hardcode Net Amount to zero
+				lineTax.setTaxAmount(BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP), currency); // Hardcode Net Amount to zero
 		
 				// KSA-12 Line amount inclusive VAT ?? // TODO CROSS CHECK
 				// cac:InvoiceLine / cac:TaxTotal / cbc:RoundingAmount	
 				// Currency for line amount inclusive VAT
 				// cac:InvoiceLine / cac:TaxTotal / cbc:RoundingAmount @curencyID
 				// Line Total is including Tax, in case of Exclusive pricelist. // TODO Handle inclusive pricelist
-				lineTax.setRoundingAmount(BigDecimal.ZERO.setScale(2), currency); // Hardcode Net Amount to zero
+				lineTax.setRoundingAmount(BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP), currency); // Hardcode Net Amount to zero
 				
 				// KSA-31 Prepayment VAT Category Taxable Amount
 				// cac:InvoiceLine / cac:TaxTotal / cac:TaxSubtotal / cbc:TaxableAmount	
@@ -1183,7 +1184,7 @@ public class EInvoiceXmlFactory {
 			// cac:InvoiceLine / cac:Price / cbc:PriceAmount
 			// BT-5 Currency for item net price
 			// cac:InvoiceLine / cac:Price / cbc:PriceAmount @ currencyID
-			priceType.setPriceAmount(isPrepaymentAdjustmentLine? BigDecimal.ZERO.setScale(2).setScale(2) : mline.getPriceEntered(), currency); // Unit Price
+			priceType.setPriceAmount(isPrepaymentAdjustmentLine? BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP) : mline.getPriceEntered(), currency); // Unit Price
 	
 			
 			// BT-149 Item price base quantity
@@ -1211,6 +1212,15 @@ public class EInvoiceXmlFactory {
 
 			invoice.getInvoiceLines().add(line);
 		}
+		
+		// Re-Calculate tax at Category Level, as rounding needs to be done at category level
+		taxMap.entrySet().forEach(t->{
+			t.getValue().tax = t.getValue().taxable
+					.multiply(t.getValue().mtax.getRate())
+					.scaleByPowerOfTen(-2)
+					.setScale(2, RoundingMode.HALF_UP);
+		});
+
 		return taxMap;
 	}
 	
