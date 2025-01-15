@@ -37,17 +37,18 @@ public class Process_SendEmail_Salesman extends SvrProcess
 		String documentno 	   = null; BigDecimal grandTotal  = null;
 		String orderno         = null;
 		BigDecimal salesrep_id = null; String custname   	  = null;
-		BigDecimal war_id 	   = null;
-		String ccEmail	   = null;
+		BigDecimal war_id 	   = null; BigDecimal beta_jobcontract_id = null; 
+		String ccEmail	       = null;
 		String ccEmailSm	   = null;
 		String ccEmailFm	   = null;
+		BigDecimal doctype_id  = null;
+		String jobCont         = null;  
 		
-		
-		
+		String jobcontSQL      = "select value from beta_jobcontract where beta_jobcontract_id=?";
 		String emailToSQL 	   = "select email,emailcc,name from ad_user where ad_user_id = ?";
 		String emailFromSQL    = "select requestuser, requestuserpw from AD_client where ad_client_id = ?" ;
 		String invoiceSQL      = "select i.documentno, i.grandtotal, i.salesrep_id, bp.name, p.value,i.c_order_id,"
-				+ "p.c_projecttype_id,p.m_warehouse_id from c_invoice i "
+				+ "p.c_projecttype_id,p.m_warehouse_id,i.c_doctype_id,i.beta_jobcontract_id from c_invoice i "
 				+ "left outer join c_bpartner bp on i.c_bpartner_id =  bp.c_bpartner_id "
 				+ "left outer join c_project p on i.c_project_id = p.c_project_id where i.c_invoice_id= ?";
 		try
@@ -67,6 +68,8 @@ public class Process_SendEmail_Salesman extends SvrProcess
 				ord_id      = rs.getBigDecimal(6);
 				prjtype_id  = rs.getBigDecimal(7);
 				war_id      = rs.getBigDecimal(8);
+				doctype_id  = rs.getBigDecimal(9);
+				beta_jobcontract_id  = rs.getBigDecimal(10);
 				
 				
 			}
@@ -133,15 +136,85 @@ public class Process_SendEmail_Salesman extends SvrProcess
 			addLog(0, null, null, "Process Stopped");
 			addLog(0, null, null, s1[1]);
 		}
+		try 
+		{
+			PreparedStatement ps  = null;
+			ResultSet rs 		  = null;
+			ps = DB.prepareStatement(jobcontSQL, "DSPL");
+			ps.setBigDecimal(1,beta_jobcontract_id);
+			rs = ps.executeQuery();
+
+			if (rs.next())
+			{
+				jobCont =  rs.getString(1);
+				
+				
+			}
+			ps.close();
+			rs.close();
+
+		}
+		catch (Exception e)
+		{
+			String s = e.getLocalizedMessage();
+			System.out.println("Error :"+ s);
+			String s1[] = s.split(":");
+			addLog(0, null, null, "Process Stopped");
+			addLog(0, null, null, s1[1]);
+		}
 		String mailContent     = "Dear Colleague, " +"\n\n Please find the attached Sales Invoice - "+   documentno    +
 				                 "\n Customer Name - " + custname +
 								 "\n Order No - " + orderno + 
 								 "\n Grand Total - " + grandTotal;
 		
+		String downPaymailContent     = "Dear Colleague, " +"\n\n Please find the attached Down Payment Invoice - "+   documentno    +
+                "\n Customer Name - " + custname +
+                 "\n Job Contract Number - " + jobCont +
+				 "\n Grand Total - " + grandTotal;
+		
 		
 		HashMap<String,Object> mm = new HashMap<String,Object>();
 		char str = 'N';
 		char strLogo = 'Y';
+		
+		if (doctype_id.doubleValue()==1000080)
+		{
+			mm.put("C_Invoice_ID", BigDecimal.valueOf(Record_ID));
+			mm.put("DUPYN", String.valueOf(str));
+			mm.put("LOGOYN", String.valueOf(strLogo));
+			String outFileName=  "/opt/Adempiere/SalesInvoice-Salesman/SalesPP - " + Record_ID +".pdf";
+			JasperPrint prnt = JasperFillManager.fillReport("/opt/Adempiere/reports/SalesPP.jasper", mm,
+					CConnection.get().getConnection(false, 8));
+			/*JRExporter exporter = new net.sf.jasperreports.engine.export.JRPdfExporter();
+			exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, outFileName);
+			exporter.setParameter(JRExporterParameter.JASPER_PRINT, prnt);
+			exporter.exportReport();
+
+			File f = new File(outFileName);*/
+			//ccEmailSm=DB.getSQLValueString(get_TrxName(),"SELECT sm_email FROM c_projecttype WHERE c_projecttype_id = ?",prjtype_id);
+			//ccEmailFm=DB.getSQLValueString(get_TrxName(),"SELECT fmemail FROM ad_client WHERE ad_client_id = ?",AD_Client_ID);
+			MClient client = MClient.get(getCtx());
+
+			if (emailFrom  != null) 
+			{
+				EMail email = client.createEMail(emailFrom.trim(), emailTo.trim(),
+						"Down Payment Invoice - " + documentno ,downPaymailContent + "  \n \n \n Thanks & Regards" + "\n \n Accounts Dept."+ "\n (Auto generated mail from Adempiere ERP)",false,fromPWD);
+				//email.addAttachment(f);
+				if (ccEmail != null && !ccEmail.isEmpty()) {
+			        String[] ccEmails = ccEmail.split(";");
+			        for (String cc : ccEmails) {
+			            email.addCc(cc.trim()); // trim to remove any extra spaces
+			        }
+			    }
+				//email.addCc(ccEmail);
+				//email.addCc(ccEmailSm);
+				//email.addCc(ccEmailFm);
+				email.send();
+				addLog(0,null,null, "Email sent successfully");
+			}
+		}
+		
+	else {
 		
 		if (prjtype_id.doubleValue()==1000010 && war_id.doubleValue()==1000002)
 		{
@@ -151,12 +224,12 @@ public class Process_SendEmail_Salesman extends SvrProcess
 			String outFileName=  "/opt/Adempiere/SalesInvoice-Salesman/SalInvPrint_Door - " + Record_ID +".pdf";
 			JasperPrint prnt = JasperFillManager.fillReport("/opt/Adempiere/reports/SalInvPrint_Door.jasper", mm,
 					CConnection.get().getConnection(false, 8));
-			JRExporter exporter = new net.sf.jasperreports.engine.export.JRPdfExporter();
+			/*JRExporter exporter = new net.sf.jasperreports.engine.export.JRPdfExporter();
 			exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, outFileName);
 			exporter.setParameter(JRExporterParameter.JASPER_PRINT, prnt);
 			exporter.exportReport();
 
-			File f = new File(outFileName);
+			File f = new File(outFileName);*/
 			
 			//ccEmailSm=DB.getSQLValueString(get_TrxName(),"SELECT sm_email FROM c_projecttype WHERE c_projecttype_id = ?",prjtype_id);
 			//ccEmailFm=DB.getSQLValueString(get_TrxName(),"SELECT fmemail FROM ad_client WHERE ad_client_id = ?",AD_Client_ID);
@@ -166,7 +239,7 @@ public class Process_SendEmail_Salesman extends SvrProcess
 			{
 				EMail email = client.createEMail(emailFrom.trim(), emailTo.trim(),
 						"Sales Invoice - " + documentno ,mailContent + "  \n \n \n Thanks & Regards" + "\n \n Stores & Delivery Section"+ "\n (Auto generated mail from Adempiere ERP)",false,fromPWD);
-				email.addAttachment(f);
+				//email.addAttachment(f);
 				
 				if (ccEmail != null && !ccEmail.isEmpty()) {
 			        String[] ccEmails = ccEmail.split(";");
@@ -189,12 +262,12 @@ public class Process_SendEmail_Salesman extends SvrProcess
 			String outFileName=  "/opt/Adempiere/SalesInvoice-Salesman/SalInvPrint_wodis - " + Record_ID +".pdf";
 			JasperPrint prnt = JasperFillManager.fillReport("/opt/Adempiere/reports/SalInvPrint_wodis.jasper", mm,
 					CConnection.get().getConnection(false, 8));
-			JRExporter exporter = new net.sf.jasperreports.engine.export.JRPdfExporter();
+			/*JRExporter exporter = new net.sf.jasperreports.engine.export.JRPdfExporter();
 			exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, outFileName);
 			exporter.setParameter(JRExporterParameter.JASPER_PRINT, prnt);
 			exporter.exportReport();
 
-			File f = new File(outFileName);
+			File f = new File(outFileName);*/
 			//ccEmailSm=DB.getSQLValueString(get_TrxName(),"SELECT sm_email FROM c_projecttype WHERE c_projecttype_id = ?",prjtype_id);
 			//ccEmailFm=DB.getSQLValueString(get_TrxName(),"SELECT fmemail FROM ad_client WHERE ad_client_id = ?",AD_Client_ID);
 			MClient client = MClient.get(getCtx());
@@ -203,7 +276,7 @@ public class Process_SendEmail_Salesman extends SvrProcess
 			{
 				EMail email = client.createEMail(emailFrom.trim(), emailTo.trim(),
 						"Sales Invoice - " + documentno ,mailContent + "  \n \n \n Thanks & Regards" + "\n \n Stores & Delivery Section"+ "\n (Auto generated mail from Adempiere ERP)",false,fromPWD);
-				email.addAttachment(f);
+				//email.addAttachment(f);
 				if (ccEmail != null && !ccEmail.isEmpty()) {
 			        String[] ccEmails = ccEmail.split(";");
 			        for (String cc : ccEmails) {
@@ -217,7 +290,8 @@ public class Process_SendEmail_Salesman extends SvrProcess
 				addLog(0,null,null, "Email sent successfully");
 			}
 		}
-		
+	}
+	
 		String updateSQL = null;
 		updateSQL 		 = "update c_invoice set btn_sendemailsalesman = 'Y' where c_invoice_id = " + Record_ID;
 

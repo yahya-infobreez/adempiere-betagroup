@@ -109,8 +109,11 @@ public class Process_Archive_Invoice extends SvrProcess{
 		String fileName = null;
 		if (doctypeid == 1000003)
 			fileName = "/opt/Adempiere/reports/SalInvPrint.jasper";
-		else if (doctypeid == 1000005)
+		else if (doctypeid == 1000005 | doctypeid == 1000046)
 			fileName = "/opt/Adempiere/reports/Credit_Debit_Note.jasper";
+		else
+			fileName = "/opt/Adempiere/reports/SalesPP.jasper";
+		
 		String outFileName = "/opt/Adempiere/InvArchive/" + docno +".pdf";
 		try
 		{
