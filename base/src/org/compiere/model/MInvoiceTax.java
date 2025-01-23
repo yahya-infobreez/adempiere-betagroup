@@ -230,7 +230,8 @@ public class MInvoiceTax extends X_C_InvoiceTax
 		}
 		
 		//	Calculate Tax
-		if (documentLevel || taxAmt.signum() == 0)
+		// ZATCA requires tax to be rounded after Category level sumup
+//		if (documentLevel || taxAmt.signum() == 0)
 			taxAmt = tax.calculateTax(taxBaseAmt, isTaxIncluded(), getPrecision());
 		setTaxAmt(taxAmt);
 

@@ -49,6 +49,7 @@ import org.etsi.uri._01903.v1_3.QualifyingProperties;
 import org.etsi.uri._01903.v1_3.SignedProperties;
 import org.etsi.uri._01903.v1_3.SignedSignatureProperties;
 import org.etsi.uri._01903.v1_3.SigningCertificate;
+import org.jfree.util.Log;
 import org.w3._2000._09.xmldsig_.DigestMethod;
 import org.w3._2000._09.xmldsig_.KeyInfo;
 import org.w3._2000._09.xmldsig_.Object;
@@ -509,9 +510,9 @@ public class EInvoiceXmlFactory {
 		// TODO Calculation depends on How charge/discount is handled at Document level		
 		// BT-5 Currency for invoice total amount without VAT
 		// cac:LegalMonetaryTotal / cbc:TaxExclusiveAmount @currencyID
-		monetaryTotalType.setTaxExclusiveAmount((isAdvanceNotApplicable ? minvoice.getTotalLines() :
-			minvoice.getTotalLinesBeforeAdvance())
-				.subtract(roundOffAmt), currency);
+		BigDecimal taxExclusiveAmt = (isAdvanceNotApplicable ? minvoice.getTotalLines() :
+			minvoice.getTotalLinesBeforeAdvance()).subtract(roundOffAmt);// RoundOff is considered extra
+		monetaryTotalType.setTaxExclusiveAmount(taxExclusiveAmt, currency);
 		
 		
 		// Pre-Paid amount	// Optional
@@ -520,22 +521,34 @@ public class EInvoiceXmlFactory {
 		// cac:LegalMonetaryTotal / cbc:PrepaidAmount @currencyID
 		monetaryTotalType.setPrepaidAmount(prepaidAmt, currency);
 		
+		// Calculate Tax first before setting TaxInclusiveAmount & PayableRoundingAmount & PayableAmount
+		// Rounding may need adjustment
+		java.util.Map<String, InvoiceTax> taxMap = processLines(invoice, minvoice); 		
+		BigDecimal taxTotal = processTax(invoice, minvoice, taxMap); // This should be called after #processLines()
+		
+
 		// BT-112 Invoice total amount with VAT		// BR-KSA-F-04
 		// If VAT total is not entered, Gross Total to be entered Statement - "Amount includes VAT"
 		// cac:LegalMonetaryTotal / cbc:TaxInclusiveAmount		
 		// Currency for invoice total amount with VAT
 		// cac:LegalMonetaryTotal / cbc:TaxInclusiveAmount @currencyID
 		// Note: This amount excludes RoundOff. Round off is shown separately
-		monetaryTotalType.setTaxInclusiveAmount(minvoice.getGrandTotal()
-				.add(prepaidAmt) // GrandTotal is the Payable amount after Advance is adjusted
-				.subtract(roundOffAmt), currency); // RoundOff is considered extra
+		BigDecimal taxInclusiveAmt = taxExclusiveAmt.add(taxTotal);
+		monetaryTotalType.setTaxInclusiveAmount(taxInclusiveAmt, currency); // RoundOff is considered extra
 
 		
 		// Rounding amount		// Optional
 		// cac:LegalMonetaryTotal/cbc:PayableRoundingAmount
 		// Currency for Rounding amount	// Optional		
 		// cac:LegalMonetaryTotal/cbc:PayableRoundingAmount @currencyID
-		monetaryTotalType.setPayableRoundingAmount(roundOffAmt, currency);
+		BigDecimal adjustedRoundOff = minvoice.getGrandTotal().subtract(taxInclusiveAmt.subtract(prepaidAmt));
+		// roundOffAmt will be automatically included in this diff.
+		// Adjust the round off to match the difference in roundOff when Prepayment is present
+		if(adjustedRoundOff.compareTo(roundOffAmt) != 0) {
+			Log.warn("EInvoice: Round off adjusted for Invoice# " + minvoice.getDocumentNo() 
+				+ " adjustedRoundOff= " + adjustedRoundOff.toPlainString() + " Actual RoundOff = " + roundOffAmt.toPlainString());
+		}
+		monetaryTotalType.setPayableRoundingAmount(adjustedRoundOff /* roundOffAmt */, currency);
 
 		
 		// BT-115 Amount due for payment // BR-15 Always REQUIRED
@@ -549,10 +562,6 @@ public class EInvoiceXmlFactory {
 		
 		// Finally add to Invoice
 		invoice.setLegalMonetaryTotal(monetaryTotalType);
-		
-		java.util.Map<String, InvoiceTax> taxMap = processLines(invoice, minvoice); 
-		
-		processTax(invoice, minvoice, taxMap); // This should be called after #processLines()
 		
 		String[] signPair = fillSignatureDetails(invoice, org);
 		String invoiceSignature = signPair[1];
@@ -821,7 +830,7 @@ public class EInvoiceXmlFactory {
 
 	}
 
-	private static void processTax(Invoice invoice, MInvoice minvoice, java.util.Map<String, InvoiceTax> taxMap) {
+	private static BigDecimal processTax(Invoice invoice, MInvoice minvoice, java.util.Map<String, InvoiceTax> taxMap) {
 		BigDecimal taxTotalAmt = taxMap.entrySet().stream()
 				.map(t->t.getValue().tax)
 				.reduce(BigDecimal::add).orElse(BigDecimal.ZERO);
@@ -869,6 +878,7 @@ public class EInvoiceXmlFactory {
 			taxTotal1.getTaxSubtotals().add(taxSubtotal);
 		});
 		invoice.getTaxTotals().add(taxTotal1);
+		return taxTotalAmt;
 	}
 
 	private static TaxSubtotal getTaxSubTotal(MInvoice minvoice, MTax tax, BigDecimal taxableAmt, BigDecimal taxAmt) {

@@ -250,7 +250,8 @@ public class MOrderTax extends X_C_OrderTax
 			return false;
 		
 		//	Calculate Tax
-		if (documentLevel)		//	document level
+		// ZATCA requires tax to be rounded at category level
+//		if (documentLevel)		//	document level
 			taxAmt = tax.calculateTax(taxBaseAmt, isTaxIncluded(), getPrecision());
 		setTaxAmt(taxAmt);
 
