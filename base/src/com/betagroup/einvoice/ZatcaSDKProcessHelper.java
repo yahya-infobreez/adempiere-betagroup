@@ -161,15 +161,28 @@ public class ZatcaSDKProcessHelper {
 	    throw null;
 	}
 
+
 	public static byte[] formatXml(byte[] xmlIn) throws Exception {	
 		try {
 			File inFile = File.createTempFile("format-in", ".xml");
-			File outFile = File.createTempFile("format-out", ".xml");
-
+//			File outFile = File.createTempFile("format-out", ".xml");
 			Files.write(inFile.toPath(), xmlIn);
+			
+			File outFile = formatXml(inFile);
+			byte[] out = Files.readAllBytes(outFile.toPath());
+			return out;
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		}
+	}
+			
+	public static File formatXml(File inFile) throws Exception {	
+		try {
+			File outFile = File.createTempFile("format-out", ".xml");
 			ProcessBuilder builder;
-			builder = new ProcessBuilder("xmllint", "--format", inFile.getAbsolutePath()); 
-//					"--output", outFile.getAbsolutePath());
+			builder = new ProcessBuilder("xmllint", "--format", inFile.getAbsolutePath())
+					.redirectOutput(outFile);
 			Map<String, String> environment = builder.environment();
 			environment.put("XMLLINT_INDENT", "    "); // 4 spaces
 			
@@ -178,79 +191,48 @@ public class ZatcaSDKProcessHelper {
 			// Wait for the process to complete
 			int exitCode = process.waitFor();
 			
-			// Print Out & Error irrespective of status. // Status returned is not proper too
-
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            byte[] buffer = new byte[1024];
-
-            int bytesRead;
-            while ((bytesRead = process.getInputStream().read(buffer)) != -1) {
-                outputStream.write(buffer, 0, bytesRead);
-            }
-            outputStream.close();
-            
-			// Print Error output
-			System.err.println("**** Error console *******  Exit code: " + exitCode + "\n");
-			BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-			String line;
-			while ((line = errorReader.readLine()) != null) {
-			    System.err.println(line);
-			}
-
-			Files.write(outFile.toPath(), outputStream.toByteArray());
-			return outputStream.toByteArray();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			return outFile;
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw e;
 		}
-	    throw null;
 	}
 	
 	public static byte[] canonicalizeXml(byte[] xmlIn, boolean compact) throws Exception {	
 		try {
 			File inFile = File.createTempFile("canon-in", ".xml");
-			File outFile = File.createTempFile("canon-out", ".xml");
 			Files.write(inFile.toPath(), xmlIn);
+			
+			File outFile = canonicalizeXml(inFile,compact);
+			byte[] out = Files.readAllBytes(outFile.toPath());
+			return out;
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		}
+	}
+	
+	
+	public static File canonicalizeXml(File inFile, boolean compact) throws Exception {	
+		try {
+			File outFile = File.createTempFile("canon-out", ".xml");
 			ProcessBuilder builder;
 			if(compact) {
-				builder = new ProcessBuilder("xmllint", "--c14n11", "--format", inFile.getAbsolutePath());				
+				builder = new ProcessBuilder("xmllint", "--c14n11", "--format", inFile.getAbsolutePath())
+						.redirectOutput(outFile);	
 			} else {
-				builder = new ProcessBuilder("xmllint", "--c14n11", inFile.getAbsolutePath());				
+				builder = new ProcessBuilder("xmllint", "--c14n11", inFile.getAbsolutePath())
+						.redirectOutput(outFile);
 			}
 			Process process = builder.start();
 
 			// Wait for the process to complete
 			int exitCode = process.waitFor();
 			
-			// Print Out & Error irrespective of status. // Status returned is not proper too
-			String line;
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            byte[] buffer = new byte[1024];
-
-            int bytesRead;
-            while ((bytesRead = process.getInputStream().read(buffer)) != -1) {
-                outputStream.write(buffer, 0, bytesRead);
-            }
-            outputStream.close();
-		
-			// Print Error output
-			System.err.println("**** Error console *******  Exit code: " + exitCode + "\n");
-			BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-			while ((line = errorReader.readLine()) != null) {
-			    System.err.println(line);
-			}
-			Files.write(outFile.toPath(), outputStream.toByteArray());
-			return outputStream.toByteArray();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			return outFile;
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw e;
 		}
-	    throw null;
 	}
 }
